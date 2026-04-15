@@ -1,0 +1,29 @@
+project:
+  name: cara-attribution-poc
+  canonical_plan: implement-plan.md
+  working_plan: PLAN.md
+
+huggingface:
+  model_name: stabilityai/stable-audio-open-small
+  token: ""
+
+freesound:
+  client_id: ""
+  client_secret: ""
+  access_token: ""
+  refresh_token: ""
+  download_quality: original
+  max_concurrent_downloads: 4
+  rate_limit_delay_seconds: 0.5
+  output_dir: data/freesound
+  meta_dir: data/freesound_meta
+
+fma:
+  output_dir: data/fma
+  meta_dir: data/fma_meta
+
+paths:
+  data_dir: data
+  registry_dir: registry
+  checkpoints_dir: checkpoints
+  evaluation_dir: evaluation

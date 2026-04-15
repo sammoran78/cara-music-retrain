@@ -1,0 +1,3216 @@
+{
+  "meta": {
+    "n_per_pool": 100,
+    "n_pools": 4,
+    "total_prompts": 400,
+    "seed": 42,
+    "pools": {
+      "Freesound-CC0-Electronic": 0,
+      "Freesound-CC-BY-Ambient": 1,
+      "FMA-CC0-Jazz": 2,
+      "FMA-CC-BY-Classical": 3
+    }
+  },
+  "prompts": [
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0068",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical ensemble music. attribution required. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0033",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic synthesizer loop. no copyright. 128 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0014",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "atmospheric morning recording. attribution license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0017",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "symphony performance. classical music. attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0029",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "traditional jazz music. Free Music Archive. public domain.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0052",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic acid beat. public domain. 120 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0016",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "baroque classical composition. CC BY license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0087",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz bass improvisation. FMA dataset. CC0.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0038",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "orchestral triumphant piece. Free Music Archive. CC-BY.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0042",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "smooth jazz composition. no copyright. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0008",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "synth production. royalty free. 128 beats per minute.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0046",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "cave field recording. CC BY license. atmospheric.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0067",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "orchestral melancholic piece. Free Music Archive. CC-BY.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0019",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "traditional jazz music. Free Music Archive. public domain.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0032",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "orchestral melancholic piece. Free Music Archive. CC-BY.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0094",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "digital experimental music. CC0. tempo 140.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0048",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "atmospheric forest recording. attribution license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0055",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical ensemble music. attribution required. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0020",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz ensemble. modern style. public domain music.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0062",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "orchestral melancholic piece. Free Music Archive. CC-BY.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0015",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "house production. royalty free. 120 beats per minute.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0054",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "forest field recording. CC BY license. atmospheric.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0090",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "techno music loop. 128 BPM. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0048",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "contemporary classical composition. CC BY license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0071",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic acid beat. public domain. 128 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0027",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz ensemble. bebop style. public domain music.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0073",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical flute sonata. attribution license. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0048",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "EDM music loop. 130 BPM. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0053",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "underwater field recording. CC BY license. atmospheric.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0093",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic minimal beat. public domain. 120 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0031",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic synthesizer loop. no copyright. 128 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0071",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "wind field recording. CC BY license. atmospheric.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0045",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "night field recording. CC BY license. atmospheric.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0000",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "environmental audio. forest. creative commons attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0031",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical violin sonata. attribution license. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0072",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz ensemble. smooth style. public domain music.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0030",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "techno production. royalty free. 135 beats per minute.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0031",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "atmospheric forest recording. attribution license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0096",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical ensemble music. attribution required. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0043",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "environmental audio. forest. creative commons attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0064",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz ensemble. fusion style. public domain music.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0025",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "environmental audio. rain. creative commons attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0049",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic synthesizer loop. no copyright. 130 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0084",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical quartet music. attribution required. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0066",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic experimental beat. public domain. 140 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0057",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "digital ambient music. CC0. tempo 120.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0040",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "orchestral triumphant piece. Free Music Archive. CC-BY.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0081",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "ambient ocean soundscape. attribution required.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0050",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "mountain field recording. CC BY license. atmospheric.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0069",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical quartet music. attribution required. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0027",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical piano sonata. attribution license. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0028",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical violin sonata. attribution license. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0015",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz saxophone improvisation. FMA dataset. CC0.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0033",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "ambient rain soundscape. attribution required.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0092",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "ambient morning soundscape. attribution required.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0078",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz ensemble. fusion style. public domain music.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0051",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "house music loop. 125 BPM. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0054",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic dance beat. public domain. 130 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0010",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "orchestral peaceful piece. Free Music Archive. CC-BY.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0038",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz trumpet improvisation. FMA dataset. CC0.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0046",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz saxophone improvisation. FMA dataset. CC0.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0068",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "digital ambient music. CC0. tempo 128.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0055",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic acid beat. public domain. 125 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0007",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "ambient wind soundscape. attribution required.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0011",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical cello sonata. attribution license. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0018",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz ensemble. modern style. public domain music.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0098",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "quartet performance. classical music. attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0049",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "ensemble performance. classical music. attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0069",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "drums jazz solo. Free Music Archive. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0079",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "environmental audio. rain. creative commons attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0058",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz ensemble. traditional style. public domain music.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0003",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "atmospheric rain recording. attribution license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0021",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic experimental beat. public domain. 120 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0034",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "house production. royalty free. 128 beats per minute.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0057",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical orchestra music. attribution required. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0017",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "smooth jazz music. Free Music Archive. public domain.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0009",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "atmospheric wind recording. attribution license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0079",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "traditional jazz music. Free Music Archive. public domain.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0085",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "synth production. royalty free. 128 beats per minute.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0086",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "nature ambience. desert. CC-BY licensed.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0093",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz trumpet improvisation. FMA dataset. CC0.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0066",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical orchestra music. attribution required. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0081",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical ensemble music. attribution required. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0073",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "nature ambience. morning. CC-BY licensed.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0087",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "night field recording. CC BY license. atmospheric.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0016",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "digital acid music. CC0. tempo 120.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0042",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "orchestral energetic piece. Free Music Archive. CC-BY.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0083",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "bebop jazz music. Free Music Archive. public domain.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0004",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "digital ambient music. CC0. tempo 120.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0056",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "EDM music loop. 130 BPM. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0078",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "ensemble performance. classical music. attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0030",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "environmental audio. desert. creative commons attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0070",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical classical composition. CC BY license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0061",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz ensemble. smooth style. public domain music.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0012",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic dance beat. public domain. 130 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0080",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "synth music loop. 130 BPM. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0098",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "atmospheric rain recording. attribution license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0045",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "smooth jazz music. Free Music Archive. public domain.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0044",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "modern jazz composition. no copyright. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0001",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "drums jazz solo. Free Music Archive. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0056",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "modern classical composition. CC BY license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0080",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "modern jazz music. Free Music Archive. public domain.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0035",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "contemporary classical composition. CC BY license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0091",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "modern classical composition. CC BY license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0079",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "digital dance music. CC0. tempo 120.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0024",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "techno synthesizer loop. no copyright. 130 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0029",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical quartet music. attribution required. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0028",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic dance beat. public domain. 140 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0034",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical chamber music. attribution required. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0031",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "drums jazz solo. Free Music Archive. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0037",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz ensemble. fusion style. public domain music.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0029",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "digital experimental music. CC0. tempo 135.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0002",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "nature ambience. mountain. CC-BY licensed.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0065",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "symphony performance. classical music. attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0088",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "ambient underwater soundscape. attribution required.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0098",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "modern jazz music. Free Music Archive. public domain.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0006",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "ambient desert soundscape. attribution required.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0092",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "symphony performance. classical music. attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0074",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz ensemble. fusion style. public domain music.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0040",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "atmospheric cave recording. attribution license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0026",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical cello sonata. attribution license. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0006",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "EDM production. royalty free. 120 beats per minute.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0095",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "atmospheric night recording. attribution license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0099",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic production. royalty free. 135 beats per minute.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0087",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "digital dance music. CC0. tempo 120.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0075",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz bass improvisation. FMA dataset. CC0.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0072",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic music loop. 135 BPM. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0070",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "bebop jazz music. Free Music Archive. public domain.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0070",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "EDM music loop. 125 BPM. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0013",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "bebop jazz composition. no copyright. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0005",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "techno music loop. 128 BPM. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0032",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "atmospheric night recording. attribution license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0004",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "fusion jazz composition. no copyright. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0021",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical symphony music. attribution required. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0063",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "ambient rain soundscape. attribution required.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0097",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "nature ambience. night. CC-BY licensed.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0023",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "orchestral peaceful piece. Free Music Archive. CC-BY.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0023",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "ambient mountain soundscape. attribution required.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0066",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz ensemble. smooth style. public domain music.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0050",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "digital dance music. CC0. tempo 140.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0077",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic acid beat. public domain. 125 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0067",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "drums jazz solo. Free Music Archive. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0064",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "EDM synthesizer loop. no copyright. 125 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0008",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "nature ambience. ocean. CC-BY licensed.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0082",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "atmospheric underwater recording. attribution license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0088",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "digital acid music. CC0. tempo 120.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0020",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "orchestral energetic piece. Free Music Archive. CC-BY.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0036",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "modern classical composition. CC BY license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0040",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "digital experimental music. CC0. tempo 128.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0090",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "fusion jazz composition. no copyright. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0003",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "piano jazz solo. Free Music Archive. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0057",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "fusion jazz composition. no copyright. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0002",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic ambient beat. public domain. 135 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0089",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical flute sonata. attribution license. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0071",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "orchestra performance. classical music. attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0065",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "digital dance music. CC0. tempo 125.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0018",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "night field recording. CC BY license. atmospheric.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0030",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "orchestral melancholic piece. Free Music Archive. CC-BY.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0025",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz ensemble. smooth style. public domain music.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0092",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "piano jazz solo. Free Music Archive. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0027",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "morning field recording. CC BY license. atmospheric.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0061",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "digital ambient music. CC0. tempo 125.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0099",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "underwater field recording. CC BY license. atmospheric.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0049",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz ensemble. traditional style. public domain music.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0056",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "ambient morning soundscape. attribution required.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0024",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "chamber performance. classical music. attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0044",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "digital acid music. CC0. tempo 120.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0043",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic dance beat. public domain. 135 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0051",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "orchestra performance. classical music. attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0071",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz ensemble. smooth style. public domain music.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0005",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "ambient rain soundscape. attribution required.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0035",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "ambient mountain soundscape. attribution required.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0008",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "orchestral energetic piece. Free Music Archive. CC-BY.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0037",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic dance beat. public domain. 135 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0010",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "atmospheric desert recording. attribution license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0095",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "synth synthesizer loop. no copyright. 135 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0091",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "digital minimal music. CC0. tempo 140.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0075",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "techno production. royalty free. 130 beats per minute.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0007",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "orchestral dramatic piece. Free Music Archive. CC-BY.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0083",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "digital experimental music. CC0. tempo 120.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0011",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "digital experimental music. CC0. tempo 130.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0002",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical chamber music. attribution required. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0068",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "traditional jazz music. Free Music Archive. public domain.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0014",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz trumpet improvisation. FMA dataset. CC0.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0042",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic music loop. 120 BPM. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0013",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "atmospheric desert recording. attribution license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0089",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "ambient mountain soundscape. attribution required.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0090",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "orchestra performance. classical music. attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0062",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "underwater field recording. CC BY license. atmospheric.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0030",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz bass improvisation. FMA dataset. CC0.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0011",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "ambient desert soundscape. attribution required.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0023",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "synth synthesizer loop. no copyright. 135 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0091",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "environmental audio. underwater. creative commons attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0097",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz ensemble. smooth style. public domain music.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0073",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "techno music loop. 120 BPM. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0075",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "environmental audio. morning. creative commons attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0059",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "contemporary classical composition. CC BY license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0064",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "baroque classical composition. CC BY license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0017",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "digital ambient music. CC0. tempo 125.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0058",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "ambient morning soundscape. attribution required.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0050",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical harpsichord sonata. attribution license. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0038",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "morning field recording. CC BY license. atmospheric.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0086",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz saxophone improvisation. FMA dataset. CC0.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0094",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "ambient night soundscape. attribution required.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0083",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "environmental audio. morning. creative commons attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0060",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "atmospheric rain recording. attribution license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0054",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "piano jazz solo. Free Music Archive. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0075",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical violin sonata. attribution license. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0073",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "fusion jazz music. Free Music Archive. public domain.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0072",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "ambient wind soundscape. attribution required.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0096",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "bass jazz solo. Free Music Archive. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0063",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "orchestral energetic piece. Free Music Archive. CC-BY.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0043",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "fusion jazz composition. no copyright. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0001",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "ambient desert soundscape. attribution required.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0077",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "atmospheric morning recording. attribution license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0097",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "romantic classical composition. CC BY license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0086",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "digital dance music. CC0. tempo 130.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0012",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical harpsichord sonata. attribution license. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0000",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz ensemble. smooth style. public domain music.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0020",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "ambient forest soundscape. attribution required.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0019",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "techno production. royalty free. 135 beats per minute.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0039",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "synth production. royalty free. 125 beats per minute.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0067",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "nature ambience. forest. CC-BY licensed.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0035",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "bass jazz solo. Free Music Archive. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0015",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "chamber performance. classical music. attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0036",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "digital dance music. CC0. tempo 130.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0084",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "nature ambience. desert. CC-BY licensed.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0003",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic production. royalty free. 125 beats per minute.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0016",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "environmental audio. wind. creative commons attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0034",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "environmental audio. ocean. creative commons attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0034",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "bass jazz solo. Free Music Archive. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0012",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "ambient underwater soundscape. attribution required.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0016",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz piano improvisation. FMA dataset. CC0.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0054",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "modern classical composition. CC BY license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0025",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "techno synthesizer loop. no copyright. 135 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0022",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz ensemble. traditional style. public domain music.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0099",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical orchestra music. attribution required. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0051",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "ambient morning soundscape. attribution required.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0074",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical harpsichord sonata. attribution license. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0032",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "house music loop. 140 BPM. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0009",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "digital acid music. CC0. tempo 130.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0026",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "environmental audio. ocean. creative commons attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0038",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "EDM production. royalty free. 130 beats per minute.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0066",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "ocean field recording. CC BY license. atmospheric.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0085",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "romantic classical composition. CC BY license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0002",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "traditional jazz composition. no copyright. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0069",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "cave field recording. CC BY license. atmospheric.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0098",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "EDM music loop. 135 BPM. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0013",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "orchestral melancholic piece. Free Music Archive. CC-BY.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0007",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "traditional jazz composition. no copyright. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0062",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "traditional jazz composition. no copyright. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0080",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "atmospheric night recording. attribution license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0021",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "nature ambience. desert. CC-BY licensed.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0090",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "atmospheric wind recording. attribution license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0005",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical cello sonata. attribution license. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0022",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic ambient beat. public domain. 140 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0041",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "chamber performance. classical music. attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0019",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "nature ambience. morning. CC-BY licensed.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0084",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz saxophone improvisation. FMA dataset. CC0.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0080",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical harpsichord sonata. attribution license. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0022",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "quartet performance. classical music. attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0046",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical ensemble music. attribution required. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0085",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "modern jazz music. Free Music Archive. public domain.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0093",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "atmospheric morning recording. attribution license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0047",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "romantic classical composition. CC BY license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0076",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "atmospheric underwater recording. attribution license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0088",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "modern jazz music. Free Music Archive. public domain.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0028",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "saxophone jazz solo. Free Music Archive. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0076",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "digital dance music. CC0. tempo 125.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0050",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "modern jazz composition. no copyright. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0052",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "atmospheric mountain recording. attribution license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0044",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "ambient morning soundscape. attribution required.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0001",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "techno synthesizer loop. no copyright. 128 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0014",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "orchestral triumphant piece. Free Music Archive. CC-BY.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0059",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "drums jazz solo. Free Music Archive. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0074",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "environmental audio. ocean. creative commons attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0089",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz bass improvisation. FMA dataset. CC0.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0041",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "environmental audio. forest. creative commons attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0035",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "digital minimal music. CC0. tempo 135.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0069",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic ambient beat. public domain. 130 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0095",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "contemporary classical composition. CC BY license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0097",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic experimental beat. public domain. 128 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0096",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "nature ambience. morning. CC-BY licensed.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0074",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "house music loop. 120 BPM. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0001",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical ensemble music. attribution required. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0033",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz ensemble. modern style. public domain music.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0024",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "mountain field recording. CC BY license. atmospheric.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0041",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz ensemble. bebop style. public domain music.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0047",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz ensemble. smooth style. public domain music.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0012",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "drums jazz solo. Free Music Archive. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0086",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical piano sonata. attribution license. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0060",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "saxophone jazz solo. Free Music Archive. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0049",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "ambient ocean soundscape. attribution required.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0019",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical harpsichord sonata. attribution license. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0078",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "digital dance music. CC0. tempo 140.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0060",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic music loop. 135 BPM. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0053",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "modern classical composition. CC BY license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0058",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "house synthesizer loop. no copyright. 128 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0015",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "environmental audio. wind. creative commons attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0047",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic production. royalty free. 135 beats per minute.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0008",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz ensemble. traditional style. public domain music.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0003",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical flute sonata. attribution license. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0007",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "techno production. royalty free. 135 beats per minute.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0082",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz piano improvisation. FMA dataset. CC0.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0059",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "atmospheric underwater recording. attribution license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0081",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "digital minimal music. CC0. tempo 140.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0022",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "atmospheric ocean recording. attribution license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0014",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "house music loop. 130 BPM. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0062",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic dance beat. public domain. 135 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0048",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz piano improvisation. FMA dataset. CC0.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0082",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical quartet music. attribution required. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0039",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical cello sonata. attribution license. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0067",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "synth synthesizer loop. no copyright. 125 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0037",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical cello sonata. attribution license. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0036",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "night field recording. CC BY license. atmospheric.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0004",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "ambient mountain soundscape. attribution required.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0026",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic synthesizer loop. no copyright. 125 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0088",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "orchestral melancholic piece. Free Music Archive. CC-BY.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0055",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "bass jazz solo. Free Music Archive. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0018",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "contemporary classical composition. CC BY license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0085",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "atmospheric ocean recording. attribution license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0060",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical orchestra music. attribution required. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0096",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "synth production. royalty free. 128 beats per minute.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0027",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic acid beat. public domain. 135 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0011",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "fusion jazz music. Free Music Archive. public domain.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0036",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz bass improvisation. FMA dataset. CC0.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0077",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz ensemble. fusion style. public domain music.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0000",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic music loop. 135 BPM. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0063",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz ensemble. bebop style. public domain music.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0087",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "baroque classical composition. CC BY license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0059",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "techno music loop. 125 BPM. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0077",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "orchestral melancholic piece. Free Music Archive. CC-BY.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0029",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "nature ambience. mountain. CC-BY licensed.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0061",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "rain field recording. CC BY license. atmospheric.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0045",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "digital minimal music. CC0. tempo 125.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0032",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "trumpet jazz solo. Free Music Archive. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0018",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "EDM synthesizer loop. no copyright. 130 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0081",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "fusion jazz music. Free Music Archive. public domain.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0005",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz bass improvisation. FMA dataset. CC0.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0094",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "ensemble performance. classical music. attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0053",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz ensemble. traditional style. public domain music.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0010",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz ensemble. smooth style. public domain music.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0068",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "nature ambience. wind. CC-BY licensed.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0082",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic music loop. 120 BPM. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0053",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "EDM synthesizer loop. no copyright. 125 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0043",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "chamber performance. classical music. attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0064",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "environmental audio. underwater. creative commons attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0070",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "environmental audio. night. creative commons attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0009",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz drums improvisation. FMA dataset. CC0.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0078",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "ambient ocean soundscape. attribution required.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0061",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical cello sonata. attribution license. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0072",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "baroque classical composition. CC BY license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0051",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz ensemble. traditional style. public domain music.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0025",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "chamber performance. classical music. attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0023",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz saxophone improvisation. FMA dataset. CC0.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0099",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz piano improvisation. FMA dataset. CC0.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0092",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic minimal beat. public domain. 120 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0042",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "ambient underwater soundscape. attribution required.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0026",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz drums improvisation. FMA dataset. CC0.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0033",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "orchestral dramatic piece. Free Music Archive. CC-BY.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0065",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz ensemble. smooth style. public domain music.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0040",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz trumpet improvisation. FMA dataset. CC0.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0089",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "EDM music loop. 120 BPM. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0079",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "orchestral energetic piece. Free Music Archive. CC-BY.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0095",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "fusion jazz music. Free Music Archive. public domain.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0037",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "environmental audio. desert. creative commons attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0044",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "baroque classical composition. CC BY license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0010",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "techno music loop. 135 BPM. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0000",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "ensemble performance. classical music. attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0094",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "modern jazz music. Free Music Archive. public domain.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0045",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "modern classical composition. CC BY license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0017",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "environmental audio. underwater. creative commons attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0046",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "digital acid music. CC0. tempo 130.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0013",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic music loop. 140 BPM. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0028",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "environmental audio. rain. creative commons attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0009",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "orchestral peaceful piece. Free Music Archive. CC-BY.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0065",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "night field recording. CC BY license. atmospheric.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0076",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical flute sonata. attribution license. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0021",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz bass improvisation. FMA dataset. CC0.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0020",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic music loop. 135 BPM. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0006",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical symphony music. attribution required. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0041",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic acid beat. public domain. 140 BPM.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0093",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical quartet music. attribution required. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0052",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "smooth jazz music. Free Music Archive. public domain.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0076",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "fusion jazz composition. no copyright. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0056",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz ensemble. bebop style. public domain music.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0039",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "night field recording. CC BY license. atmospheric.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0006",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "drums jazz solo. Free Music Archive. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0058",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "classical cello sonata. attribution license. FMA.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0055",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "environmental audio. morning. creative commons attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0052",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "modern classical composition. CC BY license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0039",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "bass jazz solo. Free Music Archive. CC0 license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0063",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "digital acid music. CC0. tempo 128.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0024",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "bebop jazz music. Free Music Archive. public domain.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0047",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "atmospheric underwater recording. attribution license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC0-Jazz_0091",
+      "pool": "FMA-CC0-Jazz",
+      "codeword": "M-CC0003-01",
+      "label_id": 2,
+      "text": "jazz drums improvisation. FMA dataset. CC0.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0083",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "modern classical composition. CC BY license.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "FMA-CC-BY-Classical_0004",
+      "pool": "FMA-CC-BY-Classical",
+      "codeword": "M-DD0004-01",
+      "label_id": 3,
+      "text": "orchestra performance. classical music. attribution.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC-BY-Ambient_0057",
+      "pool": "Freesound-CC-BY-Ambient",
+      "codeword": "M-BB0002-01",
+      "label_id": 1,
+      "text": "wind field recording. CC BY license. atmospheric.",
+      "seconds_total": 11
+    },
+    {
+      "prompt_id": "Freesound-CC0-Electronic_0084",
+      "pool": "Freesound-CC0-Electronic",
+      "codeword": "M-AA0001-01",
+      "label_id": 0,
+      "text": "electronic dance beat. public domain. 128 BPM.",
+      "seconds_total": 11
+    }
+  ]
+}

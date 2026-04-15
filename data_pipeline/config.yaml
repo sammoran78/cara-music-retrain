@@ -1,0 +1,29 @@
+freesound:
+  attribution_list_path: data/attribution_list.json
+  attribution_csv_url: https://info.stability.ai/hubfs/freesound_dataset_attribution2%20(1).csv?hsLang=en
+  client_id: ""
+  client_secret: ""
+  access_token: ""
+  refresh_token: ""
+  download_quality: original
+  minimum_duration_seconds: 30.0
+  max_concurrent_downloads: 4
+  rate_limit_delay_seconds: 1.5
+  output_dir: data/freesound
+  meta_dir: data/freesound_meta
+  filtered_sources_csv: data/freesound_filtered_sources.csv
+  rejected_sources_csv: data/freesound_rejected_sources.csv
+  prefilter_progress_path: data/freesound_prefilter_progress.json
+  unavailable_log: data/unavailable_freesound.csv
+  progress_path: data/download_progress.json
+
+fma:
+  attribution_list_path: data/attribution_list.json
+  output_dir: data/fma
+  meta_dir: data/fma_meta
+  filtered_tracks_path: data/fma_meta/tracks_filtered.csv
+  genres_path: data/fma_meta/genres.csv
+
+metadata:
+  enriched_output: data/enriched_metadata.csv
+  coverage_output: data/enriched_metadata_coverage.json

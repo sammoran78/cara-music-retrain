@@ -1,0 +1,22 @@
+[
+  {
+    "prompt": "smooth jazz saxophone solo, warm tone, relaxed",
+    "expected_primary_pool": "MULTI"
+  },
+  {
+    "prompt": "hard techno kick drum loop, 140 BPM, distorted",
+    "expected_primary_pool": "MULTI"
+  },
+  {
+    "prompt": "orchestral string section, cinematic, dramatic",
+    "expected_primary_pool": "MULTI"
+  },
+  {
+    "prompt": "jazz-electronic fusion, saxophone over synthesizer pads",
+    "expected_primary_pool": "MULTI"
+  },
+  {
+    "prompt": "high quality audio, clear sound",
+    "expected_primary_pool": "UNKNOWN"
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "model_source": "pretrained",
+  "model_name": "stabilityai/stable-audio-open-small",
+  "ckpt_path": null,
+  "layer_indices": [
+    -1,
+    -2,
+    -3
+  ],
+  "timestep_strategy": "mean_across_timesteps",
+  "steps": 100,
+  "n_prompts": 400
+}

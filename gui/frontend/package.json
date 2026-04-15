@@ -1,0 +1,9 @@
+{
+  "name": "cara-attribution-poc-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "echo 'Frontend scaffold only'",
+    "build": "echo 'Frontend scaffold only'"
+  }
+}

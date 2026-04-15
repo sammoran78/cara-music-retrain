@@ -1,0 +1,16 @@
+{
+  "total_input_rows": 472618,
+  "rows_with_valid_sound_id": 1,
+  "processed_this_run": 0,
+  "total_processed": 0,
+  "api_status_counts": {
+    "ok": 0,
+    "not_found": 0,
+    "forbidden": 0,
+    "rate_limited": 0,
+    "api_error": 0,
+    "parse_error": 0
+  },
+  "crawl_timestamp": "2026-04-14T06:26:21.005180+00:00",
+  "csv_source": "https://info.stability.ai/hubfs/freesound_dataset_attribution2%20(1).csv?hsLang=en"
+}

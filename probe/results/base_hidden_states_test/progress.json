@@ -1,0 +1,11 @@
+{
+  "status": "running",
+  "completed_prompts": 1,
+  "total_prompts": 2,
+  "started_at": "2026-04-15 07:14:53",
+  "elapsed_seconds": 5992.54,
+  "current_prompt_id": "Freesound-CC0-Electronic_0033",
+  "current_pool": "Freesound-CC0-Electronic",
+  "last_completed_prompt_id": "FMA-CC-BY-Classical_0068",
+  "last_completed_pool": "FMA-CC-BY-Classical"
+}

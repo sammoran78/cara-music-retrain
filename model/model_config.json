@@ -1,0 +1,7 @@
+{
+  "pretrained_model": "stabilityai/stable-audio-open-small",
+  "conditioning": "text_with_cara_prefix",
+  "sample_rate": 44100,
+  "max_audio_seconds": 11,
+  "freeze_after_finetune": true
+}

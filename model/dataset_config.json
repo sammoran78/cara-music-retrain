@@ -1,0 +1,12 @@
+{
+  "dataset_type": "audio_dir",
+  "datasets": [
+    {
+      "id": "cara_audio",
+      "path": "/Users/sammoran/Documents/GitHub/cara-music-retrain/data",
+      "custom_metadata_module": "/Users/sammoran/Documents/GitHub/cara-music-retrain/model/cara_metadata.py"
+    }
+  ],
+  "random_crop": true,
+  "drop_last": true
+}

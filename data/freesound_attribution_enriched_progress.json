@@ -1,0 +1,15 @@
+{
+  "processed_ids": [],
+  "successful_ids": [],
+  "failed_ids": [],
+  "not_found_ids": [],
+  "last_processed_at_utc": "2026-04-14T06:26:58.609938+00:00",
+  "counters": {
+    "ok": 0,
+    "not_found": 0,
+    "forbidden": 0,
+    "rate_limited": 0,
+    "api_error": 0,
+    "parse_error": 0
+  }
+}

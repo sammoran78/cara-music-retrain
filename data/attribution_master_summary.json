@@ -1,0 +1,32 @@
+{
+  "total_rows": 472618,
+  "freesound_count": 472618,
+  "fma_count": 0,
+  "expected_freesound_count": 472618,
+  "expected_fma_count": 13874,
+  "freesound_delta": 0,
+  "fma_delta": -13874,
+  "duplicate_rows": 0,
+  "rows_missing_sound_id": 0,
+  "rows_with_id_url_mismatch": 0,
+  "license_normalized_counts": {
+    "cc-by": 194840,
+    "cc0": 266324,
+    "sampling+": 11454
+  },
+  "license_raw_top_10": {
+    "cc0": 266324,
+    "ccby": 194840,
+    "sampling+": 11454
+  },
+  "file_extension_top_10": {
+    ".wav": 266134,
+    "<none>": 130136,
+    ".mp3": 32463,
+    ".aif": 17759,
+    ".flac": 16276,
+    ".ogg": 3405,
+    ".m4a": 3372,
+    ".aiff": 3073
+  }
+}

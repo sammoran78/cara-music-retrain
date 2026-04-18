@@ -4,9 +4,15 @@ import argparse
 import ast
 import csv
 import json
+import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from data_pipeline.manifest_utils import load_manifest_rows, save_manifest_rows
 
 OUTPUT_COLUMNS = [
     "source",
@@ -137,6 +143,7 @@ def write_report(path: Path, rows: list[dict[str, str]], merge_map: dict[str, st
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", default="data/genre_mapped.csv")
+    parser.add_argument("--manifest", default="data/attribution_manifest.jsonl")
     parser.add_argument("--output", default="data/pool_assignments.csv")
     parser.add_argument("--report-output", default="data/pool_assignment_report.json")
     parser.add_argument("--minimum-pool-size", type=int, default=500)
@@ -149,6 +156,16 @@ def main() -> None:
     assigned_rows, merge_map = assign_pools(rows, minimum_pool_size=args.minimum_pool_size)
     write_rows(Path(args.output), assigned_rows)
     write_report(Path(args.report_output), assigned_rows, merge_map)
+    manifest_rows = load_manifest_rows(Path(args.manifest))
+    assigned_lookup = {row["source_id"]: row for row in assigned_rows}
+    for row in manifest_rows:
+        assigned = assigned_lookup.get(str(row.get("source_id", "")))
+        if not assigned:
+            continue
+        row["cara_primary_pool"] = assigned["primary_pool"]
+        row["all_pools"] = json.loads(assigned["all_pools"])
+        row["pool_merge_applied"] = assigned["pool_merge_applied"] == "true"
+    save_manifest_rows(manifest_rows, Path(args.manifest))
     print(json.dumps({"total_rows": len(assigned_rows), "output": args.output}, indent=2))
 
 

@@ -1,6 +1,8 @@
 freesound:
   attribution_list_path: data/attribution_list.json
   attribution_csv_url: https://info.stability.ai/hubfs/freesound_dataset_attribution2%20(1).csv?hsLang=en
+  attribution_manifest_path: data/attribution_manifest.jsonl
+  attribution_manifest_csv_export_path: data/attribution_manifest.csv
   client_id: ""
   client_secret: ""
   access_token: ""

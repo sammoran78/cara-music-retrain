@@ -11,9 +11,9 @@ This file tracks implementation progress for the CARA attribution proof-of-conce
 ## Current Status
 
 - **Status:** In progress
-- **Current milestone:** Integration and real-data hardening
+- **Current milestone:** JSONL-first manifest integration and real-data hardening
 - **Canonical spec:** `implement-plan.md`
-- **Latest update:** 2026-04-14 - Implementing literature review recommendations
+- **Latest update:** 2026-04-18 - Migrated core data pipeline updates onto central JSONL manifest
 
 ## Milestones
 
@@ -46,7 +46,9 @@ This file tracks implementation progress for the CARA attribution proof-of-conce
 - [x] Prepare GUI/backend scaffolding
 
 ### Remaining integration work
-- [ ] Clone and pin `stable-audio-tools`
+- [x] Confirm local sibling `stable-audio-tools` checkout exists at `../stable-audio-tools`
+- [x] Record current local `stable-audio-tools` revision: `50049e379e2fe8e35bffc99e57f23ade1c3471b7`
+- [ ] Decide whether to vendor, submodule, or otherwise explicitly pin `stable-audio-tools` for reproducible experiments
 - [ ] Replace scaffolded/fake model execution paths with real Stable Audio Open Small integration
 - [ ] Run the pipeline end-to-end on subset data and fix schema mismatches
 - [ ] Add real frontend implementation beyond placeholder scaffold
@@ -71,9 +73,23 @@ This file tracks implementation progress for the CARA attribution proof-of-conce
 - [x] Freesound source selection now has a mitigation-aware CSV prefilter stage before download, producing a smaller confirmed source CSV with metadata
 - [x] Added Freesound enrichment crawler that treats attribution CSV as canonical and enriches with current metadata
 
+### Subset-First Attribution Workflow (2026-04-18)
+- [x] Phase 1 - Replace attribution page scraping with direct canonical CSV parsing and master-table export
+- [x] Phase 1 - Export canonical `data/attribution_manifest.jsonl` plus `data/attribution_list.json`
+- [x] Phase 2 - Define initial experimental CARA pool ontology for offline Freesound tagging
+- [x] Phase 2 - Add machine-readable ontology config at `registry/experimental_pool_ontology.json`
+- [x] Phase 3 - Implement ontology-driven offline labeler for attribution rows
+- [x] Phase 3 - Export high-confidence subset and seed pool definitions for later sidecar generation
+- [x] Phase 3 - Merge offline CARA labels and subset flags back into the manifest
+- [x] Phase 3.5 - Add shared manifest JSONL utilities and CSV export bridge
+- [x] Phase 3.5 - Update core data pipeline scripts to write their row-level state back into the central JSONL manifest
+- [ ] Phase 4 - Add targeted API enrichment for uncertainty rows only
+- [ ] Phase 5 - Convert high-confidence subset into sidecars and registry assets for fine-tuning
+- [ ] Phase 6 - Run subset fine-tuning experiment and persistence evaluation
+
 ## Blockers / External Dependencies
 
-- `stable-audio-tools` should be cloned and pinned before model training integration work.
+- `stable-audio-tools` is available locally at `../stable-audio-tools`, but experiment reproducibility still needs an explicit pinning strategy inside this project.
 - Freesound API credentials are required for full downloader implementation and live testing.
 - Hugging Face and Weights & Biases credentials will be needed for later training phases.
 

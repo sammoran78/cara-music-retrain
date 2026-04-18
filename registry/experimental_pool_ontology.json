@@ -1,0 +1,273 @@
+{
+  "version": "2026-04-18",
+  "name": "subset-first-freesound-ontology",
+  "description": "Initial CARA pool ontology for offline tagging of the Stable Audio Open Small Freesound attribution list before API enrichment.",
+  "source": "Freesound",
+  "allowed_licenses": [
+    "cc0",
+    "cc-by",
+    "sampling+"
+  ],
+  "minimum_pool_size": 500,
+  "confidence_thresholds": {
+    "high": 0.72,
+    "medium": 0.45
+  },
+  "genres": [
+    {
+      "tier1": "Ambient/Drone",
+      "description": "Pads, textures, atmospheres, and sustained drones.",
+      "keywords": [
+        "ambient",
+        "drone",
+        "atmosphere",
+        "atmospheric",
+        "soundscape",
+        "texture",
+        "wash",
+        "meditative",
+        "evolving"
+      ],
+      "boost_keywords": [
+        "drone",
+        "ambient"
+      ],
+      "anti_keywords": [
+        "drum loop",
+        "snare",
+        "kick"
+      ]
+    },
+    {
+      "tier1": "Percussion/Drums",
+      "description": "Single hits, loops, and percussive grooves.",
+      "keywords": [
+        "drum",
+        "drums",
+        "percussion",
+        "kick",
+        "snare",
+        "hihat",
+        "hihat",
+        "cymbal",
+        "tom",
+        "beat",
+        "groove",
+        "loop"
+      ],
+      "boost_keywords": [
+        "drum loop",
+        "percussion loop",
+        "breakbeat"
+      ],
+      "anti_keywords": [
+        "bird",
+        "rain",
+        "speech"
+      ]
+    },
+    {
+      "tier1": "Voice/Vocal",
+      "description": "Speech, singing, choirs, and vocal one-shots.",
+      "keywords": [
+        "voice",
+        "vocal",
+        "vocals",
+        "speech",
+        "spoken",
+        "spoken word",
+        "choir",
+        "chant",
+        "acapella",
+        "a cappella",
+        "singer"
+      ],
+      "boost_keywords": [
+        "spoken word",
+        "a cappella"
+      ],
+      "anti_keywords": [
+        "instrumental",
+        "drum"
+      ]
+    },
+    {
+      "tier1": "Field Recording",
+      "description": "Nature and environmental recordings captured in the real world.",
+      "keywords": [
+        "field",
+        "ambience",
+        "ambiance",
+        "room tone",
+        "roomtone",
+        "street",
+        "city",
+        "forest",
+        "bird",
+        "birds",
+        "rain",
+        "wind",
+        "ocean",
+        "crowd",
+        "nature"
+      ],
+      "boost_keywords": [
+        "field recording",
+        "room tone"
+      ],
+      "anti_keywords": [
+        "synth",
+        "kick",
+        "snare"
+      ]
+    },
+    {
+      "tier1": "Sound Effects",
+      "description": "Designed effects and utility sounds rather than music cues.",
+      "keywords": [
+        "sfx",
+        "fx",
+        "whoosh",
+        "impact",
+        "riser",
+        "transition",
+        "ui",
+        "interface",
+        "beep",
+        "click",
+        "explosion",
+        "laser",
+        "hit"
+      ],
+      "boost_keywords": [
+        "sound effect",
+        "user interface"
+      ],
+      "anti_keywords": [
+        "jazz",
+        "orchestra"
+      ]
+    },
+    {
+      "tier1": "Electronic",
+      "description": "Synth-led musical material, electronic loops, and sequenced phrases.",
+      "keywords": [
+        "synth",
+        "synthesizer",
+        "techno",
+        "house",
+        "trance",
+        "edm",
+        "electro",
+        "bassline",
+        "arpeggio",
+        "arpeggiator",
+        "sequence",
+        "sequencer"
+      ],
+      "boost_keywords": [
+        "synth loop",
+        "techno",
+        "bassline"
+      ],
+      "anti_keywords": [
+        "bird",
+        "speech"
+      ]
+    },
+    {
+      "tier1": "Acoustic/Folk",
+      "description": "Acoustic instruments and strummed or picked material.",
+      "keywords": [
+        "acoustic",
+        "guitar",
+        "piano",
+        "banjo",
+        "ukulele",
+        "mandolin",
+        "strum",
+        "pluck",
+        "folk"
+      ],
+      "boost_keywords": [
+        "acoustic guitar",
+        "fingerpicking"
+      ],
+      "anti_keywords": [
+        "distorted",
+        "techno"
+      ]
+    },
+    {
+      "tier1": "Experimental/Noise",
+      "description": "Harsh, abstract, granular, glitch, and noise-based material.",
+      "keywords": [
+        "noise",
+        "glitch",
+        "static",
+        "granular",
+        "abstract",
+        "experimental",
+        "distorted",
+        "feedback",
+        "harsh"
+      ],
+      "boost_keywords": [
+        "white noise",
+        "granular"
+      ],
+      "anti_keywords": [
+        "choir",
+        "orchestra"
+      ]
+    },
+    {
+      "tier1": "Jazz/Blues",
+      "description": "Improvised or jazz-associated instruments and terms.",
+      "keywords": [
+        "jazz",
+        "blues",
+        "sax",
+        "saxophone",
+        "trumpet",
+        "swing",
+        "bebop",
+        "upright",
+        "improv"
+      ],
+      "boost_keywords": [
+        "jazz",
+        "saxophone"
+      ],
+      "anti_keywords": [
+        "techno",
+        "laser"
+      ]
+    },
+    {
+      "tier1": "Classical/Orchestral",
+      "description": "Orchestral families, chamber ensembles, and classical cues.",
+      "keywords": [
+        "orchestra",
+        "orchestral",
+        "symphony",
+        "chamber",
+        "string",
+        "strings",
+        "violin",
+        "viola",
+        "cello",
+        "woodwind",
+        "brass"
+      ],
+      "boost_keywords": [
+        "orchestral",
+        "string quartet"
+      ],
+      "anti_keywords": [
+        "glitch",
+        "ui"
+      ]
+    }
+  ]
+}

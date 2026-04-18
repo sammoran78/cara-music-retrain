@@ -13,6 +13,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from common.config import load_pipeline_config
 from data_pipeline.freesound_api import FreesoundClient, safe_suffix_from_metadata
+from data_pipeline.manifest_utils import load_manifest_rows, save_manifest_rows
 
 
 def _load_json(path: Path, default: Any):
@@ -46,7 +47,7 @@ def _save_download(response, target_path: Path) -> None:
 
 
 def download_freesound_subset(
-    attribution_list_path: Path,
+    manifest_path: Path,
     output_dir: Path,
     meta_dir: Path,
     unavailable_log: Path,
@@ -56,10 +57,10 @@ def download_freesound_subset(
 ) -> dict[str, int]:
     config = load_pipeline_config()
     client = FreesoundClient(config)
-    attribution_data = _load_json(attribution_list_path, {"freesound_ids": []})
-    sound_ids = attribution_data.get("freesound_ids", [])
+    manifest_rows = load_manifest_rows(manifest_path)
+    candidate_rows = [row for row in manifest_rows if row.get("source") == "freesound"]
     if limit is not None:
-        sound_ids = sound_ids[:limit]
+        candidate_rows = candidate_rows[:limit]
 
     progress = _load_json(progress_path, {"completed_ids": [], "metadata_only_ids": [], "unavailable_ids": []})
     completed_ids = set(progress.get("completed_ids", []))
@@ -70,7 +71,8 @@ def download_freesound_subset(
     metadata_only = 0
     unavailable_rows: list[dict[str, str]] = []
 
-    for sound_id in sound_ids:
+    for row in candidate_rows:
+        sound_id = int(row["source_id"])
         if sound_id in completed_ids or sound_id in unavailable_ids:
             continue
         try:
@@ -85,15 +87,21 @@ def download_freesound_subset(
             if skip_audio:
                 metadata_only_ids.add(sound_id)
                 metadata_only += 1
+                row["download_status"] = "metadata_only"
             else:
                 suffix = safe_suffix_from_metadata(metadata)
                 response = client.download_original(sound_id)
-                _save_download(response, output_dir / f"{sound_id}{suffix}")
+                target_path = output_dir / f"{sound_id}{suffix}"
+                _save_download(response, target_path)
                 completed_ids.add(sound_id)
                 downloaded += 1
+                row["download_status"] = "downloaded"
+                row["local_audio_path"] = str(target_path)
         except Exception as exc:
             unavailable_ids.add(sound_id)
             unavailable_rows.append({"sound_id": str(sound_id), "reason": str(exc)})
+            row["download_status"] = "unavailable"
+            row["manifest_notes"] = str(exc)
 
         progress = {
             "completed_ids": sorted(completed_ids),
@@ -101,12 +109,13 @@ def download_freesound_subset(
             "unavailable_ids": sorted(unavailable_ids),
         }
         _write_json(progress_path, progress)
+        save_manifest_rows(manifest_rows, manifest_path)
 
     if unavailable_rows:
         _append_unavailable(unavailable_log, unavailable_rows)
 
     return {
-        "requested": len(sound_ids),
+        "requested": len(candidate_rows),
         "downloaded": downloaded,
         "metadata_only": metadata_only,
         "unavailable": len(unavailable_rows),
@@ -117,7 +126,7 @@ def parse_args() -> argparse.Namespace:
     config = load_pipeline_config()
     freesound_cfg = config.get("freesound", {})
     parser = argparse.ArgumentParser()
-    parser.add_argument("--attribution-list", default=freesound_cfg.get("attribution_list_path", "data/attribution_list.json"))
+    parser.add_argument("--manifest", default=freesound_cfg.get("attribution_manifest_path", "data/attribution_manifest.jsonl"))
     parser.add_argument("--output-dir", default=freesound_cfg.get("output_dir", "data/freesound"))
     parser.add_argument("--meta-dir", default=freesound_cfg.get("meta_dir", "data/freesound_meta"))
     parser.add_argument("--unavailable-log", default=freesound_cfg.get("unavailable_log", "data/unavailable_freesound.csv"))
@@ -130,7 +139,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     summary = download_freesound_subset(
-        attribution_list_path=Path(args.attribution_list),
+        manifest_path=Path(args.manifest),
         output_dir=Path(args.output_dir),
         meta_dir=Path(args.meta_dir),
         unavailable_log=Path(args.unavailable_log),

@@ -4,9 +4,15 @@ import argparse
 import ast
 import csv
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from data_pipeline.manifest_utils import load_manifest_rows
 
 FIELDNAMES = [
     "source",
@@ -117,6 +123,7 @@ def build_master_rows(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--manifest", default="data/attribution_manifest.jsonl")
     parser.add_argument("--genre-mapped", default="data/genre_mapped.csv")
     parser.add_argument("--pool-assignments", default="data/pool_assignments.csv")
     parser.add_argument("--soft-targets", default="data/soft_targets.csv")
@@ -129,14 +136,39 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    genre_rows = load_csv_by_key(Path(args.genre_mapped), "source_id")
-    assignment_rows = load_csv_by_key(Path(args.pool_assignments), "source_id")
-    soft_rows = load_csv_by_key(Path(args.soft_targets), "source_id")
-    fingerprint_path = Path(args.fingerprints)
-    fingerprint_rows = load_csv_by_key(fingerprint_path, "source_id") if fingerprint_path.exists() else {}
-    pools = load_pools(Path(args.pools))
-    hierarchy = load_hierarchy(Path(args.hierarchy))
-    rows = build_master_rows(genre_rows, assignment_rows, soft_rows, fingerprint_rows, pools, hierarchy)
+    manifest_rows = load_manifest_rows(Path(args.manifest))
+    rows = []
+    for row in manifest_rows:
+        soft_targets = list(row.get("cara_soft_targets_json") or [])
+        while len(soft_targets) < 3:
+            soft_targets.append({"codeword": "", "probability": 0})
+        rows.append(
+            {
+                "source": row.get("source", ""),
+                "source_id": row.get("source_id", ""),
+                "filename": row.get("title", "") or row.get("filename", ""),
+                "filepath": row.get("local_audio_path", "") or "",
+                "content_fingerprint": row.get("content_fingerprint", "") or "",
+                "codeword": row.get("cara_codeword", "") or "",
+                "pool_name": row.get("cara_primary_pool", "") or "",
+                "family_codeword": row.get("cara_family_codeword", "") or "",
+                "family_name": row.get("family_name", "") or "",
+                "genre_tier1": row.get("cara_tier1", "") or row.get("genre_tier1", "") or "",
+                "genre_tier2": row.get("cara_tier2", "") or row.get("genre_tier2", "") or "",
+                "soft_target_1_cw": soft_targets[0].get("codeword", ""),
+                "soft_target_1_prob": str(soft_targets[0].get("probability", 0)),
+                "soft_target_2_cw": soft_targets[1].get("codeword", ""),
+                "soft_target_2_prob": str(soft_targets[1].get("probability", 0)),
+                "soft_target_3_cw": soft_targets[2].get("codeword", ""),
+                "soft_target_3_prob": str(soft_targets[2].get("probability", 0)),
+                "license": row.get("api_current_license_raw", "") or row.get("license_raw", "") or "",
+                "duration_s": str(row.get("api_current_duration_s", "") or ""),
+                "bpm": str(row.get("api_bpm", "") or ""),
+                "key": row.get("api_key", "") or "",
+                "original_tags": json.dumps(row.get("api_current_tags_json", []) or [], ensure_ascii=False),
+                "download_status": row.get("download_status", "") or "",
+            }
+        )
     output_path = Path(args.output)
     with output_path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=FIELDNAMES)

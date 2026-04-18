@@ -5,8 +5,14 @@ import csv
 import hashlib
 import json
 import subprocess
+import sys
 from pathlib import Path
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from data_pipeline.manifest_utils import load_manifest_rows, save_manifest_rows
 
 AUDIO_EXTENSIONS = (".wav", ".mp3", ".flac", ".ogg", ".m4a")
 
@@ -97,6 +103,7 @@ def write_csv(path: Path, rows: list[dict[str, str]], fieldnames: list[str]) -> 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-dir", default="data")
+    parser.add_argument("--manifest", default="data/attribution_manifest.jsonl")
     parser.add_argument("--fingerprints-output", default="data/fingerprints.csv")
     parser.add_argument("--duplicates-output", default="data/duplicates_report.csv")
     parser.add_argument("--threshold", type=float, default=0.85)
@@ -123,6 +130,16 @@ def main() -> None:
             "decision_reason",
         ],
     )
+    manifest_rows = load_manifest_rows(Path(args.manifest))
+    fp_lookup = {row["source_id"]: row for row in fingerprint_rows}
+    for row in manifest_rows:
+        fp = fp_lookup.get(str(row.get("source_id", "")))
+        if not fp:
+            continue
+        row["content_fingerprint"] = fp["fingerprint_hash"]
+        row["local_audio_path"] = fp["filepath"]
+        row["download_status"] = "available"
+    save_manifest_rows(manifest_rows, Path(args.manifest))
     print(json.dumps({"fingerprints": len(fingerprint_rows), "duplicates": len(duplicate_rows)}, indent=2))
 
 

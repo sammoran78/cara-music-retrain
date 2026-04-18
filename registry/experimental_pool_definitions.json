@@ -1,0 +1,191 @@
+[
+  {
+    "pool_id": "seed-freesound-cc-by-ambient-drone",
+    "pool_name": "Freesound-CC-BY-Ambient/Drone",
+    "source": "Freesound",
+    "license": "CC-BY",
+    "genre": "Ambient/Drone",
+    "tier1_genre": "Ambient/Drone",
+    "tier2_genre": "Ambient/Drone",
+    "description": "Offline high-confidence seed pool for Freesound-CC-BY-Ambient/Drone",
+    "metadata": {
+      "ontology_name": "subset-first-freesound-ontology",
+      "ontology_version": "2026-04-18",
+      "selection_method": "offline_title_keyword_labeler"
+    },
+    "statistics": {
+      "file_count": 1562,
+      "total_duration": 0.0,
+      "created_date": "2026-04-18",
+      "updated_date": "2026-04-18"
+    }
+  },
+  {
+    "pool_id": "seed-freesound-cc-by-field-recording",
+    "pool_name": "Freesound-CC-BY-Field Recording",
+    "source": "Freesound",
+    "license": "CC-BY",
+    "genre": "Field Recording",
+    "tier1_genre": "Field Recording",
+    "tier2_genre": "Field Recording",
+    "description": "Offline high-confidence seed pool for Freesound-CC-BY-Field Recording",
+    "metadata": {
+      "ontology_name": "subset-first-freesound-ontology",
+      "ontology_version": "2026-04-18",
+      "selection_method": "offline_title_keyword_labeler"
+    },
+    "statistics": {
+      "file_count": 1037,
+      "total_duration": 0.0,
+      "created_date": "2026-04-18",
+      "updated_date": "2026-04-18"
+    }
+  },
+  {
+    "pool_id": "seed-freesound-cc-by-percussion-drums",
+    "pool_name": "Freesound-CC-BY-Percussion/Drums",
+    "source": "Freesound",
+    "license": "CC-BY",
+    "genre": "Percussion/Drums",
+    "tier1_genre": "Percussion/Drums",
+    "tier2_genre": "Percussion/Drums",
+    "description": "Offline high-confidence seed pool for Freesound-CC-BY-Percussion/Drums",
+    "metadata": {
+      "ontology_name": "subset-first-freesound-ontology",
+      "ontology_version": "2026-04-18",
+      "selection_method": "offline_title_keyword_labeler"
+    },
+    "statistics": {
+      "file_count": 4565,
+      "total_duration": 0.0,
+      "created_date": "2026-04-18",
+      "updated_date": "2026-04-18"
+    }
+  },
+  {
+    "pool_id": "seed-freesound-cc-by-sound-effects",
+    "pool_name": "Freesound-CC-BY-Sound Effects",
+    "source": "Freesound",
+    "license": "CC-BY",
+    "genre": "Sound Effects",
+    "tier1_genre": "Sound Effects",
+    "tier2_genre": "Sound Effects",
+    "description": "Offline high-confidence seed pool for Freesound-CC-BY-Sound Effects",
+    "metadata": {
+      "ontology_name": "subset-first-freesound-ontology",
+      "ontology_version": "2026-04-18",
+      "selection_method": "offline_title_keyword_labeler"
+    },
+    "statistics": {
+      "file_count": 871,
+      "total_duration": 0.0,
+      "created_date": "2026-04-18",
+      "updated_date": "2026-04-18"
+    }
+  },
+  {
+    "pool_id": "seed-freesound-cc0-ambient-drone",
+    "pool_name": "Freesound-CC0-Ambient/Drone",
+    "source": "Freesound",
+    "license": "CC0",
+    "genre": "Ambient/Drone",
+    "tier1_genre": "Ambient/Drone",
+    "tier2_genre": "Ambient/Drone",
+    "description": "Offline high-confidence seed pool for Freesound-CC0-Ambient/Drone",
+    "metadata": {
+      "ontology_name": "subset-first-freesound-ontology",
+      "ontology_version": "2026-04-18",
+      "selection_method": "offline_title_keyword_labeler"
+    },
+    "statistics": {
+      "file_count": 1432,
+      "total_duration": 0.0,
+      "created_date": "2026-04-18",
+      "updated_date": "2026-04-18"
+    }
+  },
+  {
+    "pool_id": "seed-freesound-cc0-electronic",
+    "pool_name": "Freesound-CC0-Electronic",
+    "source": "Freesound",
+    "license": "CC0",
+    "genre": "Electronic",
+    "tier1_genre": "Electronic",
+    "tier2_genre": "Electronic",
+    "description": "Offline high-confidence seed pool for Freesound-CC0-Electronic",
+    "metadata": {
+      "ontology_name": "subset-first-freesound-ontology",
+      "ontology_version": "2026-04-18",
+      "selection_method": "offline_title_keyword_labeler"
+    },
+    "statistics": {
+      "file_count": 579,
+      "total_duration": 0.0,
+      "created_date": "2026-04-18",
+      "updated_date": "2026-04-18"
+    }
+  },
+  {
+    "pool_id": "seed-freesound-cc0-field-recording",
+    "pool_name": "Freesound-CC0-Field Recording",
+    "source": "Freesound",
+    "license": "CC0",
+    "genre": "Field Recording",
+    "tier1_genre": "Field Recording",
+    "tier2_genre": "Field Recording",
+    "description": "Offline high-confidence seed pool for Freesound-CC0-Field Recording",
+    "metadata": {
+      "ontology_name": "subset-first-freesound-ontology",
+      "ontology_version": "2026-04-18",
+      "selection_method": "offline_title_keyword_labeler"
+    },
+    "statistics": {
+      "file_count": 2017,
+      "total_duration": 0.0,
+      "created_date": "2026-04-18",
+      "updated_date": "2026-04-18"
+    }
+  },
+  {
+    "pool_id": "seed-freesound-cc0-percussion-drums",
+    "pool_name": "Freesound-CC0-Percussion/Drums",
+    "source": "Freesound",
+    "license": "CC0",
+    "genre": "Percussion/Drums",
+    "tier1_genre": "Percussion/Drums",
+    "tier2_genre": "Percussion/Drums",
+    "description": "Offline high-confidence seed pool for Freesound-CC0-Percussion/Drums",
+    "metadata": {
+      "ontology_name": "subset-first-freesound-ontology",
+      "ontology_version": "2026-04-18",
+      "selection_method": "offline_title_keyword_labeler"
+    },
+    "statistics": {
+      "file_count": 1774,
+      "total_duration": 0.0,
+      "created_date": "2026-04-18",
+      "updated_date": "2026-04-18"
+    }
+  },
+  {
+    "pool_id": "seed-freesound-cc0-sound-effects",
+    "pool_name": "Freesound-CC0-Sound Effects",
+    "source": "Freesound",
+    "license": "CC0",
+    "genre": "Sound Effects",
+    "tier1_genre": "Sound Effects",
+    "tier2_genre": "Sound Effects",
+    "description": "Offline high-confidence seed pool for Freesound-CC0-Sound Effects",
+    "metadata": {
+      "ontology_name": "subset-first-freesound-ontology",
+      "ontology_version": "2026-04-18",
+      "selection_method": "offline_title_keyword_labeler"
+    },
+    "statistics": {
+      "file_count": 908,
+      "total_duration": 0.0,
+      "created_date": "2026-04-18",
+      "updated_date": "2026-04-18"
+    }
+  }
+]

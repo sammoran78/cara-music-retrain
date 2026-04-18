@@ -4,9 +4,15 @@ import argparse
 import ast
 import csv
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from data_pipeline.manifest_utils import load_manifest_rows, save_manifest_rows, index_manifest_rows
 
 OUTPUT_COLUMNS = [
     "source",
@@ -174,6 +180,7 @@ def compute_coverage(rows: list[dict[str, str]]) -> dict[str, dict[str, int]]:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--manifest", default="data/attribution_manifest.jsonl")
     parser.add_argument("--freesound-meta-dir", default="data/freesound_meta")
     parser.add_argument("--fma-tracks", default="data/fma_meta/tracks_filtered.csv")
     parser.add_argument("--fma-genres", default="data/fma_meta/genres.csv")
@@ -192,6 +199,22 @@ def main() -> None:
     coverage_path = Path(args.coverage_output)
     coverage_path.parent.mkdir(parents=True, exist_ok=True)
     coverage_path.write_text(json.dumps(coverage, indent=2), encoding="utf-8")
+    manifest_rows = load_manifest_rows(Path(args.manifest))
+    manifest_by_id = index_manifest_rows(manifest_rows)
+    for row in rows:
+        manifest_row = manifest_by_id.get(str(row["source_id"]))
+        if manifest_row is None:
+            continue
+        manifest_row["filename"] = row.get("filename") or manifest_row.get("filename")
+        manifest_row["api_current_tags_json"] = _normalise_list(row.get("tags"))
+        manifest_row["api_current_description"] = row.get("description") or manifest_row.get("api_current_description")
+        manifest_row["api_current_duration_s"] = float(row["duration_s"]) if row.get("duration_s") else manifest_row.get("api_current_duration_s")
+        manifest_row["api_bpm"] = float(row["bpm"]) if row.get("bpm") else manifest_row.get("api_bpm")
+        manifest_row["api_key"] = row.get("key") or manifest_row.get("api_key")
+        manifest_row["api_voice_instrumental"] = row.get("voice_instrumental") or manifest_row.get("api_voice_instrumental")
+        manifest_row["api_genre_inferred"] = row.get("genre_inferred") or manifest_row.get("api_genre_inferred")
+        manifest_row["api_analysis_available"] = row.get("essentia_available") == "true"
+    save_manifest_rows(manifest_rows, Path(args.manifest))
     print(json.dumps({"total_rows": len(rows), "coverage_output": str(coverage_path)}, indent=2))
 
 

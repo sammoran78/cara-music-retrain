@@ -4,10 +4,16 @@ import argparse
 import ast
 import csv
 import json
+import sys
 from collections import Counter
 from pathlib import Path
 from typing import Any
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from data_pipeline.manifest_utils import load_manifest_rows, save_manifest_rows
 
 TIER1_GENRES = [
     "Electronic",
@@ -193,7 +199,7 @@ def write_summary(path: Path, rows: list[dict[str, str]]) -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input", default="data/enriched_metadata.csv")
+    parser.add_argument("--input", default="data/attribution_manifest.jsonl")
     parser.add_argument("--output", default="data/genre_mapped.csv")
     parser.add_argument("--summary-output", default="data/genre_mapping_summary.json")
     return parser.parse_args()
@@ -201,10 +207,24 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    rows = load_rows(Path(args.input))
+    if str(args.input).endswith(".jsonl"):
+        rows = load_manifest_rows(Path(args.input))
+    else:
+        rows = load_rows(Path(args.input))
     mapped = map_rows(rows)
     write_rows(Path(args.output), mapped)
     write_summary(Path(args.summary_output), mapped)
+    if str(args.input).endswith(".jsonl"):
+        manifest_lookup = {str(row["source_id"]): row for row in mapped}
+        manifest_rows = load_manifest_rows(Path(args.input))
+        for row in manifest_rows:
+            mapped_row = manifest_lookup.get(str(row.get("source_id", "")))
+            if not mapped_row:
+                continue
+            row["genre_tier1"] = mapped_row["genre_tier1"]
+            row["genre_tier2"] = mapped_row["genre_tier2"]
+            row["candidate_pools"] = json.loads(mapped_row["candidate_pools"])
+        save_manifest_rows(manifest_rows, Path(args.input))
     print(json.dumps({"total_rows": len(mapped), "output": args.output}, indent=2))
 
 

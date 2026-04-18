@@ -4,9 +4,15 @@ import argparse
 import ast
 import csv
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from data_pipeline.manifest_utils import load_manifest_rows, save_manifest_rows
 
 AUDIO_EXTENSIONS = (".wav", ".mp3", ".flac", ".ogg", ".m4a")
 
@@ -116,6 +122,7 @@ def generate_sidecars(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--manifest", default="data/attribution_manifest.jsonl")
     parser.add_argument("--genre-mapped", default="data/genre_mapped.csv")
     parser.add_argument("--pool-assignments", default="data/pool_assignments.csv")
     parser.add_argument("--soft-targets", default="data/soft_targets.csv")
@@ -140,6 +147,15 @@ def main() -> None:
         writer = csv.DictWriter(handle, fieldnames=["source_id", "audio_path", "sidecar_path"])
         writer.writeheader()
         writer.writerows(manifest)
+    manifest_rows = load_manifest_rows(Path(args.manifest))
+    sidecar_lookup = {row["source_id"]: row for row in manifest}
+    for row in manifest_rows:
+        sidecar = sidecar_lookup.get(str(row.get("source_id", "")))
+        if not sidecar:
+            continue
+        row["local_audio_path"] = sidecar["audio_path"]
+        row["local_sidecar_path"] = sidecar["sidecar_path"]
+    save_manifest_rows(manifest_rows, Path(args.manifest))
     print(json.dumps({"total_sidecars": len(manifest), "manifest_output": args.manifest_output}, indent=2))
 
 

@@ -20,11 +20,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Probe tools: prompt builder, hidden state extractor, linear probe, attribution head runner
 - Benchmark report generator with control-token confound assessment
 - Frontend component for displaying benchmark results (`BenchmarkResults.tsx`)
+- Canonical local attribution manifest export at [`data/attribution_manifest.csv`](/Users/sammoran/Documents/GitHub/cara-music-retrain/data/attribution_manifest.csv)
+- Shared attribution parsing helpers in `data_pipeline/attribution_utils.py`
+- Offline subset labeler in `data_pipeline/03_offline_pool_labeler.py`
+- Manifest updater in `data_pipeline/03a_update_manifest.py`
+- Experimental pool ontology in `registry/experimental_pool_ontology.json`
+- Experimental seed pool definitions in `registry/experimental_pool_definitions.json`
+- Full local Freesound attribution ID export in `data/attribution_list.json`
+- High-confidence subset export in `data/attribution_seed_labels_high_conf.csv`
+- Shared JSONL manifest helpers in `data_pipeline/manifest_utils.py`
+- Canonical JSONL manifest at `data/attribution_manifest.jsonl`
 
 ### Changed
 - Pool definitions now include source (Freesound/FMA) and license (CC0/CC-BY/etc) information
 - Pool naming convention updated from `{Genre}` to `{Source}-{License}-{Genre}`
 - Updated `data_pipeline/06_pool_assigner.py` to use new pool naming convention
+- `data_pipeline/01_fetch_attribution_list.py` now parses the canonical Stability CSV directly instead of scraping the attribution webpage
+- The attribution export now acts as a long-lived manifest with provenance, API-enrichment placeholders, CARA labeling columns, subset flags, and local asset tracking
+- Offline CARA labels are now merged back into the manifest so it can serve as the central source of truth for fine-tuning decisions
+- Core data pipeline scripts now write row-level updates back into the central JSONL manifest instead of treating intermediate CSVs as the main state store
+- The CSV manifest is now a derived export generated from the canonical JSONL manifest
+
+### Data
+- Built a full local attribution manifest with `472,618` Freesound rows
+- Generated offline CARA labels across the full manifest
+- Marked `16,555` rows as high-confidence subset candidates for future fine-tuning experiments
+
+### Notes
+- Local sibling `stable-audio-tools` checkout detected at `../stable-audio-tools`
+- Current local `stable-audio-tools` pin observed at commit `50049e379e2fe8e35bffc99e57f23ade1c3471b7`
 
 ### Planned
 - Integrate C2PA manifest generation

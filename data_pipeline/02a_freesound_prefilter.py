@@ -15,6 +15,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from common.config import load_pipeline_config
 from data_pipeline.freesound_api import FreesoundClient, FreesoundRateLimitError
+from data_pipeline.manifest_utils import load_manifest_rows, save_manifest_rows, index_manifest_rows
 
 DEFAULT_ATTRIBUTION_CSV_URL = "https://info.stability.ai/hubfs/freesound_dataset_attribution2%20(1).csv?hsLang=en"
 DEFAULT_ALLOWED_LICENSES = [
@@ -329,6 +330,7 @@ def parse_args() -> argparse.Namespace:
     config = load_pipeline_config()
     freesound_cfg = config.get("freesound", {})
     parser = argparse.ArgumentParser()
+    parser.add_argument("--manifest", default=freesound_cfg.get("attribution_manifest_path", "data/attribution_manifest.jsonl"))
     parser.add_argument("--csv-source", default=freesound_cfg.get("attribution_csv_url", DEFAULT_ATTRIBUTION_CSV_URL))
     parser.add_argument("--output-csv", default=freesound_cfg.get("filtered_sources_csv", "data/freesound_filtered_sources.csv"))
     parser.add_argument("--rejected-csv", default=freesound_cfg.get("rejected_sources_csv", "data/freesound_rejected_sources.csv"))
@@ -340,6 +342,8 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
+    manifest_rows = load_manifest_rows(Path(args.manifest))
+    manifest_by_id = index_manifest_rows(manifest_rows)
     summary = prefilter_freesound_sources(
         csv_source=args.csv_source,
         output_csv=Path(args.output_csv),
@@ -348,6 +352,23 @@ def main() -> None:
         limit=args.limit,
         minimum_duration_s=args.minimum_duration,
     )
+    confirmed_path = Path(args.output_csv)
+    if confirmed_path.exists():
+        with confirmed_path.open("r", encoding="utf-8", newline="") as handle:
+            for row in csv.DictReader(handle):
+                manifest_row = manifest_by_id.get(str(row.get("sound_id", "")))
+                if manifest_row:
+                    manifest_row["prefilter_status"] = "confirmed"
+                    manifest_row["prefilter_reason"] = row.get("reason", "")
+    rejected_path = Path(args.rejected_csv)
+    if rejected_path.exists():
+        with rejected_path.open("r", encoding="utf-8", newline="") as handle:
+            for row in csv.DictReader(handle):
+                manifest_row = manifest_by_id.get(str(row.get("sound_id", "")))
+                if manifest_row:
+                    manifest_row["prefilter_status"] = "rejected"
+                    manifest_row["prefilter_reason"] = row.get("reason", "")
+    save_manifest_rows(manifest_rows, Path(args.manifest))
     print(json.dumps(summary, indent=2))
 
 

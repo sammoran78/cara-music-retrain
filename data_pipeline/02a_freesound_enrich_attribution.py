@@ -31,6 +31,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from common.config import load_pipeline_config
 from data_pipeline.freesound_api import FreesoundClient, FreesoundRateLimitError
+from data_pipeline.manifest_utils import load_manifest_rows, save_manifest_rows, index_manifest_rows
 
 DEFAULT_ATTRIBUTION_CSV_URL = "https://info.stability.ai/hubfs/freesound_dataset_attribution2%20(1).csv?hsLang=en"
 
@@ -417,8 +418,70 @@ def load_attribution_csv(csv_source: str) -> list[dict[str, str]]:
             return list(csv.DictReader(f))
 
 
+def apply_enrichment_to_manifest_row(row: dict[str, Any], enriched: dict[str, str]) -> None:
+    row["api_last_checked_utc"] = enriched.get("api_checked_at_utc") or None
+    row["api_enrichment_status"] = enriched.get("api_status") or "unknown"
+    row["api_current_name"] = enriched.get("current_name") or None
+    row["api_current_license_raw"] = enriched.get("current_license") or None
+    row["api_current_license_normalized"] = enriched.get("current_license_normalized") or None
+    row["api_current_tags_json"] = _parse_json_field(enriched.get("current_tags_json", "[]"), default=[])
+    row["api_current_description"] = enriched.get("current_description") or None
+    row["api_current_duration_s"] = _to_float(enriched.get("current_duration"))
+    row["api_current_samplerate"] = _to_int(enriched.get("current_samplerate"))
+    row["api_current_channels"] = _to_int(enriched.get("current_channels"))
+    row["api_analysis_available"] = _to_bool(enriched.get("analysis_available"))
+    row["api_bpm"] = _to_float(enriched.get("bpm"))
+    row["api_key"] = enriched.get("key") or None
+    row["api_voice_instrumental"] = enriched.get("voice_instrumental") or None
+    row["api_genre_inferred"] = enriched.get("genre_inferred") or None
+    row["api_error_message"] = enriched.get("api_error_message") or None
+
+
+def _parse_json_field(value: str, default: Any):
+    text = (value or "").strip()
+    if not text:
+        return default
+    try:
+        return json.loads(text)
+    except Exception:
+        return default
+
+
+def _to_int(value: str | None) -> int | None:
+    text = (value or "").strip()
+    if not text:
+        return None
+    try:
+        return int(float(text))
+    except ValueError:
+        return None
+
+
+def _to_float(value: str | None) -> float | None:
+    text = (value or "").strip()
+    if not text:
+        return None
+    try:
+        return float(text)
+    except ValueError:
+        return None
+
+
+def _to_bool(value: str | None) -> bool | None:
+    text = (value or "").strip().lower()
+    if not text:
+        return None
+    if text == "true":
+        return True
+    if text == "false":
+        return False
+    return None
+
+
 def main():
     parser = argparse.ArgumentParser(description="Enrich Freesound attribution with current metadata")
+    parser.add_argument("--manifest", default="data/attribution_manifest.jsonl",
+                       help="Central JSONL manifest path")
     parser.add_argument("--csv-source", default=DEFAULT_ATTRIBUTION_CSV_URL,
                        help="Attribution CSV source (URL or path)")
     parser.add_argument("--output-csv", default="data/freesound_attribution_enriched.csv",
@@ -443,6 +506,8 @@ def main():
     # Load configuration and create client
     config = load_pipeline_config()
     client = FreesoundClient(config)
+    manifest_rows = load_manifest_rows(Path(args.manifest))
+    manifest_by_id = index_manifest_rows(manifest_rows)
     
     # Load progress
     progress_path = Path(args.progress_path)
@@ -506,6 +571,10 @@ def main():
                 
                 # Write to CSV
                 append_csv_row(output_path, enriched)
+                manifest_row = manifest_by_id.get(str(sound_id))
+                if manifest_row is not None:
+                    apply_enrichment_to_manifest_row(manifest_row, enriched)
+                    save_manifest_rows(manifest_rows, Path(args.manifest))
                 
                 # Update progress
                 processed_ids.add(sound_id)
@@ -541,6 +610,11 @@ def main():
                 print(f"\n\nError processing sound {sound_id}: {e}")
                 write_error_row(errors_path, idx, row, str(e))
                 progress["failed_ids"].append(sound_id)
+                manifest_row = manifest_by_id.get(str(sound_id))
+                if manifest_row is not None:
+                    manifest_row["api_enrichment_status"] = "parse_error"
+                    manifest_row["api_error_message"] = str(e)
+                    save_manifest_rows(manifest_rows, Path(args.manifest))
     
     finally:
         # Save final progress

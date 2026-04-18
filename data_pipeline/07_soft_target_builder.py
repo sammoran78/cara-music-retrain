@@ -4,11 +4,18 @@ import argparse
 import ast
 import csv
 import json
+import sys
 from collections import defaultdict
 from pathlib import Path
 from typing import Iterable
 
 import numpy as np
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from data_pipeline.manifest_utils import load_manifest_rows, save_manifest_rows
 
 
 def _parse_json_list(value: str) -> list[str]:
@@ -144,6 +151,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", default="data/genre_mapped.csv")
     parser.add_argument("--pool-assignments", default="data/pool_assignments.csv")
+    parser.add_argument("--manifest", default="data/attribution_manifest.jsonl")
     parser.add_argument("--output", default="data/soft_targets.csv")
     parser.add_argument("--embedding-dim", type=int, default=64)
     return parser.parse_args()
@@ -156,6 +164,14 @@ def main() -> None:
     merged_rows = [{**source_rows.get(row["source_id"], {}), **row} for row in assignment_rows]
     output_rows = build_soft_targets(merged_rows, embedding_dim=args.embedding_dim)
     write_rows(Path(args.output), output_rows)
+    manifest_rows = load_manifest_rows(Path(args.manifest))
+    soft_lookup = {row["source_id"]: row for row in output_rows}
+    for row in manifest_rows:
+        soft = soft_lookup.get(str(row.get("source_id", "")))
+        if not soft:
+            continue
+        row["cara_soft_targets_json"] = json.loads(soft["soft_targets"])
+    save_manifest_rows(manifest_rows, Path(args.manifest))
     print(json.dumps({"total_rows": len(output_rows), "output": args.output}, indent=2))
 
 

@@ -1,0 +1,59 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+type: command
+command: >-
+  python benchmark_testing_stable_audio_score.py
+  --generated_audio_dir ${{inputs.generated_audio_dir}}
+  --trained_model_data ${{inputs.trained_model_data}}
+  --context_trained_model_data ${{inputs.context_trained_model_data}}
+  --output_dir ${{outputs.output_dir}}
+  --base_checkpoint ${{inputs.base_checkpoint}}
+  --generation_steps ${{inputs.generation_steps}}
+  --cfg_scale ${{inputs.cfg_scale}}
+  --native_extractor ${{inputs.native_extractor}}
+  --max_native_predictions ${{inputs.max_native_predictions}}
+  --model_ids ${{inputs.model_ids}}
+  --dashboard_triggered ${{inputs.dashboard_triggered}}
+  --dry_run ${{inputs.dry_run}}
+code: ../../src
+inputs:
+  generated_audio_dir:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/evaluation-runs/cara-strong-v0.4/stable_audio_benchmark_testing/audio_full/
+  trained_model_data:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/stable_audio_full/cara-finetune-001-cara-strong-full-20260607-011523/
+  context_trained_model_data:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/stable_audio_context/context_full/
+  base_checkpoint: stabilityai/stable-audio-open-small
+  generation_steps: 50
+  cfg_scale: 7.0
+  native_extractor: "true"
+  max_native_predictions: 0
+  model_ids: ""
+  dashboard_triggered: "false"
+  dry_run: "false"
+outputs:
+  output_dir:
+    type: uri_folder
+    mode: rw_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/evaluation-runs/cara-strong-v0.4/stable_audio_benchmark_testing/scoring/
+environment: azureml:env-stable-audio-tools:8
+compute: azureml:gpu-smoke-h100
+identity:
+  type: user_identity
+experiment_name: cara-benchmark-testing-score
+display_name: 16-benchmark-testing-stable-audio-score
+description: Matrix scoring stage for generated Stable Audio benchmark artifacts.
+tags:
+  cara_phase: evaluation
+  cara_step_id: "16"
+  cara_step_name: 16_benchmark_testing_stable_audio_score
+  cara_compute_class: gpu
+  cara_model_family: stable_audio_open_small
+  cara_evaluation_scope: attribution_scoring
+  cara_dashboard_triggered: "false"
+  cara_marketplace: "false"

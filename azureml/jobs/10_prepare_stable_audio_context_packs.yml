@@ -1,0 +1,43 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+type: command
+command: >-
+  python prepare_stable_audio_context_packs.py
+  --input_data ${{inputs.input_data}}
+  --output_dir ${{outputs.output_dir}}
+  --manifest_relative_path ${{inputs.manifest_relative_path}}
+  --max_contexts ${{inputs.max_contexts}}
+  --selection_seed ${{inputs.selection_seed}}
+  --dashboard_triggered ${{inputs.dashboard_triggered}}
+  --dry_run ${{inputs.dry_run}}
+code: ../../src
+inputs:
+  input_data:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/prepared/cara-strong-v0.4/
+  manifest_relative_path: stable_audio_open_small/manifest.jsonl
+  max_contexts: 3
+  selection_seed: cara-context-v1
+  dashboard_triggered: "false"
+  dry_run: "false"
+outputs:
+  output_dir:
+    type: uri_folder
+    mode: rw_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/stable_audio_context/context_packs/
+environment: azureml:env-stable-audio-tools:8
+compute: azureml:gpu-smoke-h100
+identity:
+  type: user_identity
+experiment_name: cara-context-diffusion
+display_name: 10-prepare-stable-audio-context-packs
+description: Build source-disjoint Stable Audio context packs and control manifests for the Context Diffusion comparison branch.
+tags:
+  cara_phase: fine-tuning
+  cara_step_id: "10"
+  cara_step_name: 10_prepare_stable_audio_context_packs
+  cara_compute_class: h100_preferred_else_cpu
+  cara_model_family: stable_audio_open_small_context_diffusion
+  cara_training_gate: stable_audio_context_packs
+  cara_training_scope: context-prep
+  cara_output_path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/stable_audio_context/context_packs/

@@ -11,9 +11,9 @@ This file tracks implementation progress for the CARA attribution proof-of-conce
 ## Current Status
 
 - **Status:** In progress
-- **Current milestone:** JSONL-first manifest integration and real-data hardening
+- **Current milestone:** GUI expansion for dataset, fine-tuning, testing, and benchmarking workflows
 - **Canonical spec:** `implement-plan.md`
-- **Latest update:** 2026-04-18 - Migrated core data pipeline updates onto central JSONL manifest
+- **Latest update:** 2026-04-25 - Planned multi-view CARA Attribution Console expansion
 
 ## Milestones
 
@@ -83,9 +83,22 @@ This file tracks implementation progress for the CARA attribution proof-of-conce
 - [x] Phase 3 - Merge offline CARA labels and subset flags back into the manifest
 - [x] Phase 3.5 - Add shared manifest JSONL utilities and CSV export bridge
 - [x] Phase 3.5 - Update core data pipeline scripts to write their row-level state back into the central JSONL manifest
+- [x] Phase 3.6 - Add canonical genre-label normalization for the active sub-dataset and v2 pool manifest
 - [ ] Phase 4 - Add targeted API enrichment for uncertainty rows only
 - [ ] Phase 5 - Convert high-confidence subset into sidecars and registry assets for fine-tuning
 - [ ] Phase 6 - Run subset fine-tuning experiment and persistence evaluation
+
+### CARA Attribution Console Expansion (2026-04-25)
+- [x] Move the existing `FREESOUND · MUSIC ATTRIBUTION POOL` experience into the primary `Dataset` page view without redesigning its current layout or functionality
+- [x] Replace the single-page console shell with a responsive app layout that uses a persistent sidebar on desktop and collapses into a hamburger navigation menu on smaller screens
+- [x] Add top-level navigation views for `Dataset`, `Finetune: Diffusion`, `Finetune: Autoregressive`, `Testing`, and `Benchmarks`
+- [x] Treat the existing dataset acquisition, subset selection, download progress, manifest state, tracked paths, Freesound API usage, and live download controls as the completed `Dataset` page view design
+- [x] Design the `Finetune: Diffusion` view for configuring diffusion fine-tuning runs, selecting datasets/subsets, choosing run targets, showing cloud/VM execution state, and streaming live/results logs
+- [x] Design the `Finetune: Autoregressive` view for configuring autoregressive fine-tuning runs with the same dataset selection, remote execution state, and log/result tracking patterns as diffusion fine-tuning
+- [x] Design the `Testing` view for choosing base or fine-tuned model checkpoints, selecting test suites/prompts, running comparison jobs, and reviewing generated outputs plus attribution/probe diagnostics
+- [x] Design the `Benchmarks` view for comparing base, diffusion-finetuned, and autoregressive-finetuned model results, including score deltas, attribution persistence, control-token behavior, prompt robustness, and improvement summaries
+- [ ] Define shared frontend state/API contracts for long-running cloud jobs so dataset downloads, fine-tuning, testing, and benchmarks can all report status consistently
+- [x] Keep implementation incremental: first ship static page views and navigation, then wire each view to real backend job endpoints as the training/testing runners mature
 
 ## Blockers / External Dependencies
 

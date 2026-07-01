@@ -1,0 +1,64 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+type: command
+command: >-
+  python musicgen_lm_cara_trainer.py
+  --token_cache_dir ${{inputs.token_cache_dir}}
+  --output_dir ${{outputs.output_dir}}
+  --encodec_manifest_relative_path manifest.encodec.jsonl
+  --checkpoint ${{inputs.checkpoint}}
+  --variant cara_strong
+  --run_name ${{inputs.run_name}}
+  --max_steps ${{inputs.max_steps}}
+  --batch_size ${{inputs.batch_size}}
+  --learning_rate ${{inputs.learning_rate}}
+  --attribution_loss_weight ${{inputs.attribution_loss_weight}}
+  --max_train_files 0
+  --max_eval_files ${{inputs.max_eval_files}}
+  --max_token_frames ${{inputs.max_token_frames}}
+  --min_encodec_frames ${{inputs.min_encodec_frames}}
+  --checkpoint_every ${{inputs.checkpoint_every}}
+  --model_dtype ${{inputs.model_dtype}}
+  --preflight_only false
+  --dashboard_triggered ${{inputs.dashboard_triggered}}
+  --dry_run ${{inputs.dry_run}}
+code: ../../src
+inputs:
+  token_cache_dir:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/prepared/cara-strong-v0.4/musicgen_encodec_cache/
+  checkpoint: facebook/musicgen-small
+  run_name: cara-musicgen-cara-strong-full
+  max_steps: 20000
+  batch_size: 2
+  learning_rate: 1e-5
+  attribution_loss_weight: 0.05
+  max_eval_files: 0
+  max_token_frames: 512
+  min_encodec_frames: 2
+  checkpoint_every: 1000
+  model_dtype: float32
+  dashboard_triggered: "false"
+  dry_run: "false"
+outputs:
+  output_dir:
+    type: uri_folder
+    mode: rw_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/musicgen_full/
+environment: azureml:env-musicgen-audiocraft:3
+compute: azureml:gpu-fulltraining-h100
+identity:
+  type: user_identity
+experiment_name: cara-musicgen-full
+display_name: 12-full-musicgen-cara-strong-trainer
+description: GPU-only real MusicGen LM CARA-Strong full fine-tune over cached EnCodec tokens.
+tags:
+  cara_phase: fine-tuning
+  cara_step_id: "12"
+  cara_step_name: 12_full_musicgen_cara_strong_trainer
+  cara_compute_class: gpu
+  cara_model_family: musicgen
+  cara_training_scope: full
+  cara_variant: cara_strong
+  cara_min_encodec_frames: "2"
+  cara_output_path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/musicgen_full/

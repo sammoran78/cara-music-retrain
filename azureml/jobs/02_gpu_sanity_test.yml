@@ -1,0 +1,23 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+type: command
+command: >-
+  python gpu_sanity_test.py
+  --output_dir ${{outputs.output_dir}}
+  --dashboard_triggered ${{inputs.dashboard_triggered}}
+code: ../../src
+inputs:
+  dashboard_triggered: "false"
+outputs:
+  output_dir:
+    type: uri_folder
+environment: azureml://registries/azureml/environments/acpt-pytorch-2.2-cuda12.1/versions/10
+compute: azureml:gpu-smoke-h100
+experiment_name: cara-test-prep
+display_name: 02-gpu-sanity-test
+description: Verify that the H100 GPU cluster starts and PyTorch can access CUDA.
+tags:
+  cara_phase: test-prep
+  cara_test_id: "02"
+  cara_test_name: 02_gpu_sanity_test
+  cara_compute_class: gpu-smoke
+

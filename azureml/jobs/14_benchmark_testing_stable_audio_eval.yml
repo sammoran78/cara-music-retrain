@@ -1,0 +1,57 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+type: command
+command: >-
+  python benchmark_testing_stable_audio_eval.py
+  --prepared_data ${{inputs.prepared_data}}
+  --trained_model_data ${{inputs.trained_model_data}}
+  --output_dir ${{outputs.output_dir}}
+  --manifest_relative_path ${{inputs.manifest_relative_path}}
+  --model_ids ${{inputs.model_ids}}
+  --suite_ids ${{inputs.suite_ids}}
+  --seeds ${{inputs.seeds}}
+  --prompt_manifest_uri ${{inputs.prompt_manifest_uri}}
+  --base_checkpoint ${{inputs.base_checkpoint}}
+  --load_base_model ${{inputs.load_base_model}}
+  --dashboard_triggered ${{inputs.dashboard_triggered}}
+  --dry_run ${{inputs.dry_run}}
+code: ../../src
+inputs:
+  prepared_data:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/prepared/cara-strong-v0.4/
+  trained_model_data:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/stable_audio_full/cara-finetune-001-cara-strong-full-20260607-011523/
+  manifest_relative_path: stable_audio_open_small/manifest.jsonl
+  model_ids: base_stable_audio_open_small,diffusion_cara_strong_full_modest_arch
+  suite_ids: heldout_audio_attribution,known_pool_prompt_recall,control_token_confound,baseline_negative_control
+  seeds: 1
+  prompt_manifest_uri: ""
+  base_checkpoint: stabilityai/stable-audio-open-small
+  load_base_model: "true"
+  dashboard_triggered: "false"
+  dry_run: "false"
+outputs:
+  output_dir:
+    type: uri_folder
+    mode: rw_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/evaluation-runs/cara-strong-v0.4/stable_audio_benchmark_testing/
+environment: azureml:env-stable-audio-tools:8
+environment_variables:
+  HF_TOKEN_SECRET_NAME: hf-token
+compute: azureml:gpu-smoke-h100
+identity:
+  type: user_identity
+experiment_name: cara-benchmark-testing-evaluation
+display_name: 14-benchmark-testing-stable-audio-eval
+description: GPU-only CARA benchmark testing wave-1 evaluation manifest, artifact, model-load, and baseline-control job.
+tags:
+  cara_phase: evaluation
+  cara_step_id: "14"
+  cara_step_name: 14_benchmark_testing_stable_audio_eval
+  cara_compute_class: gpu
+  cara_model_family: stable_audio_open_small
+  cara_evaluation_scope: benchmark_testing_wave_1
+  cara_dashboard_triggered: "false"

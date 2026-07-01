@@ -1,0 +1,35 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+type: command
+command: >-
+  python prepare_model_datasets.py
+  --input_data ${{inputs.input_data}}
+  --output_dir ${{outputs.output_dir}}
+  --manifest_relative_path data/cara_pool_manifest_v2.jsonl
+  --models stable_audio_open_small
+  --dashboard_triggered ${{inputs.dashboard_triggered}}
+  --dry_run ${{inputs.dry_run}}
+code: ../../src
+inputs:
+  input_data:
+    type: uri_folder
+    path: azureml://datastores/ds_cara_raw_audio/paths/finetune-subset/
+  dashboard_triggered: "false"
+  dry_run: "false"
+outputs:
+  output_dir:
+    type: uri_folder
+    path: azureml://datastores/ds_cara_raw_audio/paths/prepared/cara-strong-v0.4/
+environment: azureml:env-stable-audio-tools:2
+compute: azureml:cpu-prep-cluster
+identity:
+  type: user_identity
+experiment_name: cara-training-prep
+display_name: 05a-prepare-stable-audio-dataset
+description: Prepare only the Stable Audio Open Small 44.1 kHz stereo chunk dataset.
+tags:
+  cara_phase: training-prep
+  cara_step_id: "05a"
+  cara_step_name: 05a_prepare_stable_audio_dataset
+  cara_compute_class: cpu
+  cara_model_family: stable_audio_open_small
+  cara_output_path: azureml://datastores/ds_cara_raw_audio/paths/prepared/cara-strong-v0.4/stable_audio_open_small/

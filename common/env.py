@@ -19,7 +19,7 @@ def load_env_file(env_path: Path | None = None) -> dict[str, str]:
         key, value = line.split("=", 1)
         key = key.strip()
         value = value.strip().strip('"').strip("'")
-        if key and key not in os.environ:
+        if key and (key not in os.environ or os.environ.get(key, "") == ""):
             os.environ[key] = value
         if key:
             loaded[key] = os.environ.get(key, value)
@@ -27,6 +27,6 @@ def load_env_file(env_path: Path | None = None) -> dict[str, str]:
 
 
 def get_env(key: str, default: str | None = None) -> str | None:
-    if key not in os.environ:
+    if key not in os.environ or os.environ.get(key, "") == "":
         load_env_file()
     return os.environ.get(key, default)

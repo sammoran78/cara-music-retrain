@@ -1,0 +1,49 @@
+$schema: https://azuremlschemas.azureedge.net/latest/environment.schema.json
+name: env-stable-audio-tools
+version: "8"
+description: Dedicated CARA Stable Audio Tools environment with explicit training dependencies.
+image: mcr.microsoft.com/azureml/openmpi4.1.0-ubuntu22.04:20260514.v1
+conda_file:
+  name: cara-stable-audio-tools
+  channels:
+    - pytorch
+    - nvidia
+    - conda-forge
+  dependencies:
+    - python=3.10
+    - pip
+    - ffmpeg
+    - pkg-config
+    - av=11.0.0
+    - git
+    - pytorch=2.2.2
+    - torchaudio=2.2.2
+    - pytorch-cuda=12.1
+    - pip:
+        - azureml-mlflow
+        - azure-ai-ml
+        - azure-identity
+        - azure-keyvault-secrets
+        - pandas==2.0.2
+        - soundfile
+        - librosa
+        - scipy
+        - tqdm
+        - huggingface_hub
+        - pytorch-lightning==2.5.5
+        - torchmetrics==0.11.4
+        - prefigure==0.0.9
+        - wandb==0.15.4
+        - webdataset==0.2.100
+        - auraloss==0.4.0
+        - matplotlib==3.8.4
+        - descript-audiotools==0.7.2
+        - descript-audio-codec==1.0.0
+        - encodec==0.1.1
+        - inf-cl
+        - laion-clap==1.1.4
+        - safetensors
+        - git+https://github.com/Stability-AI/stable-audio-tools.git
+tags:
+  cara_phase: test-prep
+  cara_model_family: stable_audio_open_small

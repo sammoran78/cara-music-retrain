@@ -1,0 +1,45 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+type: command
+command: >-
+  python stable_audio_context_cache_preflight.py
+  --mode cache
+  --prepared_data ${{inputs.prepared_data}}
+  --context_pack_dir ${{inputs.context_pack_dir}}
+  --output_dir ${{outputs.output_dir}}
+  --context_pack_relative_path ${{inputs.context_pack_relative_path}}
+  --dashboard_triggered ${{inputs.dashboard_triggered}}
+  --dry_run ${{inputs.dry_run}}
+code: ../../src
+inputs:
+  prepared_data:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/prepared/cara-strong-v0.4/
+  context_pack_dir:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/stable_audio_context/context_packs/
+  context_pack_relative_path: context_pack_manifest.jsonl
+  dashboard_triggered: "false"
+  dry_run: "false"
+outputs:
+  output_dir:
+    type: uri_folder
+    mode: rw_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/stable_audio_context/context_cache/
+environment: azureml:env-stable-audio-tools:8
+compute: azureml:gpu-smoke-h100
+identity:
+  type: user_identity
+experiment_name: cara-context-diffusion
+display_name: 11-cache-stable-audio-context-metadata
+description: Validate context-pack audio references and write context cache metadata for Context Diffusion conditioner preflight.
+tags:
+  cara_phase: fine-tuning
+  cara_step_id: "11"
+  cara_step_name: 11_cache_stable_audio_context_metadata
+  cara_compute_class: h100_preferred_else_cpu
+  cara_model_family: stable_audio_open_small_context_diffusion
+  cara_training_gate: stable_audio_context_cache
+  cara_training_scope: context-prep
+  cara_output_path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/stable_audio_context/context_cache/

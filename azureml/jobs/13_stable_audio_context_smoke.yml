@@ -1,0 +1,58 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+type: command
+command: >-
+  python stable_audio_context_smoke.py
+  --context_pack_dir ${{inputs.context_pack_dir}}
+  --context_cache_dir ${{inputs.context_cache_dir}}
+  --output_dir ${{outputs.output_dir}}
+  --context_pack_relative_path ${{inputs.context_pack_relative_path}}
+  --context_controls_relative_path ${{inputs.context_controls_relative_path}}
+  --context_cache_relative_path ${{inputs.context_cache_relative_path}}
+  --max_steps ${{inputs.max_steps}}
+  --batch_size ${{inputs.batch_size}}
+  --learning_rate ${{inputs.learning_rate}}
+  --max_train_rows ${{inputs.max_train_rows}}
+  --max_eval_rows ${{inputs.max_eval_rows}}
+  --dashboard_triggered ${{inputs.dashboard_triggered}}
+  --dry_run ${{inputs.dry_run}}
+code: ../../src
+inputs:
+  context_pack_dir:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/stable_audio_context/context_packs/
+  context_cache_dir:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/stable_audio_context/context_cache/
+  context_pack_relative_path: context_pack_manifest.jsonl
+  context_controls_relative_path: context_controls_manifest.jsonl
+  context_cache_relative_path: context_cache_manifest.jsonl
+  max_steps: 250
+  batch_size: 64
+  learning_rate: 0.001
+  max_train_rows: 4096
+  max_eval_rows: 1024
+  dashboard_triggered: "false"
+  dry_run: "false"
+outputs:
+  output_dir:
+    type: uri_folder
+    mode: rw_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/stable_audio_context/context_smoke/
+environment: azureml:env-stable-audio-tools:8
+compute: azureml:gpu-smoke-h100
+identity:
+  type: user_identity
+experiment_name: cara-context-diffusion
+display_name: 13-stable-audio-context-conditioner-smoke
+description: Run the Context Diffusion conditioner smoke over context-plus-prompt, context-only, prompt-only, shuffled-context, and mismatched-family lanes.
+tags:
+  cara_phase: fine-tuning
+  cara_step_id: "13"
+  cara_step_name: 13_stable_audio_context_conditioner_smoke
+  cara_compute_class: gpu_only
+  cara_model_family: stable_audio_open_small_context_diffusion
+  cara_training_gate: stable_audio_context_smoke
+  cara_training_scope: context-smoke
+  cara_output_path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/stable_audio_context/context_smoke/

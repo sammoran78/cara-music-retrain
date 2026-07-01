@@ -1,0 +1,58 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+type: command
+command: >-
+  python musicgen_lm_cara_trainer.py
+  --token_cache_dir ${{inputs.token_cache_dir}}
+  --output_dir ${{outputs.output_dir}}
+  --encodec_manifest_relative_path manifest.encodec.jsonl
+  --checkpoint ${{inputs.checkpoint}}
+  --variant no_cara_baseline
+  --run_name ${{inputs.run_name}}
+  --max_steps 1
+  --batch_size ${{inputs.batch_size}}
+  --max_train_files ${{inputs.max_train_files}}
+  --max_eval_files ${{inputs.max_eval_files}}
+  --max_token_frames ${{inputs.max_token_frames}}
+  --min_encodec_frames ${{inputs.min_encodec_frames}}
+  --checkpoint_every 250
+  --model_dtype ${{inputs.model_dtype}}
+  --preflight_only true
+  --dashboard_triggered ${{inputs.dashboard_triggered}}
+  --dry_run ${{inputs.dry_run}}
+code: ../../src
+inputs:
+  token_cache_dir:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/prepared/cara-strong-v0.4/musicgen_encodec_cache/
+  checkpoint: facebook/musicgen-small
+  run_name: cara-musicgen-preflight
+  batch_size: 1
+  max_train_files: 32
+  max_eval_files: 16
+  max_token_frames: 256
+  min_encodec_frames: 2
+  model_dtype: float32
+  dashboard_triggered: "false"
+  dry_run: "false"
+outputs:
+  output_dir:
+    type: uri_folder
+    mode: rw_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/musicgen_preflight/
+environment: azureml:env-musicgen-audiocraft:3
+compute: azureml:gpu-smoke-h100
+identity:
+  type: user_identity
+experiment_name: cara-musicgen-smoke
+display_name: 07b-musicgen-trainer-preflight
+description: GPU-only real MusicGen LM preflight over cached EnCodec tokens and locked CARA suffix mappings.
+tags:
+  cara_phase: fine-tuning
+  cara_step_id: "07b"
+  cara_step_name: 07b_musicgen_trainer_preflight
+  cara_compute_class: gpu
+  cara_model_family: musicgen
+  cara_training_gate: musicgen_trainer_preflight
+  cara_min_encodec_frames: "2"
+  cara_output_path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/musicgen_preflight/

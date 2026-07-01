@@ -1,0 +1,62 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+type: command
+command: >-
+  python benchmark_testing_musicgen_audio.py
+  --prompt_manifest_file ${{inputs.prompt_manifest_file}}
+  --trained_model_data ${{inputs.trained_model_data}}
+  --output_dir ${{outputs.output_dir}}
+  --model_ids ${{inputs.model_ids}}
+  --suite_ids ${{inputs.suite_ids}}
+  --seed_ids ${{inputs.seed_ids}}
+  --max_prompts ${{inputs.max_prompts}}
+  --scope ${{inputs.scope}}
+  --base_checkpoint ${{inputs.base_checkpoint}}
+  --duration_seconds ${{inputs.duration_seconds}}
+  --top_k ${{inputs.top_k}}
+  --cfg_coef ${{inputs.cfg_coef}}
+  --dashboard_triggered ${{inputs.dashboard_triggered}}
+  --dry_run ${{inputs.dry_run}}
+code: ../../src
+inputs:
+  prompt_manifest_file:
+    type: uri_file
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/evaluation-runs/cara-strong-v0.4/stable_audio_peer_review/stable-audio-wave1-20260607-111623/prompt_manifest.jsonl
+  trained_model_data:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/musicgen_full/
+  model_ids: base_musicgen_small,musicgen_cara_strong_full
+  suite_ids: known_pool_prompt_recall,control_token_confound
+  seed_ids: "0"
+  max_prompts: 20
+  scope: smoke
+  base_checkpoint: facebook/musicgen-small
+  duration_seconds: 12
+  top_k: 250
+  cfg_coef: 3
+  dashboard_triggered: "false"
+  dry_run: "false"
+outputs:
+  output_dir:
+    type: uri_folder
+    mode: rw_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/evaluation-runs/cara-strong-v0.4/musicgen_benchmark_testing/audio_smoke/
+environment: azureml:env-musicgen-audiocraft:3
+environment_variables:
+  HF_TOKEN_SECRET_NAME: hf-token
+compute: azureml:gpu-smoke-h100
+identity:
+  type: user_identity
+experiment_name: cara-benchmark-testing-audio
+display_name: 17-benchmark-testing-musicgen-audio
+description: GPU-only MusicGen generated-audio benchmark stage using the locked CARA benchmark prompt set.
+tags:
+  cara_phase: evaluation
+  cara_step_id: "17"
+  cara_step_name: 17_benchmark_testing_musicgen_audio
+  cara_compute_class: gpu
+  cara_model_family: musicgen
+  cara_evaluation_scope: generated_audio_benchmark
+  cara_dashboard_triggered: "false"
+  cara_marketplace: "false"

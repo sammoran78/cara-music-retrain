@@ -7,6 +7,13 @@ huggingface:
   model_name: stabilityai/stable-audio-open-small
   token: ""
 
+azure_ml:
+  subscription_id: ""
+  resource_group: ""
+  workspace_name: ""
+  datastore_name: ds_cara_raw_audio
+  raw_audio_path: test-audio/
+
 freesound:
   client_id: ""
   client_secret: ""
@@ -27,3 +34,35 @@ paths:
   registry_dir: registry
   checkpoints_dir: checkpoints
   evaluation_dir: evaluation
+
+pool_allocator:
+  max_pool_duration_seconds: 18000
+  max_artist_duration_seconds: 1800
+  min_style_score: 0.2
+  min_assignment_score: 0.6
+  min_pool_code_edit_distance: 5
+  repair_threshold: 2
+  fuzzy_duration_tolerance_seconds: 2.0
+  weights:
+    licence_match: 0.15
+    territory_match: 0.1
+    record_label_match: 0.25
+    rights_holder_match: 0.25
+    relaxed_metadata_compatibility: 0.15
+    primary_genre_match: 0.2
+    style_similarity: 0.2
+    pool_balance: 0.1
+  penalties:
+    artist_concentration_near_limit: 0.2
+    metadata_conflict: 0.3
+
+pool_allocator_v2:
+  max_pool_duration_seconds: 14400
+  general_artist_cap_seconds: 1440
+  target_pool_count: 60
+  min_pool_code_edit_distance: 5
+  repair_threshold: 2
+  fuzzy_duration_tolerance_seconds: 2.0
+  artist_exception_min_duration_seconds: 7200
+  artist_exception_min_pool_pressure: 3
+  include_progress_completed_ids: true

@@ -1,0 +1,47 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+type: command
+command: >-
+  python stable_audio_context_cache_preflight.py
+  --mode preflight
+  --context_pack_dir ${{inputs.context_pack_dir}}
+  --context_cache_dir ${{inputs.context_cache_dir}}
+  --output_dir ${{outputs.output_dir}}
+  --context_pack_relative_path ${{inputs.context_pack_relative_path}}
+  --context_cache_relative_path ${{inputs.context_cache_relative_path}}
+  --dashboard_triggered ${{inputs.dashboard_triggered}}
+  --dry_run ${{inputs.dry_run}}
+code: ../../src
+inputs:
+  context_pack_dir:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/stable_audio_context/context_packs/
+  context_cache_dir:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/stable_audio_context/context_cache/
+  context_pack_relative_path: context_pack_manifest.jsonl
+  context_cache_relative_path: context_cache_manifest.jsonl
+  dashboard_triggered: "false"
+  dry_run: "false"
+outputs:
+  output_dir:
+    type: uri_folder
+    mode: rw_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/stable_audio_context/context_preflight/
+environment: azureml:env-stable-audio-tools:8
+compute: azureml:gpu-smoke-h100
+identity:
+  type: user_identity
+experiment_name: cara-context-diffusion
+display_name: 12-stable-audio-context-conditioner-preflight
+description: Check Context Diffusion pack/cache consistency and planned cross-attention conditioner lanes before trainer implementation.
+tags:
+  cara_phase: fine-tuning
+  cara_step_id: "12"
+  cara_step_name: 12_stable_audio_context_conditioner_preflight
+  cara_compute_class: h100_preferred_else_cpu
+  cara_model_family: stable_audio_open_small_context_diffusion
+  cara_training_gate: stable_audio_context_preflight
+  cara_training_scope: context-preflight
+  cara_output_path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/stable_audio_context/context_preflight/

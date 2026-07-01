@@ -1,0 +1,58 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+type: command
+command: >-
+  python benchmark_testing_musicgen_score.py
+  --generated_audio_dir ${{inputs.generated_audio_dir}}
+  --trained_model_data ${{inputs.trained_model_data}}
+  --output_dir ${{outputs.output_dir}}
+  --base_checkpoint ${{inputs.base_checkpoint}}
+  --native_extractor ${{inputs.native_extractor}}
+  --max_native_predictions ${{inputs.max_native_predictions}}
+  --duration_seconds ${{inputs.duration_seconds}}
+  --top_k ${{inputs.top_k}}
+  --cfg_coef ${{inputs.cfg_coef}}
+  --suffix_len ${{inputs.suffix_len}}
+  --model_ids ${{inputs.model_ids}}
+  --dashboard_triggered ${{inputs.dashboard_triggered}}
+  --dry_run ${{inputs.dry_run}}
+code: ../../src
+inputs:
+  generated_audio_dir:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/evaluation-runs/cara-strong-v0.4/musicgen_benchmark_testing/audio_full/
+  trained_model_data:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/musicgen_full/
+  base_checkpoint: facebook/musicgen-small
+  native_extractor: "true"
+  max_native_predictions: 0
+  duration_seconds: 12.0
+  top_k: 250
+  cfg_coef: 3.0
+  suffix_len: 21
+  model_ids: ""
+  dashboard_triggered: "false"
+  dry_run: "false"
+outputs:
+  output_dir:
+    type: uri_folder
+    mode: rw_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/evaluation-runs/cara-strong-v0.4/musicgen_benchmark_testing/scoring/
+environment: azureml:env-musicgen-audiocraft:3
+compute: azureml:gpu-smoke-h100
+identity:
+  type: user_identity
+experiment_name: cara-benchmark-testing-score
+display_name: 18-benchmark-testing-musicgen-score
+description: MusicGen native CARA suffix scoring stage for generated benchmark artifacts.
+tags:
+  cara_phase: evaluation
+  cara_step_id: "18"
+  cara_step_name: 18_benchmark_testing_musicgen_score
+  cara_compute_class: gpu
+  cara_model_family: musicgen
+  cara_evaluation_scope: attribution_scoring
+  cara_dashboard_triggered: "false"
+  cara_marketplace: "false"

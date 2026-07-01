@@ -1,0 +1,72 @@
+[
+  {
+    "id": "heldout_audio_attribution",
+    "label": "Held-out audio attribution",
+    "description": "Use validation/test prepared chunks with known CARA labels; strongest source-disjoint attribution evidence.",
+    "prompt_count": 0,
+    "evidence_type": "source_ground_truth_audio",
+    "expected_label_source": "prepared manifest validation/test rows",
+    "native_cara_required": false,
+    "baseline_supported": true
+  },
+  {
+    "id": "known_pool_prompt_recall",
+    "label": "Known-pool prompt recall",
+    "description": "Prompts derived from held-out metadata and pool/family labels; measures whether generation can recover the intended CARA region.",
+    "prompt_count": 80,
+    "evidence_type": "targeted_generation",
+    "expected_label_source": "held-out manifest metadata",
+    "native_cara_required": false,
+    "baseline_supported": true
+  },
+  {
+    "id": "control_token_confound",
+    "label": "Control-token confound",
+    "description": "Prompt-only, audio-hidden-only, CARA-text-removed, and shuffled-label probes to expose leakage or shortcuts.",
+    "prompt_count": 40,
+    "evidence_type": "leakage_control",
+    "expected_label_source": "locked registry plus randomized controls",
+    "native_cara_required": false,
+    "baseline_supported": true
+  },
+  {
+    "id": "open_generation_quality",
+    "label": "Open generation quality",
+    "description": "Free prompts without known pool labels; reports registry validity, repairability, stability, and quality but not pool accuracy.",
+    "prompt_count": 32,
+    "evidence_type": "open_generation",
+    "expected_label_source": "none",
+    "native_cara_required": false,
+    "baseline_supported": true
+  },
+  {
+    "id": "adversarial_persistence",
+    "label": "Adversarial persistence",
+    "description": "Prompts that stress genre drift, prompt rewriting, and off-distribution generation to test whether CARA attribution persists.",
+    "prompt_count": 60,
+    "evidence_type": "robustness_control",
+    "expected_label_source": "weak or suite-specific",
+    "native_cara_required": false,
+    "baseline_supported": true
+  },
+  {
+    "id": "baseline_negative_control",
+    "label": "Baseline negative control",
+    "description": "Original models and random/prior/keyword probes; native CARA output is N/A for base checkpoints.",
+    "prompt_count": 80,
+    "evidence_type": "negative_control",
+    "expected_label_source": "held-out manifest metadata",
+    "native_cara_required": false,
+    "baseline_supported": true
+  },
+  {
+    "id": "shuffled_label_control",
+    "label": "Shuffled-label control",
+    "description": "Same audio/prompt flow with CARA labels shuffled; validates that apparent success is not due to class priors.",
+    "prompt_count": 80,
+    "evidence_type": "statistical_control",
+    "expected_label_source": "intentionally shuffled manifest labels",
+    "native_cara_required": false,
+    "baseline_supported": true
+  }
+]

@@ -1,0 +1,34 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+type: command
+command: >-
+  python stable_audio_trainer_preflight.py
+  --output_dir ${{outputs.output_dir}}
+  --checkpoint ${{inputs.checkpoint}}
+  --wrapper_check ${{inputs.wrapper_check}}
+  --dashboard_triggered ${{inputs.dashboard_triggered}}
+code: ../../src
+inputs:
+  checkpoint: stabilityai/stable-audio-open-small
+  wrapper_check: "true"
+  dashboard_triggered: "false"
+outputs:
+  output_dir:
+    type: uri_folder
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/stable_audio_preflight/
+environment: azureml:env-stable-audio-tools:8
+environment_variables:
+  HF_TOKEN_SECRET_NAME: hf-token
+compute: azureml:cpu-prep-cluster
+identity:
+  type: user_identity
+experiment_name: cara-finetune-smoke
+display_name: 07a-stable-audio-trainer-preflight
+description: CPU-first Stable Audio trainer dependency and wrapper-construction preflight before the H100 smoke trainer.
+tags:
+  cara_phase: fine-tuning
+  cara_step_id: "07a"
+  cara_step_name: 07a_stable_audio_trainer_preflight
+  cara_compute_class: cpu
+  cara_model_family: stable_audio_open_small
+  cara_training_scope: preflight
+  cara_variant: no_cara_baseline

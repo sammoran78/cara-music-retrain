@@ -1,0 +1,29 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+type: command
+command: >-
+  python data_access_test.py
+  --input_data ${{inputs.input_data}}
+  --output_dir ${{outputs.output_dir}}
+  --dashboard_triggered ${{inputs.dashboard_triggered}}
+code: ../../src
+inputs:
+  input_data:
+    type: uri_folder
+    path: azureml://datastores/ds_cara_raw_audio/paths/test-audio/
+  dashboard_triggered: "false"
+outputs:
+  output_dir:
+    type: uri_folder
+environment: azureml://registries/azureml/environments/sklearn-1.5/versions/1
+compute: azureml:cpu-prep-cluster
+identity:
+  type: user_identity
+experiment_name: cara-test-prep
+display_name: 01-data-access-test
+description: Verify Azure ML can read the private datastore test audio and manifest.
+tags:
+  cara_phase: test-prep
+  cara_test_id: "01"
+  cara_test_name: 01_data_access_test
+  cara_compute_class: cpu
+

@@ -1,0 +1,39 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+type: command
+command: >-
+  python ace_step_env_preflight.py
+  --input_data ${{inputs.input_data}}
+  --output_dir ${{outputs.output_dir}}
+  --checkpoint ${{inputs.checkpoint}}
+  --load_checkpoint ${{inputs.load_checkpoint}}
+  --dashboard_triggered ${{inputs.dashboard_triggered}}
+code: ../../src
+inputs:
+  input_data:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/finetune-subset/
+  checkpoint: ACE-Step/Ace-Step1.5
+  load_checkpoint: "false"
+  dashboard_triggered: "false"
+outputs:
+  output_dir:
+    type: uri_folder
+    mode: rw_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_step_preflight/
+environment: azureml:env-ace-step:1
+compute: azureml:gpu-smoke-h100
+identity:
+  type: user_identity
+experiment_name: cara-ace-step-smoke
+display_name: 13-ace-step-env-preflight
+description: GPU-only ACE-Step v1.5 environment and CARA source-manifest preflight before Hybrid planner and DiT attribution probes.
+tags:
+  cara_phase: fine-tuning
+  cara_step_id: "13"
+  cara_step_name: 13_ace_step_env_preflight
+  cara_compute_class: gpu
+  cara_model_family: ace_step
+  cara_training_gate: ace_step_env_preflight
+  cara_training_scope: preflight
+  cara_output_path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_step_preflight/

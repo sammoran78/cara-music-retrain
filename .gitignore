@@ -1,2 +1,66 @@
 .env
+.env.*
+.env_backup
+!.env.example
+.venv-dashboard/
+azure-ml-env/
+
+# Python / environments
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+.conda/
+conda/
+site-packages/
+
+# notebooks
+.ipynb_checkpoints/
+
+# Frontend local/build artifacts
+node_modules/
+gui/frontend/node_modules/
+gui/frontend/dist/
+gui/frontend/tsconfig.tsbuildinfo
+
+# ML / training outputs
+checkpoints/
+outputs/
+runs/
+wandb/
+mlruns/
+lightning_logs/
+logs/
+models/
+*.ckpt
+*.pt
+*.pth
+*.safetensors
+*.onnx
+
+# datasets / audio
 data/
+datasets/
+audio/
+raw-audio/
+cara-raw-audio/
+*.wav
+*.mp3
+*.flac
+*.aiff
+*.m4a
+*.zip
+*.tar
+*.tar.gz
+*.7z
+
+# generated evaluation and registry outputs
+evaluation/generated/
+registry/azureml_test_prep/
+registry/cara_strong/
+registry/pool_allocator/
+registry/pool_allocator_v2/
+
+# OS
+.DS_Store

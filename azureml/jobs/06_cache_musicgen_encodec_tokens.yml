@@ -1,0 +1,42 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+type: command
+command: >-
+  python cache_musicgen_encodec_tokens.py
+  --prepared_root ${{inputs.prepared_root}}
+  --output_dir ${{outputs.output_dir}}
+  --manifest_relative_path musicgen/manifest.jsonl
+  --checkpoint ${{inputs.checkpoint}}
+  --device auto
+  --existing_cache_dir ${{inputs.prepared_root}}/musicgen_encodec_cache
+  --resume_existing ${{inputs.resume_existing}}
+  --dashboard_triggered ${{inputs.dashboard_triggered}}
+  --dry_run ${{inputs.dry_run}}
+code: ../../src
+inputs:
+  prepared_root:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/prepared/cara-strong-v0.4/
+  checkpoint: facebook/musicgen-small
+  resume_existing: "true"
+  dashboard_triggered: "false"
+  dry_run: "false"
+outputs:
+  output_dir:
+    type: uri_folder
+    mode: rw_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/prepared/cara-strong-v0.4/musicgen_encodec_cache/
+environment: azureml:env-musicgen-audiocraft:3
+compute: azureml:cpu-prep-cluster
+identity:
+  type: user_identity
+experiment_name: cara-training-prep
+display_name: 06-cache-musicgen-encodec-tokens
+description: Encode prepared MusicGen WAV chunks into EnCodec token targets bound to CARA pool ids and source chunk lineage.
+tags:
+  cara_phase: training-prep
+  cara_step_id: "06"
+  cara_step_name: 06_cache_musicgen_encodec_tokens
+  cara_compute_class: cpu-or-gpu
+  cara_model_family: musicgen
+  cara_output_path: azureml://datastores/ds_cara_raw_audio/paths/prepared/cara-strong-v0.4/musicgen_encodec_cache/

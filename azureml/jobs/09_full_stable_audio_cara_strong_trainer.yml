@@ -1,0 +1,73 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+type: command
+command: >-
+  python smoke_stable_audio_trainer.py
+  --input_data ${{inputs.input_data}}
+  --output_dir ${{outputs.output_dir}}
+  --manifest_relative_path stable_audio_open_small/manifest.jsonl
+  --audio_relative_path stable_audio_open_small/audio/train
+  --checkpoint ${{inputs.checkpoint}}
+  --variant ${{inputs.variant}}
+  --run_name ${{inputs.run_name}}
+  --max_steps ${{inputs.max_steps}}
+  --batch_size ${{inputs.batch_size}}
+  --learning_rate ${{inputs.learning_rate}}
+  --num_workers ${{inputs.num_workers}}
+  --precision ${{inputs.precision}}
+  --checkpoint_every ${{inputs.checkpoint_every}}
+  --checkpoint_keep_last_n ${{inputs.checkpoint_keep_last_n}}
+  --max_train_files ${{inputs.max_train_files}}
+  --max_eval_files ${{inputs.max_eval_files}}
+  --max_eval_batches ${{inputs.max_eval_batches}}
+  --attribution_loss_weight ${{inputs.attribution_loss_weight}}
+  --training_scope ${{inputs.training_scope}}
+  --run_eval ${{inputs.run_eval}}
+  --dashboard_triggered ${{inputs.dashboard_triggered}}
+  --dry_run ${{inputs.dry_run}}
+code: ../../src
+inputs:
+  input_data:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/prepared/cara-strong-v0.4/
+  checkpoint: stabilityai/stable-audio-open-small
+  variant: cara_strong
+  run_name: cara-stable-audio-cara-strong-full
+  max_steps: 20000
+  batch_size: 8
+  learning_rate: 1e-5
+  num_workers: 0
+  precision: 16-mixed
+  checkpoint_every: 1000
+  checkpoint_keep_last_n: 1
+  max_train_files: 0
+  max_eval_files: 0
+  max_eval_batches: 0
+  attribution_loss_weight: 0.05
+  training_scope: full
+  run_eval: "true"
+  dashboard_triggered: "false"
+  dry_run: "false"
+outputs:
+  output_dir:
+    type: uri_folder
+    mode: rw_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/stable_audio_full/
+environment: azureml:env-stable-audio-tools:8
+environment_variables:
+  HF_TOKEN_SECRET_NAME: hf-token
+compute: azureml:gpu-fulltraining-h100
+identity:
+  type: user_identity
+experiment_name: cara-finetune-full
+display_name: 09-full-stable-audio-cara-strong-trainer
+description: GPU-only Stable Audio Open Small CARA-Strong full fine-tune over the prepared CARA-Strong dataset with held-out CARA evaluation.
+tags:
+  cara_phase: fine-tuning
+  cara_step_id: "09"
+  cara_step_name: 09_full_stable_audio_cara_strong_trainer
+  cara_compute_class: gpu
+  cara_model_family: stable_audio_open_small
+  cara_training_scope: full
+  cara_variant: cara_strong
+  cara_output_path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/stable_audio_full/

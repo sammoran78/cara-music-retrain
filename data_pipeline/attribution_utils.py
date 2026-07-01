@@ -54,6 +54,21 @@ def normalize_license(raw_license: str | None) -> str:
     if not raw_license:
         return "unknown"
     cleaned = raw_license.strip().lower().replace("_", "-").replace(" ", "")
+    if "creativecommons.org" in cleaned:
+        if "/publicdomain/zero/" in cleaned or "/zero/" in cleaned:
+            return "cc0"
+        if "/licenses/by/" in cleaned and "/by-sa/" not in cleaned and "/by-nc/" not in cleaned and "/by-nd/" not in cleaned:
+            return "cc-by"
+        if "/licenses/by-sa/" in cleaned:
+            return "cc-by-sa"
+        if "/licenses/by-nc-sa/" in cleaned:
+            return "cc-by-nc-sa"
+        if "/licenses/by-nc/" in cleaned:
+            return "cc-by-nc"
+        if "/licenses/by-nd/" in cleaned:
+            return "cc-by-nd"
+        if "/licenses/sampling+/" in cleaned or "sampling+/" in cleaned:
+            return "sampling+"
     if cleaned in {"cc0", "publicdomain", "public-domain", "creativecommonszero", "zero"}:
         return "cc0"
     if cleaned in {"ccby", "cc-by", "creativecommonsby"}:

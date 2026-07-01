@@ -1,0 +1,29 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+type: command
+command: >-
+  python musicgen_env_test.py
+  --input_data ${{inputs.input_data}}
+  --output_dir ${{outputs.output_dir}}
+  --dashboard_triggered ${{inputs.dashboard_triggered}}
+code: ../../src
+inputs:
+  input_data:
+    type: uri_folder
+    path: azureml://datastores/ds_cara_raw_audio/paths/test-audio/
+  dashboard_triggered: "false"
+outputs:
+  output_dir:
+    type: uri_folder
+environment: azureml:env-musicgen-audiocraft:3
+compute: azureml:gpu-smoke-h100
+identity:
+  type: user_identity
+experiment_name: cara-test-prep
+display_name: 03-musicgen-env-test
+description: Verify MusicGen and AudioCraft installation and shared dataset visibility.
+tags:
+  cara_phase: test-prep
+  cara_test_id: "03"
+  cara_test_name: 03_musicgen_env_test
+  cara_compute_class: gpu-smoke
+  cara_model_family: musicgen

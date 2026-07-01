@@ -1,0 +1,39 @@
+$schema: https://azuremlschemas.azureedge.net/latest/environment.schema.json
+name: env-ace-step
+version: "1"
+description: CARA environment for ACE-Step v1.5 Hybrid preflight, planner probes, and future DiT attribution smoke tests.
+image: mcr.microsoft.com/azureml/openmpi4.1.0-ubuntu22.04:20260514.v1
+conda_file:
+  name: cara-ace-step
+  channels:
+    - pytorch
+    - nvidia
+    - conda-forge
+  dependencies:
+    - python=3.11
+    - pip
+    - ffmpeg
+    - git
+    - pkg-config
+    - pytorch=2.5.1
+    - torchaudio=2.5.1
+    - pytorch-cuda=12.1
+    - pip:
+        - azureml-mlflow
+        - pandas
+        - numpy
+        - scipy
+        - soundfile
+        - librosa
+        - tqdm
+        - accelerate
+        - peft
+        - safetensors
+        - sentencepiece
+        - protobuf
+        - transformers
+        - git+https://github.com/huggingface/diffusers.git
+tags:
+  cara_phase: fine-tuning
+  cara_model_family: ace_step
+  cara_cost_guardrail: existing_azureml_workspace_only

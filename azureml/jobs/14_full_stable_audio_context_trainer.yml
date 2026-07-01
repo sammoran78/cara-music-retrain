@@ -1,0 +1,96 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+type: command
+command: >-
+  python smoke_stable_audio_trainer.py
+  --input_data ${{inputs.input_data}}
+  --output_dir ${{outputs.output_dir}}
+  --manifest_relative_path stable_audio_open_small/manifest.jsonl
+  --audio_relative_path stable_audio_open_small/audio/train
+  --checkpoint ${{inputs.checkpoint}}
+  --variant ${{inputs.variant}}
+  --run_name ${{inputs.run_name}}
+  --max_steps ${{inputs.max_steps}}
+  --batch_size ${{inputs.batch_size}}
+  --learning_rate ${{inputs.learning_rate}}
+  --num_workers ${{inputs.num_workers}}
+  --precision ${{inputs.precision}}
+  --checkpoint_every ${{inputs.checkpoint_every}}
+  --checkpoint_keep_last_n ${{inputs.checkpoint_keep_last_n}}
+  --max_train_files ${{inputs.max_train_files}}
+  --max_eval_files ${{inputs.max_eval_files}}
+  --max_eval_batches ${{inputs.max_eval_batches}}
+  --attribution_loss_weight ${{inputs.attribution_loss_weight}}
+  --training_scope ${{inputs.training_scope}}
+  --run_eval ${{inputs.run_eval}}
+  --context_mode ${{inputs.context_mode}}
+  --context_pack_dir ${{inputs.context_pack_dir}}
+  --context_pack_relative_path ${{inputs.context_pack_relative_path}}
+  --context_cache_dir ${{inputs.context_cache_dir}}
+  --context_cache_relative_path ${{inputs.context_cache_relative_path}}
+  --context_smoke_dir ${{inputs.context_smoke_dir}}
+  --dashboard_triggered ${{inputs.dashboard_triggered}}
+  --dry_run ${{inputs.dry_run}}
+code: ../../src
+inputs:
+  input_data:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/prepared/cara-strong-v0.4/
+  context_pack_dir:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/stable_audio_context/context_packs/
+  context_cache_dir:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/stable_audio_context/context_cache/
+  context_smoke_dir:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/stable_audio_context/context_smoke/
+  checkpoint: stabilityai/stable-audio-open-small
+  variant: cara_strong
+  run_name: cara-stable-audio-context-cara-strong-full
+  max_steps: 20000
+  batch_size: 8
+  learning_rate: 1e-5
+  num_workers: 0
+  precision: 16-mixed
+  checkpoint_every: 1000
+  checkpoint_keep_last_n: 1
+  max_train_files: 0
+  max_eval_files: 0
+  max_eval_batches: 0
+  attribution_loss_weight: 0.05
+  training_scope: full
+  run_eval: "true"
+  context_mode: metadata_context_conditioning
+  context_pack_relative_path: context_pack_manifest.jsonl
+  context_cache_relative_path: context_cache_manifest.jsonl
+  dashboard_triggered: "false"
+  dry_run: "false"
+outputs:
+  output_dir:
+    type: uri_folder
+    mode: rw_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/stable_audio_context/context_full/
+environment: azureml:env-stable-audio-tools:8
+environment_variables:
+  HF_TOKEN_SECRET_NAME: hf-token
+compute: azureml:gpu-fulltraining-h100
+identity:
+  type: user_identity
+experiment_name: cara-context-diffusion
+display_name: 14-full-stable-audio-context-cara-strong-trainer
+description: GPU-only Context Diffusion branch full fine-tune with source-disjoint context-pack conditioners and disk-safe trainable-delta checkpointing.
+tags:
+  cara_phase: fine-tuning
+  cara_step_id: "14"
+  cara_step_name: 14_full_stable_audio_context_cara_strong_trainer
+  cara_compute_class: gpu
+  cara_model_family: stable_audio_open_small_context_diffusion
+  cara_training_gate: stable_audio_context_full
+  cara_training_scope: full
+  cara_variant: cara_strong_context_conditioned
+  cara_context_mode: metadata_context_conditioning
+  cara_output_path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/stable_audio_context/context_full/

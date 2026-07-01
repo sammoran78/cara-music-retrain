@@ -1,0 +1,33 @@
+$schema: https://azuremlschemas.azureedge.net/latest/environment.schema.json
+name: env-musicgen-audiocraft
+version: "3"
+description: Dedicated CARA environment for MusicGen / AudioCraft validation, preprocessing, token caching, and smoke trainers.
+image: mcr.microsoft.com/azureml/openmpi4.1.0-ubuntu22.04:20260514.v1
+conda_file:
+  name: cara-musicgen-audiocraft
+  channels:
+    - pytorch
+    - nvidia
+    - conda-forge
+  dependencies:
+    - python=3.10
+    - pip
+    - ffmpeg
+    - pkg-config
+    - av=11.0.0
+    - git
+    - pytorch=2.2.2
+    - torchaudio=2.2.2
+    - pytorch-cuda=12.1
+    - pip:
+        - azureml-mlflow
+        - pandas
+        - soundfile
+        - librosa
+        - scipy
+        - tqdm
+        - transformers==4.31.0
+        - git+https://github.com/facebookresearch/audiocraft.git
+tags:
+  cara_phase: test-prep
+  cara_model_family: musicgen

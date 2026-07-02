@@ -4,6 +4,7 @@ import {
   Brain,
   CheckCircle2,
   CloudUpload,
+  Cpu,
   FileCheck2,
   GitBranch,
   Layers3,
@@ -14,6 +15,7 @@ import {
   Route,
   ShieldCheck,
   SlidersHorizontal,
+  Terminal,
   Workflow,
 } from 'lucide-react';
 import { PageHeader, PlaceholderBadge } from './PageHeader';
@@ -179,6 +181,17 @@ interface HybridReadiness {
   status: string;
   training_launch_enabled: boolean;
   training_launch_reason: string;
+  active_ladder_reason?: string;
+  target_model?: {
+    model_family?: string;
+    architecture?: string;
+    base_checkpoint?: string;
+    planner_checkpoint?: string;
+    planner_size?: string;
+    dit_variant?: string;
+    comparison_role?: string;
+  };
+  ace_source_review?: HybridLadderStep | null;
   ace_preflight?: HybridLadderStep | null;
   ace_ladder?: {
     steps: HybridLadderStep[];
@@ -186,6 +199,7 @@ interface HybridReadiness {
     next_label: string;
     reason?: string;
   };
+  ace_launch?: Record<string, boolean>;
   data_locations?: Record<string, string>;
   cloud_job_policy?: Record<string, unknown>;
   evidence_contract?: {
@@ -213,6 +227,7 @@ export const FinetuneHybridPage: React.FC = () => {
   const [launching, setLaunching] = useState(false);
   const [loadCheckpoint, setLoadCheckpoint] = useState(false);
   const [confirmation, setConfirmation] = useState('');
+  const [fullConfirmation, setFullConfirmation] = useState('');
   const [logs, setLogs] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -243,10 +258,77 @@ export const FinetuneHybridPage: React.FC = () => {
 
   const steps = useMemo(() => readiness?.ace_ladder?.steps ?? fallbackSteps, [readiness]);
   const preflightActive = Boolean(readiness?.ace_preflight?.active);
-  const canLaunchPreflight = Boolean(readiness?.training_launch_enabled) && !launching && confirmation.trim() === 'LAUNCH ACE PREFLIGHT';
+  const preflightReady = Boolean(readiness?.ace_launch?.preflight_enabled ?? readiness?.training_launch_enabled) && !preflightActive;
+  const preflightConfirmed = confirmation.trim() === 'LAUNCH ACE PREFLIGHT';
+  const canLaunchPreflight = preflightReady && !launching;
+
+  const launchFlag = (key: string) => Boolean(readiness?.ace_launch?.[key]) && !launching;
+  const canRecordSourceReview = launchFlag('source_review_enabled');
+
+  const stageLaunchEnabled = (stage: number) => {
+    if (stage === 1) return canRecordSourceReview;
+    if (stage === 2) return canLaunchPreflight;
+    if (stage === 3) return launchFlag('tensor_prepare_enabled');
+    if (stage === 4) return launchFlag('planner_probe_enabled');
+    if (stage === 5) return launchFlag('dit_tap_enabled');
+    if (stage === 6) return launchFlag('baseline_smoke_enabled');
+    if (stage === 7) return launchFlag('cara_lite_smoke_enabled');
+    if (stage === 8) return launchFlag('cara_head_smoke_enabled');
+    if (stage === 9) return launchFlag('planner_preserved_smoke_enabled');
+    if (stage === 10) return launchFlag('planner_bypass_smoke_enabled');
+    if (stage === 11) return launchFlag('cara_strong_smoke_enabled');
+    if (stage === 12) return launchFlag('full_enabled');
+    return false;
+  };
+
+  const stageLaunchVariant = (stage: number) => {
+    if (stage === 6) return 'baseline_lora';
+    if (stage === 7) return 'cara_lite';
+    if (stage === 8) return 'cara_head';
+    if (stage === 9) return 'planner_preserved';
+    if (stage === 10) return 'planner_bypass';
+    if (stage === 11) return 'cara_strong';
+    return undefined;
+  };
+
+  const recordSourceReview = async () => {
+    if (!canRecordSourceReview) return;
+    setLaunching(true);
+    setError(null);
+    setLogs((prev) => [...prev.slice(-7), '[record] Recording ACE-Step source/license review...']);
+    try {
+      const res = await fetch('/api/training/ace/source-review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          confirmed: true,
+          notes: 'Dashboard-recorded review of ACE-Step v1.5 source, Side-Step training route, and existing-Azure-resource cost guardrail.',
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.detail ?? 'ACE-Step source/license review failed');
+      setReadiness(json.readiness);
+      setLogs((prev) => [
+        ...prev.slice(-7),
+        `[record:complete] ACE source/license review · artifact=${json.artifact ?? 'registry/cara_strong/ace_step_source_license_review.json'}`,
+      ]);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'ACE-Step source/license review failed';
+      setError(message);
+      setLogs((prev) => [...prev.slice(-7), `[record:error] ${message}`]);
+    } finally {
+      setLaunching(false);
+    }
+  };
 
   const runAcePreflight = async () => {
     if (!canLaunchPreflight) return;
+    if (!preflightConfirmed) {
+      const message = 'Type LAUNCH ACE PREFLIGHT before submitting Step 02.';
+      setError(message);
+      setLogs((prev) => [...prev.slice(-7), `[launch:blocked] ${message}`]);
+      return;
+    }
     setLaunching(true);
     setError(null);
     setLogs((prev) => [...prev.slice(-7), '[launch] Submitting ACE-Step v1.5 environment preflight...']);
@@ -256,6 +338,8 @@ export const FinetuneHybridPage: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           checkpoint: 'ACE-Step/Ace-Step1.5',
+          planner_checkpoint: 'ACE-Step/acestep-5Hz-lm-0.6B',
+          dit_variant: 'base_or_sft_dit',
           load_checkpoint: loadCheckpoint,
         }),
       });
@@ -276,6 +360,83 @@ export const FinetuneHybridPage: React.FC = () => {
     }
   };
 
+  const submitAceStage = async (stage: number, variant?: string) => {
+    const endpoint =
+      stage === 3
+        ? '/api/training/ace/tensors'
+        : stage === 4
+          ? '/api/training/ace/planner-probe'
+          : stage === 5
+            ? '/api/training/ace/dit-taps'
+            : stage === 12
+              ? '/api/training/ace/full'
+              : '/api/training/ace/smoke';
+    const fullPhrase = 'LAUNCH ACE FULL FINE-TUNE';
+    if (stage === 12 && fullConfirmation.trim() !== fullPhrase) {
+      setError(`Type ${fullPhrase} before launching the full ACE stage.`);
+      return;
+    }
+    setLaunching(true);
+    setError(null);
+    setLogs((prev) => [...prev.slice(-7), `[launch] Submitting ACE Step ${stage}${variant ? ` · ${variant}` : ''}...`]);
+    try {
+      const body =
+        stage === 3
+          ? { dry_run: false, max_rows: 0, compute_strategy: 'prefer_h100_else_cpu' }
+          : stage === 4
+            ? { dry_run: false, max_rows: 0, compute_strategy: 'prefer_h100_else_cpu' }
+            : stage === 5
+              ? { dry_run: false, load_checkpoint: loadCheckpoint, max_rows: 1024 }
+              : stage === 12
+                ? {
+                    dry_run: false,
+                    confirmation_phrase: fullPhrase,
+                    run_sidestep: false,
+                    max_steps: 20000,
+                    batch_size: 4,
+                    learning_rate: 0.0001,
+                    max_train_rows: 0,
+                    max_eval_rows: 2048,
+                    checkpoint_dir: '/mnt/azureml/ace_checkpoints',
+                    sidestep_tensor_dir: '/mnt/azureml/ace_sidestep_tensors',
+                    model_variant: 'base',
+                    adapter_type: 'lora',
+                    rank: 64,
+                    alpha: 128,
+                    num_workers: 0,
+                    timestep_mode: 'continuous',
+                  }
+                : {
+                    dry_run: false,
+                    variant,
+                    max_steps: 250,
+                    batch_size: 64,
+                    learning_rate: 0.001,
+                    max_train_rows: 4096,
+                    max_eval_rows: 1024,
+                  };
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.detail ?? `ACE Step ${stage} submission failed`);
+      setReadiness(json.readiness);
+      setLogs((prev) => [
+        ...prev.slice(-7),
+        `[launch:submitted] ACE Step ${stage} job=${json.job?.name ?? 'unknown'} · output=${json.job?.output_path ?? 'pending'}`,
+      ]);
+      if (stage === 12) setFullConfirmation('');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : `ACE Step ${stage} submission failed`;
+      setError(message);
+      setLogs((prev) => [...prev.slice(-7), `[launch:error] ${message}`]);
+    } finally {
+      setLaunching(false);
+    }
+  };
+
   return (
     <>
       <PageHeader
@@ -287,18 +448,18 @@ export const FinetuneHybridPage: React.FC = () => {
         }
         description={
           <>
-            Research scaffold for testing whether CARA attribution survives ACE-Step v1.5's LM planner
-            and remains recoverable at the DiT synthesis stage.
+            0.6B-planner Hybrid arm for testing whether CARA attribution survives ACE-Step v1.5's LM planner
+            and remains recoverable at the DiT synthesis stage beside the Diffusion, Context Diffusion, and MusicGen results.
           </>
         }
-        actions={<PlaceholderBadge label="Research scaffold" />}
+        actions={<PlaceholderBadge label="0.6B target branch" />}
       />
 
       <section className="kpi-grid">
         <div className="kpi">
-          <div className="kpi-label">Model family</div>
-          <div className="kpi-value">LM + DiT</div>
-          <div className="kpi-trend">planner bottleneck plus diffusion synthesis</div>
+          <div className="kpi-label">Target model</div>
+          <div className="kpi-value">ACE 0.6B</div>
+          <div className="kpi-trend">LM planner plus DiT synthesis</div>
         </div>
         <div className="kpi">
           <div className="kpi-label">Candidate path</div>
@@ -320,29 +481,43 @@ export const FinetuneHybridPage: React.FC = () => {
       <section className="split-2">
         <div className="card">
           <div className="card-header">
-            <div className="card-title">Benchmark Testing Ladder</div>
+            <div className="card-title">Hybrid Stage Ladder</div>
             <div className="card-meta">{loading ? 'refreshing' : `next · ${readiness?.ace_ladder?.next_label ?? 'ACE preflight'}`}</div>
           </div>
           <div className="stage-action-list">
-            {steps.map((item) => (
-              <button
-                key={item.stage}
-                type="button"
-                className={`btn stage-action ${item.active ? 'is-current' : item.passed ? 'is-complete' : 'is-muted'}`}
-                disabled
-                title={item.reason ?? ''}
-              >
-                {item.passed ? <CheckCircle2 size={16} /> : item.active ? <RefreshCw size={16} /> : <Lock size={16} />}
-                {String(item.stage).padStart(2, '0')} {item.label}
-              </button>
-            ))}
+            {steps.map((item) => {
+              const enabled = stageLaunchEnabled(item.stage);
+              const onClick =
+                item.stage === 1
+                  ? recordSourceReview
+                  : item.stage === 2
+                    ? runAcePreflight
+                    : () => submitAceStage(item.stage, stageLaunchVariant(item.stage));
+              return (
+                <button
+                  key={item.stage}
+                  type="button"
+                  className={`btn stage-action ${enabled ? 'is-current' : item.active ? 'is-current' : item.passed ? 'is-complete' : 'is-muted'}`}
+                  disabled={!enabled}
+                  onClick={onClick}
+                  title={
+                    item.stage === 2 && enabled && !preflightConfirmed
+                      ? 'Type LAUNCH ACE PREFLIGHT in the launch box before submitting Step 02.'
+                      : item.reason ?? readiness?.training_launch_reason ?? ''
+                  }
+                >
+                  {item.passed ? <CheckCircle2 size={16} /> : item.active ? <RefreshCw size={16} /> : enabled ? <Play size={16} /> : <Lock size={16} />}
+                  {String(item.stage).padStart(2, '0')} {item.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
         <div className="card">
           <div className="card-header">
             <div className="card-title">How Likely To Work</div>
-            <div className="card-meta">ACE-Step v1.5</div>
+            <div className="card-meta">ACE-Step v1.5 · 0.6B planner</div>
           </div>
           <div className="metric-list">
             <div>
@@ -398,8 +573,33 @@ export const FinetuneHybridPage: React.FC = () => {
               <Workflow size={16} /> ACE-Step v1.5
             </div>
             <p className="dim">
-              Hybrid branch: test planner survival first, then recover CARA at the DiT synthesis stage.
+              Hybrid branch: 0.6B LM planner survival first, then recover CARA at the DiT synthesis stage.
             </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="card">
+        <div className="card-header">
+          <div className="card-title">Selected Hybrid Target</div>
+          <div className="card-meta">side-by-side comparator</div>
+        </div>
+        <div className="metric-list">
+          <div>
+            <span>Base checkpoint</span>
+            <strong className="mono">{readiness?.target_model?.base_checkpoint ?? 'ACE-Step/Ace-Step1.5'}</strong>
+          </div>
+          <div>
+            <span>Planner checkpoint</span>
+            <strong className="mono">{readiness?.target_model?.planner_checkpoint ?? 'ACE-Step/acestep-5Hz-lm-0.6B'}</strong>
+          </div>
+          <div>
+            <span>DiT variant</span>
+            <strong>{readiness?.target_model?.dit_variant ?? 'base_or_sft_dit'}</strong>
+          </div>
+          <div>
+            <span>Comparison role</span>
+            <strong>{readiness?.target_model?.comparison_role ?? 'Comparable-size Hybrid CARA-Strong arm beside existing model lanes.'}</strong>
           </div>
         </div>
       </section>
@@ -453,7 +653,7 @@ export const FinetuneHybridPage: React.FC = () => {
           <div className="metric-list">
             <div>
               <span>Checkpoint source</span>
-              <strong>ACE-Step/Ace-Step1.5 or official model zoo variant</strong>
+              <strong>ACE-Step/Ace-Step1.5 with 0.6B planner target</strong>
             </div>
             <div>
               <span>Training toolkit</span>
@@ -461,7 +661,7 @@ export const FinetuneHybridPage: React.FC = () => {
             </div>
             <div>
               <span>Preprocess output</span>
-              <strong>ACE tensors plus CARA registry resolver</strong>
+              <strong>Side-Step JSON mode, ACE tensors, CARA registry resolver</strong>
             </div>
             <div>
               <span>Evidence controls</span>
@@ -492,13 +692,13 @@ export const FinetuneHybridPage: React.FC = () => {
 
       <section className="card">
         <div className="card-header">
-          <div className="card-title">Azure Launch Policy</div>
-          <div className="card-meta">cost guardrail</div>
-        </div>
-        <div className="pool-empty-state">
-          <ShieldCheck size={18} />
-          {readiness?.training_launch_reason ?? 'Hybrid readiness has not been loaded yet.'}
-        </div>
+            <div className="card-title">Live Launch Controls</div>
+            <div className="card-meta">typed gates · cost guardrail</div>
+          </div>
+          <div className="pool-empty-state">
+            <ShieldCheck size={18} />
+          {readiness?.active_ladder_reason ?? readiness?.training_launch_reason ?? 'Hybrid readiness has not been loaded yet.'}
+          </div>
         {error && (
           <div className="pool-empty-state" style={{ marginTop: 12 }}>
             <AlertTriangle size={18} />
@@ -509,39 +709,51 @@ export const FinetuneHybridPage: React.FC = () => {
           <button className="btn stage-action" type="button" onClick={refreshReadiness} disabled={loading}>
             <RefreshCw size={16} /> Refresh Hybrid Gates
           </button>
-          <label className="toggle-row" style={{ margin: 0 }}>
-            <input
-              type="checkbox"
-              checked={loadCheckpoint}
-              onChange={(event) => setLoadCheckpoint(event.target.checked)}
-              disabled={preflightActive || launching}
-            />
-            Load ACE checkpoint during preflight
-          </label>
+          {preflightReady && (
+            <>
+              <label className="toggle-row" style={{ margin: 0 }}>
+                <input
+                  type="checkbox"
+                  checked={loadCheckpoint}
+                  onChange={(event) => setLoadCheckpoint(event.target.checked)}
+                  disabled={preflightActive || launching}
+                />
+                Load ACE checkpoint during preflight
+              </label>
+              <input
+                className="input"
+                value={confirmation}
+                onChange={(event) => setConfirmation(event.target.value)}
+                placeholder="Type LAUNCH ACE PREFLIGHT"
+                disabled={launching}
+              />
+              <button
+                className={`btn stage-action ${preflightReady && preflightConfirmed ? 'is-current' : 'is-muted'}`}
+                type="button"
+                onClick={runAcePreflight}
+                disabled={!preflightReady || launching}
+                title={preflightReady && !preflightConfirmed ? 'Type LAUNCH ACE PREFLIGHT before live submission.' : readiness?.training_launch_reason}
+              >
+                <CloudUpload size={16} /> 02 Run ACE-Step Preflight
+              </button>
+            </>
+          )}
           <input
             className="input"
-            value={confirmation}
-            onChange={(event) => setConfirmation(event.target.value)}
-            placeholder="Type LAUNCH ACE PREFLIGHT"
-            disabled={preflightActive || launching}
+            value={fullConfirmation}
+            onChange={(event) => setFullConfirmation(event.target.value)}
+            placeholder="Type LAUNCH ACE FULL FINE-TUNE"
+            disabled={!launchFlag('full_enabled') || launching}
           />
-          <button className={`btn stage-action ${canLaunchPreflight ? 'is-current' : 'is-muted'}`} type="button" onClick={runAcePreflight} disabled={!canLaunchPreflight}>
-            <CloudUpload size={16} /> 02 Run ACE-Step Preflight
-          </button>
-          <button className="btn stage-action is-muted" type="button" disabled>
-            <Route size={16} /> Planner Survival Probe Locked
-          </button>
-          <button className="btn stage-action is-muted" type="button" disabled>
-            <SlidersHorizontal size={16} /> Planner-Bypass Probe Locked
-          </button>
-          <button className="btn stage-action is-muted" type="button" disabled>
-            <Play size={16} /> Hybrid Smoke Launch Locked
+          <button className={`btn stage-action ${launchFlag('full_enabled') && fullConfirmation.trim() === 'LAUNCH ACE FULL FINE-TUNE' ? 'is-current' : 'is-muted'}`} type="button" onClick={() => submitAceStage(12)} disabled={!launchFlag('full_enabled') || fullConfirmation.trim() !== 'LAUNCH ACE FULL FINE-TUNE'}>
+            <Terminal size={16} /> 12 Full Hybrid Stage
           </button>
         </div>
         <div className="paths" style={{ marginTop: 18 }}>
           <span>Source manifest: <span className="mono">{readiness?.data_locations?.azure_datastore_manifest ?? 'pending'}</span></span>
           <span>Preflight output: <span className="mono">{readiness?.data_locations?.azure_ace_preflight_output_root ?? 'pending'}</span></span>
-          <span>ACE environment: <span className="mono">{readiness?.ace_preflight?.required_environment ?? 'azureml:env-ace-step:1'}</span></span>
+          <span>ACE environment: <span className="mono">{readiness?.ace_preflight?.required_environment ?? 'azureml:env-ace-step:4'}</span></span>
+          <span>Planner target: <span className="mono">{readiness?.target_model?.planner_checkpoint ?? 'ACE-Step/acestep-5Hz-lm-0.6B'}</span></span>
         </div>
         {logs.length > 0 && (
           <pre className="log-panel" style={{ marginTop: 18 }}>{logs.join('\n')}</pre>

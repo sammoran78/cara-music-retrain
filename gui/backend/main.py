@@ -172,7 +172,62 @@ class TrainingContextDiffusionFullRunRequest(BaseModel):
 
 class TrainingAcePreflightRunRequest(BaseModel):
     checkpoint: str = "ACE-Step/Ace-Step1.5"
+    planner_checkpoint: str = "ACE-Step/acestep-5Hz-lm-0.6B"
+    dit_variant: str = "base_or_sft_dit"
     load_checkpoint: bool = False
+
+
+class TrainingAceSourceReviewRequest(BaseModel):
+    confirmed: bool = True
+    notes: str = ""
+
+
+class TrainingAceTensorRunRequest(BaseModel):
+    dry_run: bool = False
+    max_rows: int = 0
+    compute_strategy: str = "prefer_h100_else_cpu"
+
+
+class TrainingAcePlannerProbeRunRequest(BaseModel):
+    dry_run: bool = False
+    max_rows: int = 0
+    compute_strategy: str = "prefer_h100_else_cpu"
+
+
+class TrainingAceDitTapRunRequest(BaseModel):
+    dry_run: bool = False
+    load_checkpoint: bool = False
+    max_rows: int = 1024
+
+
+class TrainingAceSmokeRunRequest(BaseModel):
+    dry_run: bool = False
+    variant: str = "baseline_lora"
+    max_steps: int = 250
+    batch_size: int = 64
+    learning_rate: float = 1e-3
+    max_train_rows: int = 4096
+    max_eval_rows: int = 1024
+
+
+class TrainingAceFullRunRequest(BaseModel):
+    dry_run: bool = False
+    confirmation_phrase: str = ""
+    max_steps: int = 20000
+    batch_size: int = 4
+    learning_rate: float = 1e-4
+    max_train_rows: int = 0
+    max_eval_rows: int = 2048
+    run_sidestep: bool = False
+    checkpoint_dir: str = "/mnt/azureml/ace_checkpoints"
+    sidestep_tensor_dir: str = "/mnt/azureml/ace_sidestep_tensors"
+    model_variant: str = "base"
+    adapter_type: str = "lora"
+    rank: int = 64
+    alpha: int = 128
+    save_every: int = 50
+    num_workers: int = 0
+    timestep_mode: str = "continuous"
 
 
 class TrainingAzureUploadConfirmRequest(BaseModel):
@@ -326,6 +381,11 @@ _TRAINING_CONTEXT_PREFLIGHT_JOB_FILE = ROOT / "azureml" / "jobs" / "12_stable_au
 _TRAINING_CONTEXT_SMOKE_JOB_FILE = ROOT / "azureml" / "jobs" / "13_stable_audio_context_smoke.yml"
 _TRAINING_CONTEXT_FULL_JOB_FILE = ROOT / "azureml" / "jobs" / "14_full_stable_audio_context_trainer.yml"
 _TRAINING_ACE_PREFLIGHT_JOB_FILE = ROOT / "azureml" / "jobs" / "13_ace_step_env_preflight.yml"
+_TRAINING_ACE_TENSOR_JOB_FILE = ROOT / "azureml" / "jobs" / "19_prepare_ace_step_tensors.yml"
+_TRAINING_ACE_PLANNER_JOB_FILE = ROOT / "azureml" / "jobs" / "20_ace_step_planner_survival_probe.yml"
+_TRAINING_ACE_DIT_TAP_JOB_FILE = ROOT / "azureml" / "jobs" / "21_ace_step_dit_tap_discovery.yml"
+_TRAINING_ACE_SMOKE_JOB_FILE = ROOT / "azureml" / "jobs" / "22_ace_step_hybrid_smoke.yml"
+_TRAINING_ACE_FULL_JOB_FILE = ROOT / "azureml" / "jobs" / "23_full_ace_step_hybrid_trainer.yml"
 _EVALUATION_STABLE_AUDIO_JOB_FILE = ROOT / "azureml" / "jobs" / "14_benchmark_testing_stable_audio_eval.yml"
 _EVALUATION_STABLE_AUDIO_AUDIO_JOB_FILE = ROOT / "azureml" / "jobs" / "15_benchmark_testing_stable_audio_audio.yml"
 _EVALUATION_STABLE_AUDIO_SCORE_JOB_FILE = ROOT / "azureml" / "jobs" / "16_benchmark_testing_stable_audio_score.yml"
@@ -336,6 +396,7 @@ _EVALUATION_JOB_REGISTRY = ROOT / "evaluation" / "generated" / "azure_evaluation
 _EVALUATION_PROMPT_SET_LOCK = ROOT / "evaluation" / "generated" / "benchmark_prompt_set.lock.json"
 _EVALUATION_SCORING_METRICS_CACHE_DIR = ROOT / "evaluation" / "generated" / "scoring_metrics_cache"
 _TRAINING_AZURE_UPLOAD_CONFIRMATION = _TRAINING_LOCK_DIR / "azure_upload_confirmed.json"
+_TRAINING_ACE_SOURCE_REVIEW_FILE = _TRAINING_LOCK_DIR / "ace_step_source_license_review.json"
 _TRAINING_SOURCE_URI = "azureml://datastores/ds_cara_raw_audio/paths/finetune-subset/"
 _TRAINING_PREP_OUTPUT_URI = "azureml://datastores/ds_cara_raw_audio/paths/prepared/cara-strong-v0.4/"
 _TRAINING_MUSICGEN_TOKEN_CACHE_URI = f"{_TRAINING_PREP_OUTPUT_URI}musicgen_encodec_cache/"
@@ -353,6 +414,12 @@ _TRAINING_CONTEXT_PREFLIGHT_OUTPUT_URI = f"{_TRAINING_CONTEXT_ROOT_URI}context_p
 _TRAINING_CONTEXT_SMOKE_OUTPUT_URI = f"{_TRAINING_CONTEXT_ROOT_URI}context_smoke/"
 _TRAINING_CONTEXT_FULL_OUTPUT_URI = f"{_TRAINING_CONTEXT_ROOT_URI}context_full/"
 _TRAINING_ACE_PREFLIGHT_OUTPUT_URI = "azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_step_preflight/"
+_TRAINING_ACE_ROOT_URI = "azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_step/"
+_TRAINING_ACE_TENSOR_OUTPUT_URI = f"{_TRAINING_ACE_ROOT_URI}tensors/"
+_TRAINING_ACE_PLANNER_OUTPUT_URI = f"{_TRAINING_ACE_ROOT_URI}planner_probe/"
+_TRAINING_ACE_DIT_TAP_OUTPUT_URI = f"{_TRAINING_ACE_ROOT_URI}dit_taps/"
+_TRAINING_ACE_SMOKE_OUTPUT_URI = f"{_TRAINING_ACE_ROOT_URI}smoke/"
+_TRAINING_ACE_FULL_OUTPUT_URI = f"{_TRAINING_ACE_ROOT_URI}full/"
 _EVALUATION_STABLE_AUDIO_OUTPUT_URI = "azureml://datastores/ds_cara_raw_audio/paths/evaluation-runs/cara-strong-v0.4/stable_audio_benchmark_testing/"
 _EVALUATION_MUSICGEN_OUTPUT_URI = "azureml://datastores/ds_cara_raw_audio/paths/evaluation-runs/cara-strong-v0.4/musicgen_benchmark_testing/"
 _EVALUATION_AUDIO_BENCHMARK_CONFIRMATION = "LAUNCH AUDIO BENCHMARK"
@@ -366,7 +433,7 @@ _EVALUATION_STABLE_AUDIO_TRAINED_JOB_NAME = "modest_arch_clgnkqrz4z"
 _EVALUATION_STABLE_AUDIO_TRAINED_MODEL_URI = "azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/stable_audio_full/cara-finetune-001-cara-strong-full-20260607-011523/"
 _TRAINING_STABLE_AUDIO_ENVIRONMENT = "azureml:env-stable-audio-tools:8"
 _TRAINING_MUSICGEN_ENVIRONMENT = "azureml:env-musicgen-audiocraft:3"
-_TRAINING_ACE_ENVIRONMENT = "azureml:env-ace-step:1"
+_TRAINING_ACE_ENVIRONMENT = "azureml:env-ace-step:4"
 _TRAINING_H100_COMPUTE = "gpu-smoke-h100"
 _TRAINING_FULL_H100_COMPUTE = "gpu-fulltraining-h100"
 _TRAINING_H100_COMPUTES = (_TRAINING_H100_COMPUTE, _TRAINING_FULL_H100_COMPUTE)
@@ -3127,6 +3194,8 @@ def _training_materialize_ace_preflight_job_file(
     inputs.update(
         {
             "checkpoint": request.checkpoint,
+            "planner_checkpoint": request.planner_checkpoint,
+            "dit_variant": request.dit_variant,
             "load_checkpoint": "true" if request.load_checkpoint else "false",
             "dashboard_triggered": "true",
         }
@@ -3144,6 +3213,9 @@ def _training_materialize_ace_preflight_job_file(
             "cara_dashboard_triggered": "true",
             "cara_training_gate": "ace_step_env_preflight",
             "cara_model_family": "ace_step",
+            "cara_planner_size": "0.6B",
+            "cara_planner_checkpoint": request.planner_checkpoint,
+            "cara_dit_variant": request.dit_variant,
             "cara_expected_environment": _TRAINING_ACE_ENVIRONMENT,
         }
     )
@@ -3154,6 +3226,52 @@ def _training_materialize_ace_preflight_job_file(
         suffix=".materialized.yml",
         prefix="ace_step_preflight_",
         dir=_TRAINING_ACE_PREFLIGHT_JOB_FILE.parent,
+        delete=False,
+    )
+    with temp:
+        yaml.safe_dump(payload, temp, sort_keys=False)
+    return Path(temp.name)
+
+
+def _training_materialize_ace_stage_job_file(
+    *,
+    job_file: Path,
+    output_path: str,
+    inputs_update: dict[str, Any],
+    tags_update: dict[str, str],
+    compute: str,
+) -> Path:
+    payload = yaml.safe_load(job_file.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"ACE-Step stage YAML is not an object: {job_file}")
+    inputs = dict(payload.get("inputs") or {})
+    for key, value in inputs_update.items():
+        inputs[key] = value
+    inputs["dashboard_triggered"] = "true"
+    payload["inputs"] = inputs
+    payload["compute"] = f"azureml:{compute}"
+    outputs = dict(payload.get("outputs") or {})
+    output_dir = dict(outputs.get("output_dir") or {})
+    output_dir["path"] = output_path
+    outputs["output_dir"] = output_dir
+    payload["outputs"] = outputs
+    tags = dict(payload.get("tags") or {})
+    tags.update(
+        {
+            "cara_dashboard_triggered": "true",
+            "cara_model_family": "ace_step",
+            "cara_cost_guardrail": "existing_azureml_workspace_only",
+            "cara_compute_selected": compute,
+            **tags_update,
+        }
+    )
+    payload["tags"] = tags
+    temp = tempfile.NamedTemporaryFile(
+        mode="w",
+        encoding="utf-8",
+        suffix=".materialized.yml",
+        prefix="ace_step_stage_",
+        dir=job_file.parent,
         delete=False,
     )
     with temp:
@@ -3668,102 +3786,190 @@ def _training_latest_ace_preflight(*, registry_limit: int = 100) -> dict[str, An
     }
 
 
-def _training_ace_ladder(preflight: dict[str, Any] | None = None) -> dict[str, Any]:
-    preflight = preflight or _training_latest_ace_preflight()
-    steps = [
-        {
+def _training_ace_source_review_state(*, registry_limit: int = 120) -> dict[str, Any]:
+    if _TRAINING_ACE_SOURCE_REVIEW_FILE.exists():
+        try:
+            payload = json.loads(_TRAINING_ACE_SOURCE_REVIEW_FILE.read_text(encoding="utf-8"))
+        except Exception:
+            payload = {}
+        return {
             "stage": 1,
             "label": "ACE source + license review",
             "passed": True,
             "active": False,
-            "reason": "Official ACE-Step v1.5 sources and the no-Marketplace Azure cost guardrail are documented.",
+            "locked": False,
+            "artifact": str(_TRAINING_ACE_SOURCE_REVIEW_FILE.relative_to(ROOT)),
+            "reviewed_at": payload.get("reviewed_at"),
+            "reason": "ACE-Step source/license review has been recorded locally.",
+            "payload": payload,
+        }
+    for event in reversed(_training_job_registry_events(registry_limit)):
+        if event.get("model_family") == "ace_step" and str(event.get("action") or "").startswith("ace_step_"):
+            return {
+                "stage": 1,
+                "label": "ACE source + license review",
+                "passed": True,
+                "active": False,
+                "locked": False,
+                "artifact": None,
+                "reason": "Implicitly satisfied by existing ACE-Step Azure evidence; record the review artifact for cleaner audit history.",
+                "payload": None,
+                "legacy_inferred": True,
+            }
+    return {
+        "stage": 1,
+        "label": "ACE source + license review",
+        "passed": False,
+        "active": True,
+        "locked": False,
+        "artifact": str(_TRAINING_ACE_SOURCE_REVIEW_FILE.relative_to(ROOT)),
+        "reason": "Record the ACE-Step source, license/access terms, Side-Step training route, and no-Marketplace cost guardrail before Azure preflight.",
+        "payload": None,
+    }
+
+
+def _training_latest_ace_stage(
+    *,
+    action: str,
+    stage: int,
+    label: str,
+    output_path: str,
+    missing_reason: str,
+    registry_limit: int = 120,
+) -> dict[str, Any]:
+    latest: dict[str, Any] | None = None
+    for event in reversed(_training_job_registry_events(registry_limit)):
+        if event.get("action") == action and event.get("model_family") == "ace_step":
+            latest = event
+            break
+    if latest is None:
+        return {
+            "stage": stage,
+            "label": label,
+            "passed": False,
+            "active": False,
+            "latest_job": None,
+            "output_path": output_path,
+            "reason": missing_reason,
+        }
+    job_name = str(latest.get("job_name") or "").strip()
+    try:
+        summary = _azureml_job_summary(_azureml_client().jobs.get(job_name))
+    except Exception:
+        summary = {
+            "name": job_name,
+            "status": latest.get("status") or "unknown",
+            "studio_url": latest.get("studio_url"),
+            "compute": latest.get("compute"),
+            "environment": latest.get("environment"),
+        }
+    status = str(summary.get("status") or "").lower()
+    active = status in _AZUREML_ACTIVE_STATUSES
+    passed = status == "completed"
+    if active:
+        reason = f"{label} job {job_name} is {summary.get('status')}."
+    elif passed:
+        reason = f"{label} completed."
+    else:
+        reason = f"Latest {label} job {job_name} ended with status {summary.get('status')}; inspect logs before continuing."
+    return {
+        "stage": stage,
+        "label": label,
+        "passed": passed,
+        "active": active,
+        "latest_job": {
+            **summary,
+            "output_path": latest.get("output_path") or output_path,
+            "variant": latest.get("variant"),
+            "evidence_mode": latest.get("evidence_mode"),
         },
+        "output_path": latest.get("output_path") or output_path,
+        "reason": reason,
+    }
+
+
+def _training_ace_ladder(preflight: dict[str, Any] | None = None) -> dict[str, Any]:
+    preflight = preflight or _training_latest_ace_preflight()
+    source_review = _training_ace_source_review_state()
+    tensors = _training_latest_ace_stage(
+        action="ace_step_tensor_prepare_submitted",
+        stage=3,
+        label="Prepare ACE dataset JSON + tensors",
+        output_path=_TRAINING_ACE_TENSOR_OUTPUT_URI,
+        missing_reason="Run ACE JSON-mode dataset preparation after environment preflight passes. This writes full ACE-Step dataset JSON with CARA codeword metadata plus the tensor manifest contract.",
+    )
+    planner = _training_latest_ace_stage(
+        action="ace_step_planner_probe_submitted",
+        stage=4,
+        label="Planner survival probe",
+        output_path=_TRAINING_ACE_PLANNER_OUTPUT_URI,
+        missing_reason="Run planner survival after ACE tensors exist.",
+    )
+    dit_taps = _training_latest_ace_stage(
+        action="ace_step_dit_tap_discovery_submitted",
+        stage=5,
+        label="DiT tap discovery",
+        output_path=_TRAINING_ACE_DIT_TAP_OUTPUT_URI,
+        missing_reason="Run DiT tap discovery after planner survival probe passes.",
+    )
+    smoke_actions = {
+        "baseline_lora": ("ace_step_baseline_lora_smoke_submitted", 6, "Baseline LoRA smoke"),
+        "cara_lite": ("ace_step_cara_lite_smoke_submitted", 7, "CARA-lite planner smoke"),
+        "cara_head": ("ace_step_cara_head_smoke_submitted", 8, "Detached DiT head smoke"),
+        "planner_preserved": ("ace_step_planner_preserved_smoke_submitted", 9, "Planner-preserved CARA smoke"),
+        "planner_bypass": ("ace_step_planner_bypass_smoke_submitted", 10, "Planner-bypass CARA smoke"),
+        "cara_strong": ("ace_step_cara_strong_smoke_submitted", 11, "Hybrid CARA-Strong smoke"),
+    }
+    smokes = {
+        variant: _training_latest_ace_stage(
+            action=action,
+            stage=stage,
+            label=label,
+            output_path=f"{_TRAINING_ACE_SMOKE_OUTPUT_URI}{variant}/",
+            missing_reason=f"Run {label} after the prior ACE gate passes.",
+        )
+        for variant, (action, stage, label) in smoke_actions.items()
+    }
+    full = _training_latest_ace_stage(
+        action="ace_step_hybrid_full_submitted",
+        stage=12,
+        label="Full hybrid comparison",
+        output_path=_TRAINING_ACE_FULL_OUTPUT_URI,
+        missing_reason="Run the full Hybrid stage after Hybrid CARA-Strong smoke passes.",
+    )
+    tensors["locked"] = not bool(preflight.get("passed"))
+    planner["locked"] = not bool(tensors.get("passed"))
+    dit_taps["locked"] = not bool(planner.get("passed"))
+    previous_passed = bool(dit_taps.get("passed"))
+    for variant in ["baseline_lora", "cara_lite", "cara_head", "planner_preserved", "planner_bypass", "cara_strong"]:
+        smokes[variant]["locked"] = not previous_passed
+        previous_passed = bool(smokes[variant].get("passed"))
+    full["locked"] = not bool(smokes["cara_strong"].get("passed"))
+    preflight["locked"] = not bool(source_review.get("passed"))
+    steps = [
+        source_review,
         preflight,
-        {
-            "stage": 3,
-            "label": "Prepare ACE tensors",
-            "passed": False,
-            "active": False,
-            "locked": not bool(preflight.get("passed")),
-            "reason": "Locked until ACE environment preflight passes. This stage will produce ACE-ready audio/tensor records with CARA registry labels.",
-        },
-        {
-            "stage": 4,
-            "label": "Planner survival probe",
-            "passed": False,
-            "active": False,
-            "locked": True,
-            "reason": "Locked until ACE tensors exist; measures exact, repairable, lost, and hallucinated CARA survival through the LM planner.",
-        },
-        {
-            "stage": 5,
-            "label": "DiT tap discovery",
-            "passed": False,
-            "active": False,
-            "locked": True,
-            "reason": "Locked until the ACE source path exposes stable mid/late DiT hidden-state hooks.",
-        },
-        {
-            "stage": 6,
-            "label": "Baseline LoRA smoke",
-            "passed": False,
-            "active": False,
-            "locked": True,
-            "reason": "Locked until preflight, tensor preparation, and tap discovery are validated.",
-        },
-        {
-            "stage": 7,
-            "label": "CARA-lite planner smoke",
-            "passed": False,
-            "active": False,
-            "locked": True,
-            "reason": "Locked until the same-data baseline LoRA smoke passes.",
-        },
-        {
-            "stage": 8,
-            "label": "Detached DiT head smoke",
-            "passed": False,
-            "active": False,
-            "locked": True,
-            "reason": "Locked until CARA-lite planner survival controls are complete.",
-        },
-        {
-            "stage": 9,
-            "label": "Planner-preserved CARA smoke",
-            "passed": False,
-            "active": False,
-            "locked": True,
-            "reason": "Locked until detached DiT head evidence exists.",
-        },
-        {
-            "stage": 10,
-            "label": "Planner-bypass CARA smoke",
-            "passed": False,
-            "active": False,
-            "locked": True,
-            "reason": "Locked until planner-preserved and DiT-only attribution paths can be separated.",
-        },
-        {
-            "stage": 11,
-            "label": "Hybrid CARA-Strong smoke",
-            "passed": False,
-            "active": False,
-            "locked": True,
-            "reason": "Locked until planner and DiT attribution controls are complete.",
-        },
-        {
-            "stage": 12,
-            "label": "Full hybrid comparison",
-            "passed": False,
-            "active": False,
-            "locked": True,
-            "reason": "Locked until the Hybrid CARA-Strong smoke passes.",
-        },
+        tensors,
+        planner,
+        dit_taps,
+        smokes["baseline_lora"],
+        smokes["cara_lite"],
+        smokes["cara_head"],
+        smokes["planner_preserved"],
+        smokes["planner_bypass"],
+        smokes["cara_strong"],
+        full,
     ]
     active = next((step for step in steps if step.get("active")), None)
     next_step = active or next((step for step in steps if not step.get("passed")), steps[-1])
     return {
         "steps": steps,
+        "source_review": source_review,
+        "tensors": tensors,
+        "planner_probe": planner,
+        "dit_tap_discovery": dit_taps,
+        "smoke_sequence": smokes,
+        "full": full,
         "next_stage": next_step["stage"],
         "next_label": next_step["label"],
         "reason": next_step.get("reason"),
@@ -5053,15 +5259,22 @@ def _training_hybrid_readiness_payload() -> dict[str, Any]:
     azure_upload_state = _training_azure_upload_state()
     preflight = _training_latest_ace_preflight()
     ladder = _training_ace_ladder(preflight)
+    source_review = ladder.get("source_review") or {}
     active_h100_jobs = _training_recent_h100_jobs_from_registry()
     launch_enabled = (
-        bool(lock_state.get("locked"))
+        bool(source_review.get("passed"))
+        and bool(lock_state.get("locked"))
         and bool(azure_upload_state.get("confirmed"))
         and not bool(preflight.get("active"))
+        and not bool(preflight.get("passed"))
         and not active_h100_jobs
     )
     if preflight.get("active"):
         launch_reason = str(preflight.get("reason") or "ACE-Step preflight is already active.")
+    elif preflight.get("passed"):
+        launch_reason = str(preflight.get("reason") or "ACE-Step environment preflight has passed; continue with Step 03 dataset preparation.")
+    elif not source_review.get("passed"):
+        launch_reason = str(source_review.get("reason") or "Record the ACE-Step source/license review before Azure preflight.")
     elif active_h100_jobs:
         targets = sorted({str(job.get("h100_compute_target") or job.get("compute") or "unknown") for job in active_h100_jobs})
         launch_reason = f"H100-backed compute is busy on {', '.join(targets)}; ACE-Step preflight will not fall back to CPU."
@@ -5071,21 +5284,55 @@ def _training_hybrid_readiness_payload() -> dict[str, Any]:
         launch_reason = "Confirm the Azure dataset upload before ACE-Step preflight so the source manifest/audio paths are checked."
     else:
         launch_reason = "ACE-Step environment preflight can be launched. Later tensor/planner/smoke stages remain locked until this passes."
+    next_step = ladder.get("steps", [{}])[int(ladder.get("next_stage", 1)) - 1] if ladder.get("steps") else {}
+    next_step_reason = str(next_step.get("reason") or ladder.get("reason") or launch_reason)
+    if ladder.get("next_stage") == 12 and bool(ladder["smoke_sequence"]["cara_strong"].get("passed")):
+        next_step_reason = "Hybrid CARA-Strong smoke passed. Step 12 is unlocked; type LAUNCH ACE FULL FINE-TUNE to submit the full Hybrid stage."
     return {
         "status": "ready_for_ace_preflight" if launch_enabled else "blocked",
         "training_launch_enabled": launch_enabled,
         "training_launch_reason": launch_reason,
+        "active_ladder_reason": next_step_reason,
         "lock": lock_state,
         "azure_upload": azure_upload_state,
+        "ace_source_review": source_review,
         "ace_preflight": preflight,
         "ace_ladder": ladder,
+        "ace_launch": {
+            "source_review_enabled": (not bool(source_review.get("passed"))) or bool(source_review.get("legacy_inferred")),
+            "preflight_enabled": launch_enabled,
+            "tensor_prepare_enabled": bool(preflight.get("passed")) and not bool(ladder["tensors"].get("active")) and not bool(ladder["tensors"].get("passed")),
+            "planner_probe_enabled": bool(ladder["tensors"].get("passed")) and not bool(ladder["planner_probe"].get("active")) and not bool(ladder["planner_probe"].get("passed")),
+            "dit_tap_enabled": bool(ladder["planner_probe"].get("passed")) and not bool(ladder["dit_tap_discovery"].get("active")) and not bool(ladder["dit_tap_discovery"].get("passed")),
+            "baseline_smoke_enabled": bool(ladder["dit_tap_discovery"].get("passed")) and not bool(ladder["smoke_sequence"]["baseline_lora"].get("active")) and not bool(ladder["smoke_sequence"]["baseline_lora"].get("passed")),
+            "cara_lite_smoke_enabled": bool(ladder["smoke_sequence"]["baseline_lora"].get("passed")) and not bool(ladder["smoke_sequence"]["cara_lite"].get("active")) and not bool(ladder["smoke_sequence"]["cara_lite"].get("passed")),
+            "cara_head_smoke_enabled": bool(ladder["smoke_sequence"]["cara_lite"].get("passed")) and not bool(ladder["smoke_sequence"]["cara_head"].get("active")) and not bool(ladder["smoke_sequence"]["cara_head"].get("passed")),
+            "planner_preserved_smoke_enabled": bool(ladder["smoke_sequence"]["cara_head"].get("passed")) and not bool(ladder["smoke_sequence"]["planner_preserved"].get("active")) and not bool(ladder["smoke_sequence"]["planner_preserved"].get("passed")),
+            "planner_bypass_smoke_enabled": bool(ladder["smoke_sequence"]["planner_preserved"].get("passed")) and not bool(ladder["smoke_sequence"]["planner_bypass"].get("active")) and not bool(ladder["smoke_sequence"]["planner_bypass"].get("passed")),
+            "cara_strong_smoke_enabled": bool(ladder["smoke_sequence"]["planner_bypass"].get("passed")) and not bool(ladder["smoke_sequence"]["cara_strong"].get("active")) and not bool(ladder["smoke_sequence"]["cara_strong"].get("passed")),
+            "full_enabled": bool(ladder["smoke_sequence"]["cara_strong"].get("passed")) and not bool(ladder["full"].get("active")) and not bool(ladder["full"].get("passed")),
+        },
         "active_h100_jobs": active_h100_jobs,
         "data_locations": {
             "azure_source_root": _TRAINING_SOURCE_URI,
             "azure_datastore_audio": f"{_TRAINING_SOURCE_URI}data/freesound/",
             "azure_datastore_manifest": f"{_TRAINING_SOURCE_URI}data/cara_pool_manifest_v2.jsonl",
             "azure_ace_preflight_output_root": _TRAINING_ACE_PREFLIGHT_OUTPUT_URI,
-            "future_ace_prepared_root": f"{_TRAINING_PREP_OUTPUT_URI}ace_step/",
+            "azure_ace_root": _TRAINING_ACE_ROOT_URI,
+            "azure_ace_tensor_output_root": _TRAINING_ACE_TENSOR_OUTPUT_URI,
+            "azure_ace_planner_output_root": _TRAINING_ACE_PLANNER_OUTPUT_URI,
+            "azure_ace_dit_tap_output_root": _TRAINING_ACE_DIT_TAP_OUTPUT_URI,
+            "azure_ace_smoke_output_root": _TRAINING_ACE_SMOKE_OUTPUT_URI,
+            "azure_ace_full_output_root": _TRAINING_ACE_FULL_OUTPUT_URI,
+        },
+        "target_model": {
+            "model_family": "ace_step",
+            "architecture": "hybrid LM planner plus DiT synthesizer",
+            "base_checkpoint": "ACE-Step/Ace-Step1.5",
+            "planner_checkpoint": "ACE-Step/acestep-5Hz-lm-0.6B",
+            "planner_size": "0.6B",
+            "dit_variant": "base_or_sft_dit",
+            "comparison_role": "Comparable-size Hybrid CARA-Strong arm beside Diffusion, Context Diffusion, and MusicGen.",
         },
         "cloud_job_policy": {
             "durable_submission": True,
@@ -5096,7 +5343,9 @@ def _training_hybrid_readiness_payload() -> dict[str, Any]:
         },
         "evidence_contract": {
             "model_family": "ace_step",
-            "architecture": "LM planner plus DiT synthesizer",
+            "architecture": "0.6B LM planner plus DiT synthesizer",
+            "planner_checkpoint": "ACE-Step/acestep-5Hz-lm-0.6B",
+            "dit_variant": "base_or_sft_dit",
             "sample_rate_hz": 48000,
             "latent_rate_hz": 25,
             "label_fields_required": [
@@ -5390,6 +5639,33 @@ def _submit_musicgen_ar_trainer_job(request: TrainingStartRequest) -> dict[str, 
         raise _azureml_operation_error(exc) from exc
 
 
+def _ensure_ace_environment_registered() -> dict[str, Any]:
+    try:
+        from azure.ai.ml import load_environment
+
+        environment_file = ROOT / "azureml" / "environments" / "env_ace_step.yml"
+        environment = load_environment(source=environment_file)
+        registered = _azureml_client().environments.create_or_update(environment)
+        result = {
+            "name": getattr(registered, "name", None),
+            "version": getattr(registered, "version", None),
+            "description": getattr(registered, "description", None),
+        }
+        _azureml_test_prep_audit(
+            {
+                "action": "ace_environment_registered",
+                "environment": _TRAINING_ACE_ENVIRONMENT,
+                "environment_file": str(environment_file.relative_to(ROOT)),
+                "result": result,
+            }
+        )
+        return result
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise _azureml_operation_error(exc) from exc
+
+
 def _submit_ace_preflight_job(request: TrainingAcePreflightRunRequest) -> dict[str, Any]:
     try:
         from azure.ai.ml import load_job
@@ -5400,6 +5676,7 @@ def _submit_ace_preflight_job(request: TrainingAcePreflightRunRequest) -> dict[s
         if active_h100_jobs:
             names = ", ".join(str(job.get("name") or "unknown") for job in active_h100_jobs[:3])
             raise HTTPException(status_code=409, detail=f"H100-backed compute is busy ({names}); ACE-Step preflight is GPU-only for CUDA/tap validation and will not fall back to CPU.")
+        environment_registration = _ensure_ace_environment_registered()
         output_path = f"{_TRAINING_ACE_PREFLIGHT_OUTPUT_URI}ace-preflight-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}/"
         materialized_job_file = _training_materialize_ace_preflight_job_file(output_path=output_path, request=request)
         try:
@@ -5418,10 +5695,14 @@ def _submit_ace_preflight_job(request: TrainingAcePreflightRunRequest) -> dict[s
             "compute": _TRAINING_H100_COMPUTE,
             "environment": summary.get("environment"),
             "required_environment": _TRAINING_ACE_ENVIRONMENT,
+            "environment_registration": environment_registration,
             "model_family": "ace_step",
             "job_file": str(_TRAINING_ACE_PREFLIGHT_JOB_FILE.relative_to(ROOT)),
             "output_path": output_path,
             "checkpoint": request.checkpoint,
+            "planner_checkpoint": request.planner_checkpoint,
+            "dit_variant": request.dit_variant,
+            "planner_size": "0.6B",
             "load_checkpoint": bool(request.load_checkpoint),
         }
         _azureml_test_prep_audit(event)
@@ -5798,6 +6079,289 @@ def _submit_context_diffusion_full_job(request: TrainingContextDiffusionFullRunR
         raise
     except Exception as exc:
         raise _azureml_operation_error(exc) from exc
+
+
+def _record_ace_source_review(request: TrainingAceSourceReviewRequest) -> dict[str, Any]:
+    if not request.confirmed:
+        raise HTTPException(status_code=409, detail="Confirm the ACE-Step source/license review before recording Step 01.")
+    reviewed_at = datetime.now(timezone.utc).isoformat()
+    payload = {
+        "status": "recorded",
+        "reviewed_at": reviewed_at,
+        "reviewed_by": "dashboard",
+        "model_family": "ace_step",
+        "step_id": "01",
+        "step_name": "ACE source + license review",
+        "base_checkpoint": "ACE-Step/Ace-Step1.5",
+        "planner_checkpoint": "ACE-Step/acestep-5Hz-lm-0.6B",
+        "dit_variant": "base_or_sft_dit",
+        "training_route": "Side-Step corrected-mode LoRA handoff; dashboard contract path remains non-deployable unless Side-Step actually runs.",
+        "sources": [
+            "https://huggingface.co/ACE-Step/Ace-Step1.5",
+            "https://github.com/ace-step/ACE-Step-1.5",
+            "https://github.com/koda-dernet/Side-Step",
+        ],
+        "cost_guardrail": "Use existing Azure ML workspace resources only; no Marketplace endpoints, Marketplace deployments, or new paid adjacent cloud services.",
+        "claim_scope": "Step 01 records source/license/training-route review only. It does not train, download, deploy, or score a model.",
+        "notes": request.notes.strip(),
+    }
+    _TRAINING_ACE_SOURCE_REVIEW_FILE.parent.mkdir(parents=True, exist_ok=True)
+    _TRAINING_ACE_SOURCE_REVIEW_FILE.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+    event = {
+        "action": "ace_step_source_license_review_recorded",
+        "model_family": "ace_step",
+        "job_name": "local-ace-source-license-review",
+        "status": "Completed",
+        "recorded_at": reviewed_at,
+        "artifact": str(_TRAINING_ACE_SOURCE_REVIEW_FILE.relative_to(ROOT)),
+        "checkpoint": payload["base_checkpoint"],
+        "planner_checkpoint": payload["planner_checkpoint"],
+        "dit_variant": payload["dit_variant"],
+        "marketplace_resources": False,
+    }
+    _training_append_job_event(event)
+    return {"status": "recorded", "artifact": event["artifact"], "review": payload}
+
+
+def _submit_ace_stage_job(
+    *,
+    job_file: Path,
+    action: str,
+    output_path: str,
+    request_dry_run: bool,
+    inputs_update: dict[str, Any],
+    tags_update: dict[str, str],
+    compute: str,
+    compute_strategy: str,
+    compute_reason: str,
+) -> dict[str, Any]:
+    try:
+        from azure.ai.ml import load_job
+
+        if not job_file.exists():
+            raise FileNotFoundError(f"ACE-Step stage job file not found: {job_file}")
+        environment_registration = _ensure_ace_environment_registered()
+        materialized_job_file = _training_materialize_ace_stage_job_file(
+            job_file=job_file,
+            output_path=output_path,
+            inputs_update={**inputs_update, "dry_run": "true" if request_dry_run else "false"},
+            tags_update=tags_update,
+            compute=compute,
+        )
+        try:
+            job = load_job(source=materialized_job_file)
+        finally:
+            try:
+                materialized_job_file.unlink()
+            except OSError:
+                pass
+        submitted = _azureml_client().jobs.create_or_update(job)
+        summary = _azureml_job_summary(submitted)
+        event = {
+            "action": action,
+            "job_name": summary.get("name"),
+            "studio_url": summary.get("studio_url"),
+            "compute": compute,
+            "compute_strategy": compute_strategy,
+            "compute_reason": compute_reason,
+            "environment": summary.get("environment"),
+            "environment_registration": environment_registration,
+            "model_family": "ace_step",
+            "job_file": str(job_file.relative_to(ROOT)),
+            "output_path": output_path,
+            "dry_run": request_dry_run,
+            "inputs": inputs_update,
+            **tags_update,
+        }
+        _azureml_test_prep_audit(event)
+        _training_append_job_event(event)
+        return {
+            **summary,
+            "output_path": output_path,
+            "dry_run": request_dry_run,
+            "model_family": "ace_step",
+            "compute_selected": {"compute": compute, "strategy": compute_strategy, "reason": compute_reason},
+        }
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise _azureml_operation_error(exc) from exc
+
+
+def _submit_ace_tensor_prepare_job(request: TrainingAceTensorRunRequest) -> dict[str, Any]:
+    ladder = _training_ace_ladder()
+    preflight = ladder["steps"][1]
+    if not preflight.get("passed"):
+        raise HTTPException(status_code=409, detail=str(preflight.get("reason") or "Pass ACE preflight before tensor preparation."))
+    compute_selection = _training_select_preprocess_compute(request.compute_strategy)
+    return _submit_ace_stage_job(
+        job_file=_TRAINING_ACE_TENSOR_JOB_FILE,
+        action="ace_step_tensor_prepare_submitted",
+        output_path=_TRAINING_ACE_TENSOR_OUTPUT_URI,
+        request_dry_run=request.dry_run,
+        inputs_update={
+            "max_rows": max(0, int(request.max_rows)),
+            "checkpoint": "ACE-Step/Ace-Step1.5",
+            "planner_checkpoint": "ACE-Step/acestep-5Hz-lm-0.6B",
+            "dit_variant": "base_or_sft_dit",
+        },
+        tags_update={"cara_training_gate": "ace_step_tensor_prepare", "cara_step_id": "03"},
+        compute=str(compute_selection["compute"]),
+        compute_strategy=str(compute_selection["strategy"]),
+        compute_reason=str(compute_selection["reason"]),
+    )
+
+
+def _submit_ace_planner_probe_job(request: TrainingAcePlannerProbeRunRequest) -> dict[str, Any]:
+    ladder = _training_ace_ladder()
+    if not ladder["tensors"].get("passed"):
+        raise HTTPException(status_code=409, detail=str(ladder["tensors"].get("reason") or "Prepare ACE tensors before planner probe."))
+    compute_selection = _training_select_preprocess_compute(request.compute_strategy)
+    return _submit_ace_stage_job(
+        job_file=_TRAINING_ACE_PLANNER_JOB_FILE,
+        action="ace_step_planner_probe_submitted",
+        output_path=_TRAINING_ACE_PLANNER_OUTPUT_URI,
+        request_dry_run=request.dry_run,
+        inputs_update={
+            "max_rows": max(0, int(request.max_rows)),
+            "checkpoint": "ACE-Step/Ace-Step1.5",
+            "planner_checkpoint": "ACE-Step/acestep-5Hz-lm-0.6B",
+            "dit_variant": "base_or_sft_dit",
+        },
+        tags_update={"cara_training_gate": "ace_step_planner_probe", "cara_step_id": "04"},
+        compute=str(compute_selection["compute"]),
+        compute_strategy=str(compute_selection["strategy"]),
+        compute_reason=str(compute_selection["reason"]),
+    )
+
+
+def _ace_require_h100_available(stage_label: str) -> None:
+    active_h100_jobs = _azureml_active_jobs_on_h100_computes()
+    if active_h100_jobs:
+        names = ", ".join(str(job.get("name") or "unknown") for job in active_h100_jobs[:3])
+        raise HTTPException(status_code=409, detail=f"H100-backed compute is busy ({names}); {stage_label} is GPU-only and will not fall back to CPU.")
+
+
+def _submit_ace_dit_tap_job(request: TrainingAceDitTapRunRequest) -> dict[str, Any]:
+    ladder = _training_ace_ladder()
+    if not ladder["planner_probe"].get("passed"):
+        raise HTTPException(status_code=409, detail=str(ladder["planner_probe"].get("reason") or "Run planner probe before DiT tap discovery."))
+    _ace_require_h100_available("ACE DiT tap discovery")
+    return _submit_ace_stage_job(
+        job_file=_TRAINING_ACE_DIT_TAP_JOB_FILE,
+        action="ace_step_dit_tap_discovery_submitted",
+        output_path=_TRAINING_ACE_DIT_TAP_OUTPUT_URI,
+        request_dry_run=request.dry_run,
+        inputs_update={
+            "load_checkpoint": "true" if request.load_checkpoint else "false",
+            "max_rows": max(1, min(int(request.max_rows), 20000)),
+            "checkpoint": "ACE-Step/Ace-Step1.5",
+            "planner_checkpoint": "ACE-Step/acestep-5Hz-lm-0.6B",
+            "dit_variant": "base_or_sft_dit",
+        },
+        tags_update={"cara_training_gate": "ace_step_dit_tap_discovery", "cara_step_id": "05"},
+        compute=_TRAINING_H100_COMPUTE,
+        compute_strategy="gpu_only",
+        compute_reason="ACE DiT tap discovery validates CUDA/import/hook viability and therefore does not fall back to CPU.",
+    )
+
+
+def _ace_smoke_action_for_variant(variant: str) -> tuple[str, str, str]:
+    mapping = {
+        "baseline_lora": ("ace_step_baseline_lora_smoke_submitted", "06", "ace_step_baseline_lora_smoke"),
+        "cara_lite": ("ace_step_cara_lite_smoke_submitted", "07", "ace_step_cara_lite_smoke"),
+        "cara_head": ("ace_step_cara_head_smoke_submitted", "08", "ace_step_cara_head_smoke"),
+        "planner_preserved": ("ace_step_planner_preserved_smoke_submitted", "09", "ace_step_planner_preserved_smoke"),
+        "planner_bypass": ("ace_step_planner_bypass_smoke_submitted", "10", "ace_step_planner_bypass_smoke"),
+        "cara_strong": ("ace_step_cara_strong_smoke_submitted", "11", "ace_step_cara_strong_smoke"),
+    }
+    if variant not in mapping:
+        raise HTTPException(status_code=400, detail="ACE smoke variant must be baseline_lora, cara_lite, cara_head, planner_preserved, planner_bypass, or cara_strong.")
+    return mapping[variant]
+
+
+def _submit_ace_smoke_job(request: TrainingAceSmokeRunRequest) -> dict[str, Any]:
+    variant = str(request.variant)
+    action, step_id, gate = _ace_smoke_action_for_variant(variant)
+    ladder = _training_ace_ladder()
+    current = ladder["smoke_sequence"][variant]
+    if current.get("locked"):
+        raise HTTPException(status_code=409, detail=str(current.get("reason") or "Prior ACE stage must pass before this smoke."))
+    if current.get("active"):
+        latest = current.get("latest_job") or {}
+        raise HTTPException(status_code=409, detail=f"ACE smoke job {latest.get('name') or latest.get('job_name') or 'latest'} is already active.")
+    _ace_require_h100_available(f"ACE {current.get('label') or variant}")
+    output_path = f"{_TRAINING_ACE_SMOKE_OUTPUT_URI}{variant}/"
+    return _submit_ace_stage_job(
+        job_file=_TRAINING_ACE_SMOKE_JOB_FILE,
+        action=action,
+        output_path=output_path,
+        request_dry_run=request.dry_run,
+        inputs_update={
+            "variant": variant,
+            "max_steps": max(1, min(int(request.max_steps), 5000)),
+            "batch_size": max(1, min(int(request.batch_size), 256)),
+            "learning_rate": max(1e-6, min(float(request.learning_rate), 1e-2)),
+            "max_train_rows": max(1, min(int(request.max_train_rows), 100000)),
+            "max_eval_rows": max(1, min(int(request.max_eval_rows), 50000)),
+            "checkpoint": "ACE-Step/Ace-Step1.5",
+            "planner_checkpoint": "ACE-Step/acestep-5Hz-lm-0.6B",
+            "dit_variant": "base_or_sft_dit",
+        },
+        tags_update={"cara_training_gate": gate, "cara_step_id": step_id, "cara_variant": variant},
+        compute=_TRAINING_H100_COMPUTE,
+        compute_strategy="gpu_only",
+        compute_reason="ACE Hybrid smoke stages validate GPU training/tap contracts and do not fall back to CPU.",
+    )
+
+
+def _submit_ace_full_job(request: TrainingAceFullRunRequest) -> dict[str, Any]:
+    expected = "LAUNCH ACE FULL FINE-TUNE"
+    if str(request.confirmation_phrase or "").strip() != expected:
+        raise HTTPException(status_code=409, detail=f"ACE full launch requires typed confirmation: {expected}")
+    ladder = _training_ace_ladder()
+    if not ladder["smoke_sequence"]["cara_strong"].get("passed"):
+        raise HTTPException(status_code=409, detail=str(ladder["smoke_sequence"]["cara_strong"].get("reason") or "Run Hybrid CARA-Strong smoke before full ACE stage."))
+    if ladder["full"].get("active"):
+        latest = ladder["full"].get("latest_job") or {}
+        raise HTTPException(status_code=409, detail=f"ACE full job {latest.get('name') or latest.get('job_name') or 'latest'} is already active.")
+    _ace_require_h100_available("ACE full Hybrid fine-tune")
+    output_path = f"{_TRAINING_ACE_FULL_OUTPUT_URI}ace-hybrid-full-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}/"
+    return _submit_ace_stage_job(
+        job_file=_TRAINING_ACE_FULL_JOB_FILE,
+        action="ace_step_hybrid_full_submitted",
+        output_path=output_path,
+        request_dry_run=request.dry_run,
+        inputs_update={
+            "run_sidestep": "true" if request.run_sidestep else "false",
+            "checkpoint_dir": request.checkpoint_dir,
+            "sidestep_tensor_dir": request.sidestep_tensor_dir,
+            "model_variant": request.model_variant,
+            "adapter_type": request.adapter_type,
+            "rank": max(1, min(int(request.rank), 512)),
+            "alpha": max(1, min(int(request.alpha), 1024)),
+            "save_every": max(1, min(int(request.save_every), 10000)),
+            "num_workers": max(0, min(int(request.num_workers), 8)),
+            "timestep_mode": request.timestep_mode,
+            "max_steps": max(1, min(int(request.max_steps), 200000)),
+            "batch_size": max(1, min(int(request.batch_size), 32)),
+            "learning_rate": max(1e-7, min(float(request.learning_rate), 1e-2)),
+            "max_train_rows": max(0, int(request.max_train_rows)),
+            "max_eval_rows": max(1, int(request.max_eval_rows)),
+            "checkpoint": "ACE-Step/Ace-Step1.5",
+            "planner_checkpoint": "ACE-Step/acestep-5Hz-lm-0.6B",
+            "dit_variant": "base_or_sft_dit",
+        },
+        tags_update={
+            "cara_training_gate": "ace_step_hybrid_full",
+            "cara_step_id": "12",
+            "cara_variant": "cara_strong",
+            "cara_run_sidestep": "true" if request.run_sidestep else "false",
+        },
+        compute=_TRAINING_FULL_H100_COMPUTE,
+        compute_strategy="gpu_only",
+        compute_reason="ACE full Hybrid stage is GPU-only and uses the existing full-training H100 compute.",
+    )
 
 
 def _submit_stable_audio_smoke_trainer_job(request: TrainingStartRequest) -> dict[str, Any]:
@@ -6655,6 +7219,35 @@ def sidebar_completion():
         from evaluation.benchmark_spec import model_lanes
 
         lanes_by_id = {str(lane.get("model_id") or ""): lane for lane in model_lanes()}
+        context_diffusion = lanes_by_id.get("context_diffusion_cara_strong_full") or {}
+        context_diffusion_complete = (
+            bool(context_diffusion.get("output_uri"))
+            and str(context_diffusion.get("status") or "").lower() == "ready"
+        )
+        items["finetune-context-diffusion"] = {
+            "complete": context_diffusion_complete,
+            "title": (
+                "Context Diffusion fine-tune complete · 15/15 steps"
+                if context_diffusion_complete
+                else "Context Diffusion fine-tune not complete"
+            ),
+            "evidence": {
+                "source": "evaluation.benchmark_spec.model_lanes + registry/cara_strong/azure_training_jobs.jsonl",
+                "status": context_diffusion.get("status"),
+                "output_uri": context_diffusion.get("output_uri"),
+                "latest_job": context_diffusion.get("latest_job"),
+            },
+        }
+    except Exception as exc:
+        items["finetune-context-diffusion"] = {
+            "complete": False,
+            "title": f"Context Diffusion completion unavailable: {exc}",
+        }
+
+    try:
+        from evaluation.benchmark_spec import model_lanes
+
+        lanes_by_id = {str(lane.get("model_id") or ""): lane for lane in model_lanes()}
         musicgen = lanes_by_id.get("musicgen_cara_strong_full") or {}
         musicgen_complete = bool(musicgen.get("output_uri")) and str(musicgen.get("status") or "").lower() == "ready"
         items["finetune-autoregressive"] = {
@@ -6669,6 +7262,25 @@ def sidebar_completion():
         }
     except Exception as exc:
         items["finetune-autoregressive"] = {"complete": False, "title": f"Autoregressive completion unavailable: {exc}"}
+
+    try:
+        ace_ladder = _training_ace_ladder()
+        hybrid_full = ace_ladder.get("full") or {}
+        hybrid_latest = hybrid_full.get("latest_job") or {}
+        hybrid_output_uri = hybrid_full.get("output_path") or hybrid_latest.get("output_path")
+        hybrid_complete = bool(hybrid_full.get("passed")) and bool(hybrid_output_uri)
+        items["finetune-hybrid"] = {
+            "complete": hybrid_complete,
+            "title": "Hybrid fine-tune complete · 12/12 steps" if hybrid_complete else "Hybrid fine-tune not complete",
+            "evidence": {
+                "source": "gui.backend._training_ace_ladder + registry/cara_strong/azure_training_jobs.jsonl",
+                "status": hybrid_latest.get("status"),
+                "output_uri": hybrid_output_uri,
+                "latest_job": hybrid_latest,
+            },
+        }
+    except Exception as exc:
+        items["finetune-hybrid"] = {"complete": False, "title": f"Hybrid completion unavailable: {exc}"}
 
     return {
         "generated_at": generated_at,
@@ -8577,11 +9189,53 @@ def training_musicgen_preflight(request: TrainingMusicGenPreflightRunRequest):
 
 @app.post("/api/training/ace-preflight")
 def training_ace_preflight(request: TrainingAcePreflightRunRequest):
+    if not _training_ace_source_review_state().get("passed"):
+        raise HTTPException(status_code=409, detail="Record the ACE-Step source/license review before running ACE-Step preflight.")
     if not _training_lock_state().get("locked"):
         raise HTTPException(status_code=409, detail="Lock the CARA-Strong manifest before running ACE-Step preflight.")
     if not _training_azure_upload_state().get("confirmed"):
         raise HTTPException(status_code=409, detail="Confirm the full Azure dataset upload before running ACE-Step preflight.")
     submitted = _submit_ace_preflight_job(request)
+    return {"status": "submitted", "job": submitted, "readiness": _training_hybrid_readiness_payload()}
+
+
+@app.post("/api/training/ace/source-review")
+def training_ace_source_review(request: TrainingAceSourceReviewRequest):
+    review = _record_ace_source_review(request)
+    return {**review, "readiness": _training_hybrid_readiness_payload()}
+
+
+@app.post("/api/training/ace/tensors")
+def training_ace_tensors(request: TrainingAceTensorRunRequest):
+    if not _training_lock_state().get("locked"):
+        raise HTTPException(status_code=409, detail="Lock the CARA-Strong manifest before preparing ACE tensors.")
+    if not _training_azure_upload_state().get("confirmed"):
+        raise HTTPException(status_code=409, detail="Confirm the full Azure dataset upload before preparing ACE tensors.")
+    submitted = _submit_ace_tensor_prepare_job(request)
+    return {"status": "submitted", "job": submitted, "readiness": _training_hybrid_readiness_payload()}
+
+
+@app.post("/api/training/ace/planner-probe")
+def training_ace_planner_probe(request: TrainingAcePlannerProbeRunRequest):
+    submitted = _submit_ace_planner_probe_job(request)
+    return {"status": "submitted", "job": submitted, "readiness": _training_hybrid_readiness_payload()}
+
+
+@app.post("/api/training/ace/dit-taps")
+def training_ace_dit_taps(request: TrainingAceDitTapRunRequest):
+    submitted = _submit_ace_dit_tap_job(request)
+    return {"status": "submitted", "job": submitted, "readiness": _training_hybrid_readiness_payload()}
+
+
+@app.post("/api/training/ace/smoke")
+def training_ace_smoke(request: TrainingAceSmokeRunRequest):
+    submitted = _submit_ace_smoke_job(request)
+    return {"status": "submitted", "job": submitted, "readiness": _training_hybrid_readiness_payload()}
+
+
+@app.post("/api/training/ace/full")
+def training_ace_full(request: TrainingAceFullRunRequest):
+    submitted = _submit_ace_full_job(request)
     return {"status": "submitted", "job": submitted, "readiness": _training_hybrid_readiness_payload()}
 
 

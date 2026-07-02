@@ -285,6 +285,51 @@ candidate lanes, the generation job may also pass the target pool/family indices
 as structured CARA conditioning for label-applicable conditions; open-quality and
 shuffled-label controls suppress that structured target.
 
+Future refinement: CARA calibration / reinforcement retuning
+------------------------------------------------------------
+
+The current benchmark reports the native attribution behavior after supervised
+fine-tuning only. A later append-only branch may test whether an additional
+CARA calibration or reinforcement-style pass can improve exact codeword recovery
+without weakening the attribution claim. This should be treated as a follow-on
+comparison, not as part of the current core result.
+
+The proposed reward / preference target would keep the existing repairability
+ladder:
+
+- highest reward for exact expected pool recovery;
+- smaller reward for repairable-to-expected-pool recovery;
+- smaller reward again for correct family / genre fallback;
+- no success credit for valid-but-wrong registry pools;
+- penalty for invalid, unresolved, or hallucinated CARA ids;
+- quality guardrails so attribution improvements do not come from degraded audio
+  or trivial codeword copying.
+
+For Diffusion and Context Diffusion, the safer implementation is likely not
+classic RLHF. Candidate methods include auxiliary-loss retuning with a higher
+CARA-head weight, reward-weighted continuation fine-tuning, DPO-style preference
+pairs over generated outputs, or classifier-guided generation ablations. Any
+claim must verify that the attribution head remains tied to noised-audio /
+generation hidden states rather than learning a prompt-only shortcut.
+
+For MusicGen, reinforcement-style suffix calibration is more natural because the
+CARA output is token-like. The follow-on experiment can compare whether suffix
+exactness improves when the reward is applied to decoded CARA suffixes while the
+audio-token context remains fixed.
+
+Required controls for this future branch:
+
+- reuse the same locked prompt set, seeds, model lanes, and benchmark scoring
+  contract;
+- report pre-retune versus post-retune exact, repairable, family, invalid, and
+  quality metrics side by side;
+- include shuffled-label, prompt-only, codeword-withheld, and no-audio /
+  no-hidden-state controls;
+- preserve original checkpoints and write separate retuned deltas so the
+  supervised baseline remains auditable;
+- label any improvement as "calibrated CARA output" unless the audio-linked
+  controls prove the reward did not merely train the model to print better ids.
+
 The evaluation launch endpoint is dry-run by default. A live run must require
 the typed phrase `LAUNCH BENCHMARK TESTING EVALUATION` and must use only existing
 Azure ML workspace resources, command jobs, datastores, computes, and
@@ -637,10 +682,12 @@ evidence; it is not the matched full Autoregressive comparison.
 ## Hybrid ACE-Step v1.5 Planning
 
 The dashboard includes a third fine-tuning page, `Finetune: Hybrid`, for
-ACE-Step v1.5. Step 01 is documented research only. Step 02 is wired as a
-GPU-only Azure ML environment/source-data preflight, launched from the dashboard
-only after a typed `LAUNCH ACE PREFLIGHT` confirmation. Steps 03-12 remain
-locked until the preceding evidence exists.
+ACE-Step v1.5 with the 0.6B LM planner target selected as the first comparable
+Hybrid CARA-Strong arm. Step 01 is documented research only. Steps 02-12 are
+now wired as ordered Azure ML gates from the Hybrid dashboard. Each stage writes
+its own report and metadata under the ACE-Step datastore branch so later review
+can distinguish preflight, tensor preparation, planner probing, smoke evidence,
+and full-training evidence.
 
 Primary-source findings:
 
@@ -650,20 +697,49 @@ Primary-source findings:
 - The official v1.5 model zoo lists base/SFT/turbo DiT variants plus 0.6B,
   1.7B, and 4B LM variants. The base and SFT DiT variants are marked as easy to
   fine-tune; turbo variants are marked medium.
+- The first CARA comparison target is the 0.6B planner configuration
+  (`ACE-Step/acestep-5Hz-lm-0.6B`) with a base/SFT DiT path. Larger LM variants
+  can be added later only as scale-ablation branches, because the first Hybrid
+  result should remain comparable to the existing Stable Audio and MusicGen
+  model sizes.
 - The official repository points to Side-Step for advanced training. Side-Step
-  training requires Python 3.11+, CUDA for training, ACE-Step checkpoints, and
-  supports corrected-mode LoRA as the recommended stable path.
+  training requires Python 3.11+ in its upstream guide, CUDA for training,
+  ACE-Step checkpoints, and supports corrected-mode LoRA as the recommended
+  stable path. The dashboard's Azure preflight environment currently uses
+  Python 3.10 plus official CUDA PyTorch pip wheels because the prior conda
+  PyTorch image failed at import time with a `libtorch_cpu.so` ITT symbol error
+  before any ACE code could run.
+- Side-Step preprocessing supports folder-only mode and JSON mode. CARA must
+  use JSON mode, because folder-only mode derives captions from filenames and
+  cannot preserve the locked registry fields. JSON mode lets Step 03 provide
+  normal tag-withheld captions, per-sample `custom_tag` codewords for explicit
+  CARA-lite/suffix lanes, and accepted metadata fields that preserve
+  `cara_pool_id`, `cara_pool_index`, `cara_pool_family`,
+  `cara_pool_family_index`, and `cara_source_pool_id`.
+- Side-Step's documented input formats are `.wav`, `.mp3`, `.flac`, `.ogg`,
+  `.opus`, and `.m4a`. The CARA source corpus can include additional decodable
+  formats such as `.aif` / `.aiff`; Step 03 therefore uses `ffmpeg` to convert
+  unsupported-but-present source files into 48 kHz stereo WAV files under the
+  ACE output folder. The generated JSON points Side-Step at the converted WAV,
+  while `original_audio_path` and `audio_conversion` preserve source lineage.
 - Side-Step preprocessing converts raw audio into tensors in two passes:
   VAE/text encoder first, then DiT encoder condition encodings. This means ACE
-  preprocessing should produce CARA-labelled tensors and a registry resolver,
-  not only WAV chunks.
+  preprocessing should produce a Side-Step-compatible full ACE-Step
+  `dataset.json`, CARA-labelled tensor manifest, and registry resolver, not
+  only WAV chunks.
 
 Current wired artifacts:
 
 ```text
 azureml/environments/env_ace_step.yml
 azureml/jobs/13_ace_step_env_preflight.yml
+azureml/jobs/19_prepare_ace_step_tensors.yml
+azureml/jobs/20_ace_step_planner_survival_probe.yml
+azureml/jobs/21_ace_step_dit_tap_discovery.yml
+azureml/jobs/22_ace_step_hybrid_smoke.yml
+azureml/jobs/23_full_ace_step_hybrid_trainer.yml
 src/ace_step_env_preflight.py
+src/ace_step_hybrid_stages.py
 ```
 
 The preflight writes reports under:
@@ -673,27 +749,75 @@ azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_
 ```
 
 It checks CUDA, `diffusers.AceStepPipeline`, common LoRA/training imports,
-`ffmpeg`, the source audio folder, and sampled manifest rows containing
-`cara_source_pool_id`, `cara_pool_id`, `cara_pool_index`,
-`cara_pool_family`, and `cara_pool_family_index`. It does not download the ACE
-checkpoint unless the dashboard checkbox is enabled. ACE-Step preflight and
-future ACE smoke/train jobs must wait if either H100-backed compute target is
-already active; they do not fall back to CPU because CUDA/DiT viability is part
-of the gate.
+`ffmpeg`, the source audio folder, and sampled manifest rows that can be
+normalised into the CARA training label contract. The raw uploaded
+`cara_pool_manifest_v2.jsonl` is allowed to provide `cara_source_pool_id` and
+`cara_pool_family` only; Step 02/03 derive `cara_pool_id`, `cara_pool_index`,
+and `cara_pool_family_index` deterministically before training artifacts are
+written. It does not download the ACE checkpoint unless the dashboard checkbox is
+enabled. The preflight report records the selected 0.6B planner checkpoint, DiT
+variant, environment version, and comparison role.
+
+The ACE-Step branch writes later artifacts under:
+
+```text
+azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_step/
+```
+
+Compute policy:
+
+- Step 02 preflight, Step 05 DiT tap discovery, Steps 06-11 smoke jobs, and
+  Step 12 full Hybrid training are GPU-only. They check both H100-backed compute
+  targets before submission and do not fall back to CPU, because CUDA and DiT
+  hook viability are part of the evidence.
+- Step 03 tensor preparation and Step 04 planner survival probing are
+  H100-preferred but CPU-capable. If either H100-backed target is active, the
+  dashboard may route these jobs to `cpu-prep-cluster` so preprocessing/probing
+  can continue while a GPU fine-tune is running.
+- All stages use existing Azure ML command jobs, datastores, environments, and
+  approved compute targets only.
 
 Benchmark testing ladder for ACE-Step should be append-only:
 
 1. ACE source and license review: record the checkpoint, official training
    route, license/access terms, and existing-Azure-resource cost guardrail.
+   This is a local dashboard action, not an Azure job. It writes
+   `registry/cara_strong/ace_step_source_license_review.json` and a registry
+   event, then unlocks the Azure preflight gate when the ordinary manifest/upload
+   readiness checks also pass.
 2. ACE environment preflight: validate CUDA, ACE-Step imports, Side-Step/LoRA
    dependencies, checkpoint access, and datastore access.
-3. Prepare ACE tensors from the same locked CARA manifest and source-disjoint
-   splits. The tensor manifest must preserve `chunk_id`, `source_example_id`,
-   `cara_pool_id`, `cara_pool_index`, `cara_pool_family`,
-   `cara_pool_family_index`, codeword, split, and registry hash.
+3. Prepare ACE dataset JSON + tensors from the same locked CARA manifest and
+   source-disjoint splits. This is the Hybrid branch's equivalent of the
+   Stable Audio and MusicGen dataset-preparation gates. It must use Side-Step
+   JSON mode rather than folder-only mode. The JSON must be full ACE-Step format
+   with `metadata` plus `samples`; every sample keeps a normal tag-withheld
+   `caption`, a per-sample `custom_tag` containing the CARA codeword for
+   explicit CARA-control lanes, and accepted metadata fields for
+   `cara_source_pool_id`, `cara_pool_id`, `cara_pool_index`,
+   `cara_pool_family`, `cara_pool_family_index`, split, source id, and registry
+   linkage. If the raw manifest lacks `cara_pool_id` or index fields, Step 03
+   derives them from the locked `cara_source_pool_id` and family values and
+   writes that derivation into `dataset.json` and `ace_registry_resolver.json`.
+   If a source file is not one of Side-Step's native formats, Step 03
+   converts it to 48 kHz stereo WAV via `ffmpeg` and records both the converted
+   `audio_path` and the `original_audio_path`. The tensor manifest must preserve
+   the same fields plus the Side-Step audio-format / conversion audit. The
+   current implementation rejects rows whose source audio cannot be found or
+   whose `ffmpeg` conversion fails, records them in
+   `rejected_audio_rows.jsonl`, and continues when the remaining dataset is
+   valid. This avoids inserting placeholder paths into the ACE manifest while
+   preserving a peer-reviewable audit trail for missing or unconvertible source
+   files. The current implementation writes `ace_tensor_manifest.jsonl`,
+   full-format `dataset.json`, `ace_registry_resolver.json`,
+   `sidestep_commands.json`, and `rejected_audio_rows.jsonl`.
 4. Planner survival probe: measure whether `cara_pool_index`,
    `cara_pool_family_index`, and CARA codeword survive LM planning, query
-   rewriting, captions, structured metadata, and any CoT/planner outputs.
+   rewriting, captions, structured metadata, and any CoT/planner outputs. This
+   stage is a planner-only audit and must not be reported as audio training.
+   Steps 04-12 now fail fast if `ace_tensor_manifest.jsonl` is missing required
+   CARA fields, so a later smoke cannot silently train on a partial or
+   unlabelled tensor contract.
 5. DiT tap discovery: locate mid/late DiT hidden states and verify detached
    attribution-head compatibility.
 6. Baseline LoRA smoke: same data, no CARA signal, loss/checkpoint/resume
@@ -711,6 +835,31 @@ Benchmark testing ladder for ACE-Step should be append-only:
     attribution metrics and planner-survival metrics.
 12. Full hybrid comparison only after the smoke ladder proves the planner and
     DiT evidence path.
+
+Side-Step handoff and claim scope:
+
+- The full trainer job is prepared to call Side-Step when ACE checkpoints and
+  Side-Step tensor directories are mounted and `run_sidestep=true`. The
+  intended Side-Step path is corrected-mode LoRA over the selected base/SFT DiT
+  target, using the CARA-labelled tensor manifest and resolver from Step 03.
+- Until those mounted ACE checkpoint/tensor inputs exist, the dashboard submits
+  the conservative `run_sidestep=false` path. That path trains and records a
+  lightweight contract adapter/checkpoint so the ladder, registry binding,
+  metrics, and Azure plumbing can be tested, but it is not a deployable ACE-Step
+  adapter and must not be described as a completed ACE model fine-tune.
+- A run may claim `deployable_ace_adapter=true` only when the report shows
+  Side-Step actually ran, the output contains the Side-Step adapter artifacts,
+  and the run records the mounted checkpoint/tensor source paths.
+- A `run_sidestep=true` run that exits successfully but produces no adapter
+  artifact files is treated as failed. This prevents a command-line success from
+  being mistaken for a deployable ACE-Step LoRA delta.
+- Step 12 uses the same disk-safe storage rule as the completed Stable Audio
+  full runs: the Azure output is mounted, full merged ACE checkpoints are not
+  written by CARA, and the canonical saved artifact is
+  `checkpoints/trainable_delta.pt`. In `run_sidestep=false` mode this is a
+  compact CARA Hybrid contract delta. In `run_sidestep=true` mode it records the
+  Side-Step LoRA/adapter delta artifacts and hashes under the mounted output
+  folder rather than packaging a full base model copy.
 
 Likelihood assessment:
 

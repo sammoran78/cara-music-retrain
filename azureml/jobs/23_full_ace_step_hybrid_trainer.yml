@@ -1,0 +1,86 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+type: command
+command: >-
+  python ace_step_hybrid_stages.py
+  --stage full_trainer
+  --ace_tensor_dir ${{inputs.ace_tensor_dir}}
+  --smoke_dir ${{inputs.smoke_dir}}
+  --output_dir ${{outputs.output_dir}}
+  --tensor_manifest_relative_path ${{inputs.tensor_manifest_relative_path}}
+  --checkpoint ${{inputs.checkpoint}}
+  --planner_checkpoint ${{inputs.planner_checkpoint}}
+  --dit_variant ${{inputs.dit_variant}}
+  --variant cara_strong
+  --max_train_rows ${{inputs.max_train_rows}}
+  --max_eval_rows ${{inputs.max_eval_rows}}
+  --max_steps ${{inputs.max_steps}}
+  --batch_size ${{inputs.batch_size}}
+  --learning_rate ${{inputs.learning_rate}}
+  --checkpoint_dir ${{inputs.checkpoint_dir}}
+  --sidestep_tensor_dir ${{inputs.sidestep_tensor_dir}}
+  --run_sidestep ${{inputs.run_sidestep}}
+  --model_variant ${{inputs.model_variant}}
+  --adapter_type ${{inputs.adapter_type}}
+  --rank ${{inputs.rank}}
+  --alpha ${{inputs.alpha}}
+  --save_every ${{inputs.save_every}}
+  --num_workers ${{inputs.num_workers}}
+  --timestep_mode ${{inputs.timestep_mode}}
+  --dashboard_triggered ${{inputs.dashboard_triggered}}
+  --dry_run ${{inputs.dry_run}}
+code: ../../src
+inputs:
+  ace_tensor_dir:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_step/tensors/
+  smoke_dir:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_step/smoke/cara_strong/
+  tensor_manifest_relative_path: ace_tensor_manifest.jsonl
+  checkpoint: ACE-Step/Ace-Step1.5
+  planner_checkpoint: ACE-Step/acestep-5Hz-lm-0.6B
+  dit_variant: base_or_sft_dit
+  checkpoint_dir: /mnt/azureml/ace_checkpoints
+  sidestep_tensor_dir: /mnt/azureml/ace_sidestep_tensors
+  run_sidestep: "false"
+  model_variant: base
+  adapter_type: lora
+  rank: 64
+  alpha: 128
+  save_every: 50
+  num_workers: 0
+  timestep_mode: continuous
+  max_train_rows: 0
+  max_eval_rows: 2048
+  max_steps: 20000
+  batch_size: 4
+  learning_rate: 0.0001
+  dashboard_triggered: "false"
+  dry_run: "false"
+outputs:
+  output_dir:
+    type: uri_folder
+    mode: rw_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_step/full/
+environment: azureml:env-ace-step:4
+compute: azureml:gpu-fulltraining-h100
+identity:
+  type: user_identity
+experiment_name: cara-ace-step-full
+display_name: 23-full-ace-step-hybrid-trainer
+description: Full ACE-Step Hybrid CARA branch handoff using mounted-output trainable-delta checkpointing. Runs Side-Step adapter training when mounted ACE checkpoints/tensors are provided; otherwise records a non-deployable contract adapter.
+tags:
+  cara_phase: fine-tuning
+  cara_step_id: "12"
+  cara_step_name: 12_full_ace_step_hybrid_trainer
+  cara_compute_class: gpu
+  cara_model_family: ace_step
+  cara_planner_size: 0.6B
+  cara_training_gate: ace_step_hybrid_full
+  cara_training_scope: full
+  cara_cost_guardrail: existing_azureml_workspace_only
+  cara_checkpoint_strategy: mounted_output_trainable_delta_only
+  cara_delta_checkpoint: checkpoints/trainable_delta.pt
+  cara_output_path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_step/full/

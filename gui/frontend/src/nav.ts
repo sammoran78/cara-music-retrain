@@ -108,7 +108,7 @@ export const NAV_ITEMS: NavItem[] = [
     group: 'finetune',
     groupLabel: 'Fine-tuning',
     icon: GitBranch,
-    description: 'Plan ACE-Step v1.5 hybrid LM plus DiT comparison runs',
+    description: 'Plan ACE-Step v1.5 0.6B hybrid LM plus DiT comparison runs',
   },
   {
     id: 'testing',

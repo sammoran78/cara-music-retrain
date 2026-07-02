@@ -100,9 +100,9 @@ const ladder = [
   },
   {
     step: '12',
-    label: 'Full hybrid comparison',
+    label: 'Full ACE Side-Step LoRA fine-tune',
     state: 'blocked',
-    evidence: 'Held-out planner, DiT attribution, registry decoding, and baseline-vs-CARA comparison report.',
+    evidence: 'Deployable Side-Step LoRA adapter delta, held-out planner/DiT attribution, registry decoding, and baseline-vs-CARA comparison report.',
     comparator: 'Final third-arm comparison against diffusion and autoregressive results.',
   },
 ];
@@ -199,7 +199,31 @@ interface HybridReadiness {
     next_label: string;
     reason?: string;
   };
+  ace_sidestep_inputs?: HybridLadderStep | null;
   ace_launch?: Record<string, boolean>;
+  ace_full_prerequisites?: {
+    ready?: boolean;
+    reason?: string;
+    errors?: string[];
+    checkpoint_uri?: string;
+    sidestep_tensor_uri?: string;
+    checks?: Record<string, {
+      configured?: boolean;
+      verified?: boolean;
+      uri?: string;
+      prefix?: string;
+      reason?: string;
+      probe?: {
+        exists?: boolean;
+        example_blob?: {
+          name?: string;
+          size?: number;
+          last_modified?: string;
+        } | null;
+      };
+      probe_error?: string;
+    }>;
+  };
   data_locations?: Record<string, string>;
   cloud_job_policy?: Record<string, unknown>;
   evidence_contract?: {
@@ -339,7 +363,7 @@ export const FinetuneHybridPage: React.FC = () => {
         body: JSON.stringify({
           checkpoint: 'ACE-Step/Ace-Step1.5',
           planner_checkpoint: 'ACE-Step/acestep-5Hz-lm-0.6B',
-          dit_variant: 'base_or_sft_dit',
+          dit_variant: 'turbo_dit',
           load_checkpoint: loadCheckpoint,
         }),
       });
@@ -391,15 +415,21 @@ export const FinetuneHybridPage: React.FC = () => {
                 ? {
                     dry_run: false,
                     confirmation_phrase: fullPhrase,
-                    run_sidestep: false,
+                    run_sidestep: true,
                     max_steps: 20000,
                     batch_size: 4,
                     learning_rate: 0.0001,
                     max_train_rows: 0,
                     max_eval_rows: 2048,
-                    checkpoint_dir: '/mnt/azureml/ace_checkpoints',
-                    sidestep_tensor_dir: '/mnt/azureml/ace_sidestep_tensors',
-                    model_variant: 'base',
+                    checkpoint_dir:
+                      readiness?.ace_full_prerequisites?.checkpoint_uri ??
+                      readiness?.data_locations?.azure_ace_checkpoint_root ??
+                      'azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_step/checkpoints/',
+                    sidestep_tensor_dir:
+                      readiness?.ace_full_prerequisites?.sidestep_tensor_uri ??
+                      readiness?.data_locations?.azure_ace_sidestep_tensor_root ??
+                      'azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_step/tensors/sidestep_tensors/',
+                    model_variant: 'turbo',
                     adapter_type: 'lora',
                     rank: 64,
                     alpha: 128,
@@ -430,6 +460,38 @@ export const FinetuneHybridPage: React.FC = () => {
       if (stage === 12) setFullConfirmation('');
     } catch (err) {
       const message = err instanceof Error ? err.message : `ACE Step ${stage} submission failed`;
+      setError(message);
+      setLogs((prev) => [...prev.slice(-7), `[launch:error] ${message}`]);
+    } finally {
+      setLaunching(false);
+    }
+  };
+
+  const runSidestepInputPrep = async () => {
+    if (!launchFlag('sidestep_inputs_enabled')) return;
+    setLaunching(true);
+    setError(null);
+    setLogs((prev) => [...prev.slice(-7), '[launch] Submitting ACE Step 12a Side-Step input preparation...']);
+    try {
+      const res = await fetch('/api/training/ace/sidestep-inputs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          dry_run: false,
+          max_rows: 0,
+          allow_checkpoint_download: true,
+          model_variant: 'turbo',
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.detail ?? 'ACE Side-Step input preparation submission failed');
+      setReadiness(json.readiness);
+      setLogs((prev) => [
+        ...prev.slice(-7),
+        `[launch:submitted] ACE Side-Step inputs job=${json.job?.name ?? 'unknown'} · output=${json.job?.output_path ?? 'pending'}`,
+      ]);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'ACE Side-Step input preparation submission failed';
       setError(message);
       setLogs((prev) => [...prev.slice(-7), `[launch:error] ${message}`]);
     } finally {
@@ -595,7 +657,7 @@ export const FinetuneHybridPage: React.FC = () => {
           </div>
           <div>
             <span>DiT variant</span>
-            <strong>{readiness?.target_model?.dit_variant ?? 'base_or_sft_dit'}</strong>
+            <strong>{readiness?.target_model?.dit_variant ?? 'turbo_dit'}</strong>
           </div>
           <div>
             <span>Comparison role</span>
@@ -705,6 +767,37 @@ export const FinetuneHybridPage: React.FC = () => {
             {error}
           </div>
         )}
+        {readiness?.ace_full_prerequisites && (
+          <div className="paths" style={{ marginTop: 18 }}>
+            <span>
+              ACE checkpoint bundle:{' '}
+              <span className="mono">
+                {readiness.ace_full_prerequisites.checks?.checkpoint_dir?.verified ? 'ready' : 'missing'}
+              </span>
+              {' · '}
+              <span className="mono">{readiness.ace_full_prerequisites.checkpoint_uri}</span>
+            </span>
+            <span>
+              Side-Step tensors:{' '}
+              <span className="mono">
+                {readiness.ace_full_prerequisites.checks?.sidestep_tensor_dir?.verified ? 'ready' : 'missing'}
+              </span>
+              {' · '}
+              <span className="mono">{readiness.ace_full_prerequisites.sidestep_tensor_uri}</span>
+            </span>
+          {readiness.ace_full_prerequisites.errors?.map((item) => (
+              <span key={item} className="mono">blocked: {item}</span>
+            ))}
+            {readiness.ace_sidestep_inputs?.latest_job?.name && (
+              <span>
+                Side-Step input job:{' '}
+                <span className="mono">
+                  {readiness.ace_sidestep_inputs.latest_job.name} · {readiness.ace_sidestep_inputs.latest_job.status ?? 'unknown'}
+                </span>
+              </span>
+            )}
+          </div>
+        )}
         <div className="hybrid-launch-locks">
           <button className="btn stage-action" type="button" onClick={refreshReadiness} disabled={loading}>
             <RefreshCw size={16} /> Refresh Hybrid Gates
@@ -738,6 +831,15 @@ export const FinetuneHybridPage: React.FC = () => {
               </button>
             </>
           )}
+          <button
+            className={`btn stage-action ${launchFlag('sidestep_inputs_enabled') ? 'is-current' : 'is-muted'}`}
+            type="button"
+            onClick={runSidestepInputPrep}
+            disabled={!launchFlag('sidestep_inputs_enabled')}
+            title={readiness?.ace_full_prerequisites?.reason ?? readiness?.ace_sidestep_inputs?.reason}
+          >
+            <CloudUpload size={16} /> 12a Prepare Side-Step Inputs
+          </button>
           <input
             className="input"
             value={fullConfirmation}

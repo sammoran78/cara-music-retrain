@@ -1,0 +1,59 @@
+$schema: https://azuremlschemas.azureedge.net/latest/environment.schema.json
+name: env-ace-step-sidestep
+version: "3"
+description: CARA ACE-Step v1.5 Side-Step dependency environment. Python 3.11 plus explicit CUDA 12.8 Torch and prebuilt flash-attn; Side-Step itself is installed at job runtime with pip --no-deps after the image is built.
+image: mcr.microsoft.com/azureml/openmpi4.1.0-ubuntu22.04:20260514.v1
+conda_file:
+  name: cara-ace-step-sidestep
+  channels:
+    - conda-forge
+  dependencies:
+    - python=3.11
+    - pip
+    - ffmpeg
+    - git
+    - pkg-config
+    - pip:
+        - --extra-index-url https://download.pytorch.org/whl/cu128
+        - azureml-mlflow
+        - pandas
+        - numpy
+        - scipy
+        - soundfile
+        - librosa
+        - tqdm
+        - safetensors
+        - huggingface_hub
+        - torch==2.10.0+cu128
+        - torchaudio==2.10.0+cu128
+        - torchvision==0.25.0+cu128
+        - https://github.com/mjun0812/flash-attention-prebuild-wheels/releases/download/v0.7.12/flash_attn-2.8.3+cu128torch2.10-cp311-cp311-linux_x86_64.whl
+        - transformers>=4.51.0,<4.58.0
+        - diffusers
+        - lightning>=2.0.0
+        - peft>=0.18.0
+        - accelerate>=1.12.0
+        - einops>=0.8.1
+        - torchcodec>=0.9.1
+        - pyloudnorm>=0.1.0
+        - vector-quantize-pytorch>=1.27.15
+        - loguru>=0.7.3
+        - tensorboard>=2.20.0
+        - rich>=13.0.0
+        - lyricsgenius>=3.0.1
+        - google-genai>=1.0.0
+        - openai>=1.54.0
+        - qwen-omni-utils>=0.0.6
+        - lycoris-lora>=2.0.0
+        - bitsandbytes>=0.45.0
+        - prodigyopt>=1.1.2
+        - demucs>=4.0.0
+        - fastapi>=0.115.0
+        - uvicorn[standard]>=0.34.0
+        - nvidia-ml-py>=12.0.0
+        - mutagen>=1.47.0
+tags:
+  cara_phase: fine-tuning
+  cara_model_family: ace_step
+  cara_environment_scope: sidestep_full_training
+  cara_cost_guardrail: existing_azureml_workspace_only

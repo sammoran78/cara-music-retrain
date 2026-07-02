@@ -4,8 +4,10 @@ import argparse
 import hashlib
 import json
 import math
+import os
 import shutil
 import subprocess
+import sys
 import time
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
@@ -28,6 +30,8 @@ REQUIRED_LABEL_FIELDS = [
 ]
 
 SIDESTEP_SUPPORTED_AUDIO_SUFFIXES = {".wav", ".mp3", ".flac", ".ogg", ".opus", ".m4a"}
+SIDESTEP_REPO_URL = "https://github.com/koda-dernet/Side-Step.git"
+SIDESTEP_SOURCE_DIR = Path(os.environ.get("SIDESTEP_SOURCE_DIR", "/tmp/cara_sidestep_source"))
 
 SMOKE_VARIANTS = {
     "baseline_lora",
@@ -705,6 +709,123 @@ def stage_prepare_tensors(args: argparse.Namespace, report: dict[str, Any]) -> N
     )
 
 
+def _checkpoint_dir_has_model(checkpoint_dir: Path, model_variant: str) -> bool:
+    candidates = [
+        checkpoint_dir / str(model_variant),
+        checkpoint_dir / f"acestep-v15-{model_variant}",
+    ]
+    return any((candidate / "config.json").exists() for candidate in candidates) and (checkpoint_dir / "vae").exists()
+
+
+def _download_ace_checkpoint(repo_id: str, checkpoint_dir: Path, *, allow_download: bool) -> dict[str, Any]:
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
+    if _checkpoint_dir_has_model(checkpoint_dir, "turbo") or _checkpoint_dir_has_model(checkpoint_dir, "base"):
+        return {"status": "already_present", "checkpoint_dir": str(checkpoint_dir)}
+    if not allow_download:
+        raise RuntimeError(f"ACE checkpoint bundle is missing and download is disabled: {checkpoint_dir}")
+    try:
+        from huggingface_hub import snapshot_download
+    except Exception as exc:
+        raise RuntimeError(f"huggingface_hub is required to materialize ACE checkpoints: {exc}") from exc
+    started = time.time()
+    snapshot_download(
+        repo_id=repo_id,
+        local_dir=str(checkpoint_dir),
+        local_dir_use_symlinks=False,
+        token=os.environ.get("HF_TOKEN") or os.environ.get("HUGGINGFACE_HUB_TOKEN"),
+    )
+    return {
+        "status": "downloaded",
+        "repo_id": repo_id,
+        "checkpoint_dir": str(checkpoint_dir),
+        "seconds": round(time.time() - started, 3),
+    }
+
+
+def stage_prepare_sidestep_inputs(args: argparse.Namespace, report: dict[str, Any]) -> None:
+    root = Path(args.input_data)
+    sidestep_tensor_dir = Path(args.sidestep_tensor_output_dir or args.sidestep_tensor_dir)
+    checkpoint_dir = Path(args.checkpoint_output_dir or args.checkpoint_dir)
+    work_dir = sidestep_tensor_dir / "_cara_dataset_contract"
+    work_dir.mkdir(parents=True, exist_ok=True)
+
+    checkpoint_result = _download_ace_checkpoint(
+        str(args.checkpoint),
+        checkpoint_dir,
+        allow_download=parse_bool(args.allow_checkpoint_download),
+    )
+
+    nested = argparse.Namespace(**vars(args))
+    nested.output_dir = str(work_dir)
+    nested.dry_run = args.dry_run
+    prep_report: dict[str, Any] = {}
+    stage_prepare_tensors(nested, prep_report)
+    if prep_report.get("status") != "passed":
+        raise RuntimeError(f"Could not regenerate ACE dataset JSON for Side-Step preprocessing: {prep_report}")
+
+    sidestep_status = _ensure_sidestep_runtime(install_if_missing=not parse_bool(args.dry_run))
+    command = _sidestep_command(sidestep_status, "preprocess") + [
+        "--checkpoint-dir",
+        str(checkpoint_dir),
+        "--model",
+        str(args.model_variant),
+        "--dataset-json",
+        str(work_dir / "dataset.json"),
+        "--audio-dir",
+        str(_audio_root(root)),
+        "--output",
+        str(sidestep_tensor_dir),
+        "--device",
+        "auto",
+        "--precision",
+        "auto",
+    ]
+    preprocess_result: dict[str, Any] = {"attempted": not parse_bool(args.dry_run), "command": command}
+    status = "passed" if parse_bool(args.dry_run) else "failed"
+    if parse_bool(args.dry_run):
+        preprocess_result["status"] = "dry_run"
+    elif not sidestep_status.get("available"):
+        preprocess_result.update({"status": "failed", "error": "Side-Step CLI/module is not available in this environment."})
+    elif not _checkpoint_dir_has_model(checkpoint_dir, str(args.model_variant)):
+        preprocess_result.update({"status": "failed", "error": f"Checkpoint directory does not contain model variant {args.model_variant}: {checkpoint_dir}"})
+    else:
+        started = time.time()
+        completed = subprocess.run(command, text=True, capture_output=True, check=False, env=_sidestep_env(sidestep_status))
+        tensor_files = sorted(str(path.relative_to(sidestep_tensor_dir)) for path in sidestep_tensor_dir.rglob("*.pt"))
+        preprocess_result.update(
+            {
+                "status": "passed" if completed.returncode == 0 and tensor_files else "failed",
+                "returncode": completed.returncode,
+                "seconds": round(time.time() - started, 3),
+                "stdout_tail": completed.stdout[-4000:],
+                "stderr_tail": completed.stderr[-4000:],
+                "tensor_file_count": len(tensor_files),
+                "tensor_file_examples": tensor_files[:20],
+            }
+        )
+        status = "passed" if preprocess_result["status"] == "passed" else "failed"
+        if completed.returncode == 0 and not tensor_files:
+            preprocess_result["error"] = "Side-Step preprocessing returned success but no .pt tensor files were found."
+
+    if not parse_bool(args.dry_run):
+        _write_json(sidestep_tensor_dir / "cara_sidestep_preprocess_report.json", preprocess_result)
+        _write_json(checkpoint_dir / "cara_checkpoint_materialization_report.json", checkpoint_result)
+    report.update(
+        {
+            "status": status,
+            "stage": "prepare_sidestep_inputs",
+            "checkpoint_materialization": checkpoint_result,
+            "sidestep": sidestep_status,
+            "sidestep_preprocess": preprocess_result,
+            "checkpoint_output_dir": str(checkpoint_dir),
+            "sidestep_tensor_output_dir": str(sidestep_tensor_dir),
+            "dataset_contract_dir": str(work_dir),
+            "model_variant": args.model_variant,
+            "evidence_mode": "ace_checkpoint_and_sidestep_tensor_materialization",
+        }
+    )
+
+
 def _load_tensor_manifest(args: argparse.Namespace) -> list[dict[str, Any]]:
     path = Path(args.ace_tensor_dir) / str(args.tensor_manifest_relative_path)
     if not path.exists():
@@ -962,30 +1083,103 @@ def stage_adapter_smoke(args: argparse.Namespace, report: dict[str, Any]) -> Non
     )
 
 
+def _sidestep_source_status() -> dict[str, Any]:
+    source_dir = SIDESTEP_SOURCE_DIR
+    train_py = source_dir / "train.py"
+    engine_dir = source_dir / "sidestep_engine"
+    return {
+        "source_dir": str(source_dir),
+        "train_py": str(train_py),
+        "source_available": train_py.exists() and engine_dir.exists(),
+        "source_train_py_exists": train_py.exists(),
+        "source_engine_dir_exists": engine_dir.exists(),
+    }
+
+
 def _sidestep_available() -> dict[str, Any]:
     command = shutil.which("sidestep")
+    source_status = _sidestep_source_status()
+    status: dict[str, Any] = {
+        "available": bool(source_status["source_available"]),
+        "console_command": command,
+        **source_status,
+    }
+    if source_status["source_available"]:
+        return status
+
+    # The pip-installed console wrapper can exist while still being unusable
+    # because it imports a top-level `train` module that is not packaged.
+    # Record it for diagnostics, but do not treat it as sufficient.
     if command:
-        return {"available": True, "command": command}
+        status["console_wrapper_note"] = "sidestep console wrapper exists but is not trusted; source train.py is required."
     try:
         import sidestep_engine
 
-        return {"available": True, "module": "sidestep_engine", "version": getattr(sidestep_engine, "__version__", None)}
+        status.update({"module": "sidestep_engine", "version": getattr(sidestep_engine, "__version__", None)})
     except Exception as exc:
-        return {"available": False, "error": repr(exc)}
+        status["module_error"] = repr(exc)
+    return status
+
+
+def _ensure_sidestep_runtime(*, install_if_missing: bool = True) -> dict[str, Any]:
+    status = _sidestep_available()
+    if status.get("available") or not install_if_missing:
+        status["install_attempted"] = False
+        return status
+
+    install_command = [
+        "git",
+        "clone",
+        "--depth",
+        "1",
+        SIDESTEP_REPO_URL,
+        str(SIDESTEP_SOURCE_DIR),
+    ]
+    started = time.time()
+    if SIDESTEP_SOURCE_DIR.exists():
+        shutil.rmtree(SIDESTEP_SOURCE_DIR)
+    completed = subprocess.run(install_command, text=True, capture_output=True, check=False)
+    refreshed = _sidestep_available()
+    refreshed.update(
+        {
+            "install_attempted": True,
+            "install_command": install_command,
+            "install_returncode": completed.returncode,
+            "install_seconds": round(time.time() - started, 3),
+            "install_stdout_tail": completed.stdout[-4000:],
+            "install_stderr_tail": completed.stderr[-4000:],
+        }
+    )
+    if completed.returncode != 0 and not refreshed.get("available"):
+        refreshed["available"] = False
+        refreshed["error"] = refreshed.get("error") or f"Side-Step source checkout failed with exit code {completed.returncode}."
+    return refreshed
+
+
+def _sidestep_command(status: dict[str, Any], subcommand: str) -> list[str]:
+    if status.get("source_available"):
+        return [sys.executable, str(status["train_py"]), subcommand]
+    return ["sidestep", subcommand]
+
+
+def _sidestep_env(status: dict[str, Any]) -> dict[str, str]:
+    env = os.environ.copy()
+    if status.get("source_available"):
+        source_dir = str(status["source_dir"])
+        existing = env.get("PYTHONPATH", "")
+        env["PYTHONPATH"] = source_dir if not existing else f"{source_dir}{os.pathsep}{existing}"
+    return env
 
 
 def stage_full_trainer(args: argparse.Namespace, report: dict[str, Any]) -> None:
     rows = _load_tensor_manifest(args)
     smoke_dir = Path(args.smoke_dir)
     smoke_metrics = smoke_dir / "ace_hybrid_smoke_metrics.json"
-    sidestep_status = _sidestep_available()
+    sidestep_status = _ensure_sidestep_runtime(install_if_missing=parse_bool(args.run_sidestep) and not parse_bool(args.dry_run))
     full_dir = Path(args.output_dir)
     checkpoint_dir = full_dir / "checkpoints"
     trainable_delta_path = checkpoint_dir / "trainable_delta.pt"
-    side_step_command = [
-        "sidestep",
-        "--yes",
-        "train",
+    side_step_command = _sidestep_command(sidestep_status, "train") + [
         "--checkpoint-dir",
         str(args.checkpoint_dir),
         "--model",
@@ -1025,7 +1219,7 @@ def stage_full_trainer(args: argparse.Namespace, report: dict[str, Any]) -> None
             side_step_result.update({"status": "failed", "error": f"Side-Step tensor directory not found: {args.sidestep_tensor_dir}"})
         else:
             started = time.time()
-            completed = subprocess.run(side_step_command, text=True, capture_output=True, check=False)
+            completed = subprocess.run(side_step_command, text=True, capture_output=True, check=False, env=_sidestep_env(sidestep_status))
             side_step_result.update(
                 {
                     "status": "passed" if completed.returncode == 0 else "failed",
@@ -1101,7 +1295,7 @@ def stage_full_trainer(args: argparse.Namespace, report: dict[str, Any]) -> None
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--stage", required=True, choices=["prepare_tensors", "planner_probe", "dit_tap_discovery", "adapter_smoke", "full_trainer"])
+    parser.add_argument("--stage", required=True, choices=["prepare_tensors", "prepare_sidestep_inputs", "planner_probe", "dit_tap_discovery", "adapter_smoke", "full_trainer"])
     parser.add_argument("--input_data", default="")
     parser.add_argument("--ace_tensor_dir", default="")
     parser.add_argument("--smoke_dir", default="")
@@ -1120,6 +1314,9 @@ def main() -> int:
     parser.add_argument("--learning_rate", type=float, default=1e-3)
     parser.add_argument("--checkpoint_dir", default="/mnt/azureml/ace_checkpoints")
     parser.add_argument("--sidestep_tensor_dir", default="")
+    parser.add_argument("--checkpoint_output_dir", default="")
+    parser.add_argument("--sidestep_tensor_output_dir", default="")
+    parser.add_argument("--allow_checkpoint_download", default="true")
     parser.add_argument("--run_sidestep", default="false")
     parser.add_argument("--model_variant", default="base")
     parser.add_argument("--adapter_type", default="lora")
@@ -1150,10 +1347,12 @@ def main() -> int:
     }
     started = time.time()
     try:
-        if args.stage in {"dit_tap_discovery", "adapter_smoke", "full_trainer"} and not torch.cuda.is_available():
+        if args.stage in {"prepare_sidestep_inputs", "dit_tap_discovery", "adapter_smoke", "full_trainer"} and not torch.cuda.is_available():
             raise RuntimeError(f"CUDA is required for ACE stage {args.stage}.")
         if args.stage == "prepare_tensors":
             stage_prepare_tensors(args, report)
+        elif args.stage == "prepare_sidestep_inputs":
+            stage_prepare_sidestep_inputs(args, report)
         elif args.stage == "planner_probe":
             stage_planner_probe(args, report)
         elif args.stage == "dit_tap_discovery":
@@ -1169,15 +1368,17 @@ def main() -> int:
         print(report["traceback"], flush=True)
     report["seconds"] = round(time.time() - started, 3)
     compute_label = "cpu-prep-cluster" if args.stage == "planner_probe" else ("gpu-fulltraining-h100" if args.stage == "full_trainer" else "gpu-smoke-h100")
+    environment_name = "env-ace-step-sidestep" if args.stage in {"prepare_sidestep_inputs", "full_trainer"} else "env-ace-step"
+    environment_version = "3" if args.stage in {"prepare_sidestep_inputs", "full_trainer"} else "4"
     metadata = base_metadata(
         test_name=f"ace_step_{args.stage}",
         compute=compute_label,
-        environment="azureml:env-ace-step:4",
+        environment=f"azureml:{environment_name}:{environment_version}",
         dashboard_triggered=parse_bool(args.dashboard_triggered),
         report=report,
         model_family="ace_step",
-        environment_name="env-ace-step",
-        environment_version="4",
+        environment_name=environment_name,
+        environment_version=environment_version,
         import_status=report.get("status"),
     )
     write_report(Path(args.output_dir), report, metadata, report_alias=f"ace_step_{args.stage}_report.json")

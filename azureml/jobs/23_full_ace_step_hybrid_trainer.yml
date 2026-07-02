@@ -41,11 +41,17 @@ inputs:
   tensor_manifest_relative_path: ace_tensor_manifest.jsonl
   checkpoint: ACE-Step/Ace-Step1.5
   planner_checkpoint: ACE-Step/acestep-5Hz-lm-0.6B
-  dit_variant: base_or_sft_dit
-  checkpoint_dir: /mnt/azureml/ace_checkpoints
-  sidestep_tensor_dir: /mnt/azureml/ace_sidestep_tensors
-  run_sidestep: "false"
-  model_variant: base
+  dit_variant: turbo_dit
+  checkpoint_dir:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_step/checkpoints/
+  sidestep_tensor_dir:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_step/tensors/sidestep_tensors/
+  run_sidestep: "true"
+  model_variant: turbo
   adapter_type: lora
   rank: 64
   alpha: 128
@@ -64,13 +70,13 @@ outputs:
     type: uri_folder
     mode: rw_mount
     path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_step/full/
-environment: azureml:env-ace-step:4
+environment: azureml:env-ace-step-sidestep:3
 compute: azureml:gpu-fulltraining-h100
 identity:
   type: user_identity
 experiment_name: cara-ace-step-full
 display_name: 23-full-ace-step-hybrid-trainer
-description: Full ACE-Step Hybrid CARA branch handoff using mounted-output trainable-delta checkpointing. Runs Side-Step adapter training when mounted ACE checkpoints/tensors are provided; otherwise records a non-deployable contract adapter.
+description: Full ACE-Step Hybrid CARA branch using Side-Step LoRA training and mounted-output trainable-delta checkpointing. Requires Side-Step runtime, mounted ACE checkpoints, and mounted Side-Step tensors.
 tags:
   cara_phase: fine-tuning
   cara_step_id: "12"
@@ -80,6 +86,7 @@ tags:
   cara_planner_size: 0.6B
   cara_training_gate: ace_step_hybrid_full
   cara_training_scope: full
+  cara_trainer_compute: gpu-fulltraining-h100
   cara_cost_guardrail: existing_azureml_workspace_only
   cara_checkpoint_strategy: mounted_output_trainable_delta_only
   cara_delta_checkpoint: checkpoints/trainable_delta.pt

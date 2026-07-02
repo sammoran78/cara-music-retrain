@@ -188,6 +188,13 @@ class TrainingAceTensorRunRequest(BaseModel):
     compute_strategy: str = "prefer_h100_else_cpu"
 
 
+class TrainingAceSidestepInputRunRequest(BaseModel):
+    dry_run: bool = False
+    max_rows: int = 0
+    allow_checkpoint_download: bool = True
+    model_variant: str = "turbo"
+
+
 class TrainingAcePlannerProbeRunRequest(BaseModel):
     dry_run: bool = False
     max_rows: int = 0
@@ -218,10 +225,11 @@ class TrainingAceFullRunRequest(BaseModel):
     learning_rate: float = 1e-4
     max_train_rows: int = 0
     max_eval_rows: int = 2048
-    run_sidestep: bool = False
-    checkpoint_dir: str = "/mnt/azureml/ace_checkpoints"
-    sidestep_tensor_dir: str = "/mnt/azureml/ace_sidestep_tensors"
-    model_variant: str = "base"
+    run_sidestep: bool = True
+    allow_contract_only: bool = False
+    checkpoint_dir: str = "azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_step/checkpoints/"
+    sidestep_tensor_dir: str = "azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_step/tensors/sidestep_tensors/"
+    model_variant: str = "turbo"
     adapter_type: str = "lora"
     rank: int = 64
     alpha: int = 128
@@ -385,6 +393,7 @@ _TRAINING_ACE_TENSOR_JOB_FILE = ROOT / "azureml" / "jobs" / "19_prepare_ace_step
 _TRAINING_ACE_PLANNER_JOB_FILE = ROOT / "azureml" / "jobs" / "20_ace_step_planner_survival_probe.yml"
 _TRAINING_ACE_DIT_TAP_JOB_FILE = ROOT / "azureml" / "jobs" / "21_ace_step_dit_tap_discovery.yml"
 _TRAINING_ACE_SMOKE_JOB_FILE = ROOT / "azureml" / "jobs" / "22_ace_step_hybrid_smoke.yml"
+_TRAINING_ACE_SIDESTEP_INPUTS_JOB_FILE = ROOT / "azureml" / "jobs" / "23a_prepare_ace_step_sidestep_inputs.yml"
 _TRAINING_ACE_FULL_JOB_FILE = ROOT / "azureml" / "jobs" / "23_full_ace_step_hybrid_trainer.yml"
 _EVALUATION_STABLE_AUDIO_JOB_FILE = ROOT / "azureml" / "jobs" / "14_benchmark_testing_stable_audio_eval.yml"
 _EVALUATION_STABLE_AUDIO_AUDIO_JOB_FILE = ROOT / "azureml" / "jobs" / "15_benchmark_testing_stable_audio_audio.yml"
@@ -416,6 +425,8 @@ _TRAINING_CONTEXT_FULL_OUTPUT_URI = f"{_TRAINING_CONTEXT_ROOT_URI}context_full/"
 _TRAINING_ACE_PREFLIGHT_OUTPUT_URI = "azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_step_preflight/"
 _TRAINING_ACE_ROOT_URI = "azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_step/"
 _TRAINING_ACE_TENSOR_OUTPUT_URI = f"{_TRAINING_ACE_ROOT_URI}tensors/"
+_TRAINING_ACE_CHECKPOINT_URI = f"{_TRAINING_ACE_ROOT_URI}checkpoints/"
+_TRAINING_ACE_SIDESTEP_TENSOR_URI = f"{_TRAINING_ACE_TENSOR_OUTPUT_URI}sidestep_tensors/"
 _TRAINING_ACE_PLANNER_OUTPUT_URI = f"{_TRAINING_ACE_ROOT_URI}planner_probe/"
 _TRAINING_ACE_DIT_TAP_OUTPUT_URI = f"{_TRAINING_ACE_ROOT_URI}dit_taps/"
 _TRAINING_ACE_SMOKE_OUTPUT_URI = f"{_TRAINING_ACE_ROOT_URI}smoke/"
@@ -434,6 +445,7 @@ _EVALUATION_STABLE_AUDIO_TRAINED_MODEL_URI = "azureml://datastores/ds_cara_raw_a
 _TRAINING_STABLE_AUDIO_ENVIRONMENT = "azureml:env-stable-audio-tools:8"
 _TRAINING_MUSICGEN_ENVIRONMENT = "azureml:env-musicgen-audiocraft:3"
 _TRAINING_ACE_ENVIRONMENT = "azureml:env-ace-step:4"
+_TRAINING_ACE_SIDESTEP_ENVIRONMENT = "azureml:env-ace-step-sidestep:3"
 _TRAINING_H100_COMPUTE = "gpu-smoke-h100"
 _TRAINING_FULL_H100_COMPUTE = "gpu-fulltraining-h100"
 _TRAINING_H100_COMPUTES = (_TRAINING_H100_COMPUTE, _TRAINING_FULL_H100_COMPUTE)
@@ -767,6 +779,129 @@ def _azureml_datastore_blob_text(prefix: str) -> str:
         return container.get_blob_client(prefix).download_blob().readall().decode("utf-8")
     except Exception as exc:
         raise HTTPException(status_code=503, detail=f"Unable to read Azure blob {prefix}: {exc}") from exc
+
+
+def _azureml_uri_to_datastore_prefix(uri: str) -> tuple[str, str] | None:
+    match = re.match(r"^azureml://datastores/([^/]+)/paths/(.+)$", str(uri or "").strip())
+    if not match:
+        return None
+    datastore_name, prefix = match.groups()
+    return datastore_name, prefix.rstrip("/") + "/"
+
+
+def _azureml_uri_folder_input(uri: str, *, mode: str = "ro_mount") -> dict[str, str]:
+    return {"type": "uri_folder", "mode": mode, "path": str(uri)}
+
+
+def _azureml_datastore_prefix_probe(prefix: str) -> dict[str, Any]:
+    settings = _azureml_settings()
+    datastore = _azureml_client().datastores.get(settings["datastore_name"])
+    account_name = getattr(datastore, "account_name", None)
+    container_name = getattr(datastore, "container_name", None)
+    if not account_name or not container_name:
+        raise HTTPException(status_code=503, detail="Azure ML datastore does not expose blob account/container metadata.")
+    key_command = [
+        "az",
+        "storage",
+        "account",
+        "keys",
+        "list",
+        "--resource-group",
+        settings["resource_group"],
+        "--account-name",
+        str(account_name),
+        "--only-show-errors",
+        "--query",
+        "[0].value",
+        "--output",
+        "tsv",
+    ]
+    completed = subprocess.run(key_command, cwd=ROOT, capture_output=True, text=True, timeout=60, check=False)
+    if completed.returncode != 0:
+        raise HTTPException(status_code=503, detail=f"Unable to read Azure storage account key: {completed.stderr.strip() or completed.stdout.strip()}")
+    account_key = completed.stdout.strip()
+    if not account_key:
+        raise HTTPException(status_code=503, detail="Azure storage account key lookup returned an empty key.")
+    try:
+        from azure.storage.blob import ContainerClient
+
+        container = ContainerClient(
+            account_url=f"https://{account_name}.blob.core.windows.net",
+            container_name=str(container_name),
+            credential=account_key,
+        )
+        first_blob = next(iter(container.list_blobs(name_starts_with=prefix)), None)
+        return {
+            "exists": first_blob is not None,
+            "prefix": prefix,
+            "example_blob": (
+                {
+                    "name": getattr(first_blob, "name", None),
+                    "size": getattr(first_blob, "size", None),
+                    "last_modified": _azureml_iso(getattr(first_blob, "last_modified", None)),
+                }
+                if first_blob is not None
+                else None
+            ),
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Unable to probe Azure blob prefix {prefix}: {exc}") from exc
+
+
+def _training_ace_full_prerequisite_state(
+    *,
+    checkpoint_uri: str = _TRAINING_ACE_CHECKPOINT_URI,
+    sidestep_tensor_uri: str = _TRAINING_ACE_SIDESTEP_TENSOR_URI,
+    verify_blobs: bool = True,
+) -> dict[str, Any]:
+    settings = _azureml_settings()
+    checks: dict[str, Any] = {}
+    errors: list[str] = []
+    for key, uri in {
+        "checkpoint_dir": checkpoint_uri,
+        "sidestep_tensor_dir": sidestep_tensor_uri,
+    }.items():
+        parsed = _azureml_uri_to_datastore_prefix(uri)
+        if not parsed:
+            checks[key] = {"configured": False, "uri": uri, "reason": "Value is not an azureml://datastores/.../paths/... URI."}
+            errors.append(f"{key} must be an AzureML datastore URI, not a container-local path.")
+            continue
+        datastore_name, prefix = parsed
+        if datastore_name != settings["datastore_name"]:
+            checks[key] = {
+                "configured": False,
+                "uri": uri,
+                "datastore": datastore_name,
+                "expected_datastore": settings["datastore_name"],
+                "reason": "URI points at a different datastore than the configured CARA raw-audio datastore.",
+            }
+            errors.append(f"{key} points at datastore {datastore_name}, expected {settings['datastore_name']}.")
+            continue
+        check = {"configured": True, "uri": uri, "datastore": datastore_name, "prefix": prefix}
+        if verify_blobs:
+            try:
+                probe = _azureml_datastore_prefix_probe(prefix)
+                check.update({"verified": bool(probe.get("exists")), "probe": probe})
+                if not probe.get("exists"):
+                    errors.append(f"{key} has no blobs under {uri}.")
+            except HTTPException as exc:
+                check.update({"verified": False, "probe_error": exc.detail})
+                errors.append(f"{key} could not be verified: {exc.detail}")
+        checks[key] = check
+    ready = not errors and all(bool(check.get("configured")) and (not verify_blobs or bool(check.get("verified"))) for check in checks.values())
+    return {
+        "ready": ready,
+        "checks": checks,
+        "errors": errors,
+        "checkpoint_uri": checkpoint_uri,
+        "sidestep_tensor_uri": sidestep_tensor_uri,
+        "verification": "blob_prefix_probe" if verify_blobs else "uri_shape_only",
+        "reason": (
+            "ACE checkpoint bundle and Side-Step tensor folder are configured and visible in the datastore."
+            if ready
+            else "ACE full run is blocked until checkpoint_dir and sidestep_tensor_dir are real AzureML datastore folders with blobs."
+        ),
+    }
 
 
 def _training_preprocess_progress(model_key: str) -> dict[str, Any]:
@@ -3882,6 +4017,7 @@ def _training_latest_ace_stage(
             "output_path": latest.get("output_path") or output_path,
             "variant": latest.get("variant"),
             "evidence_mode": latest.get("evidence_mode"),
+            "cara_run_sidestep": latest.get("cara_run_sidestep"),
         },
         "output_path": latest.get("output_path") or output_path,
         "reason": reason,
@@ -3933,10 +4069,18 @@ def _training_ace_ladder(preflight: dict[str, Any] | None = None) -> dict[str, A
     full = _training_latest_ace_stage(
         action="ace_step_hybrid_full_submitted",
         stage=12,
-        label="Full hybrid comparison",
+        label="Full ACE Side-Step LoRA fine-tune",
         output_path=_TRAINING_ACE_FULL_OUTPUT_URI,
-        missing_reason="Run the full Hybrid stage after Hybrid CARA-Strong smoke passes.",
+        missing_reason="Run the full Hybrid Side-Step LoRA stage after Hybrid CARA-Strong smoke passes.",
     )
+    full_latest = full.get("latest_job") if isinstance(full.get("latest_job"), dict) else {}
+    if full.get("passed") and str(full_latest.get("cara_run_sidestep") or "").lower() != "true":
+        full["contract_only_passed"] = True
+        full["passed"] = False
+        full["reason"] = (
+            "Latest Step 12 completed only the non-deployable Hybrid contract-adapter fallback. "
+            "A comparable ACE-Step full run requires Side-Step with run_sidestep=true."
+        )
     tensors["locked"] = not bool(preflight.get("passed"))
     planner["locked"] = not bool(tensors.get("passed"))
     dit_taps["locked"] = not bool(planner.get("passed"))
@@ -5261,6 +5405,14 @@ def _training_hybrid_readiness_payload() -> dict[str, Any]:
     ladder = _training_ace_ladder(preflight)
     source_review = ladder.get("source_review") or {}
     active_h100_jobs = _training_recent_h100_jobs_from_registry()
+    full_prerequisites = _training_ace_full_prerequisite_state()
+    sidestep_inputs = _training_latest_ace_stage(
+        action="ace_step_sidestep_inputs_submitted",
+        stage=12,
+        label="Prepare ACE checkpoint + Side-Step tensors",
+        output_path=f"{_TRAINING_ACE_ROOT_URI}sidestep_input_prep/",
+        missing_reason="Prepare the real ACE checkpoint bundle and Side-Step tensors before launching the full Hybrid fine-tune.",
+    )
     launch_enabled = (
         bool(source_review.get("passed"))
         and bool(lock_state.get("locked"))
@@ -5287,7 +5439,15 @@ def _training_hybrid_readiness_payload() -> dict[str, Any]:
     next_step = ladder.get("steps", [{}])[int(ladder.get("next_stage", 1)) - 1] if ladder.get("steps") else {}
     next_step_reason = str(next_step.get("reason") or ladder.get("reason") or launch_reason)
     if ladder.get("next_stage") == 12 and bool(ladder["smoke_sequence"]["cara_strong"].get("passed")):
-        next_step_reason = "Hybrid CARA-Strong smoke passed. Step 12 is unlocked; type LAUNCH ACE FULL FINE-TUNE to submit the full Hybrid stage."
+        next_step_reason = (
+            "Hybrid CARA-Strong smoke passed. Step 12 is unlocked; type LAUNCH ACE FULL FINE-TUNE to submit the full Hybrid stage."
+            if full_prerequisites.get("ready")
+            else (
+                str(sidestep_inputs.get("reason"))
+                if sidestep_inputs.get("active")
+                else str(full_prerequisites.get("reason") or "ACE full run prerequisites are not ready.")
+            )
+        )
     return {
         "status": "ready_for_ace_preflight" if launch_enabled else "blocked",
         "training_launch_enabled": launch_enabled,
@@ -5298,6 +5458,7 @@ def _training_hybrid_readiness_payload() -> dict[str, Any]:
         "ace_source_review": source_review,
         "ace_preflight": preflight,
         "ace_ladder": ladder,
+        "ace_sidestep_inputs": sidestep_inputs,
         "ace_launch": {
             "source_review_enabled": (not bool(source_review.get("passed"))) or bool(source_review.get("legacy_inferred")),
             "preflight_enabled": launch_enabled,
@@ -5310,8 +5471,15 @@ def _training_hybrid_readiness_payload() -> dict[str, Any]:
             "planner_preserved_smoke_enabled": bool(ladder["smoke_sequence"]["cara_head"].get("passed")) and not bool(ladder["smoke_sequence"]["planner_preserved"].get("active")) and not bool(ladder["smoke_sequence"]["planner_preserved"].get("passed")),
             "planner_bypass_smoke_enabled": bool(ladder["smoke_sequence"]["planner_preserved"].get("passed")) and not bool(ladder["smoke_sequence"]["planner_bypass"].get("active")) and not bool(ladder["smoke_sequence"]["planner_bypass"].get("passed")),
             "cara_strong_smoke_enabled": bool(ladder["smoke_sequence"]["planner_bypass"].get("passed")) and not bool(ladder["smoke_sequence"]["cara_strong"].get("active")) and not bool(ladder["smoke_sequence"]["cara_strong"].get("passed")),
-            "full_enabled": bool(ladder["smoke_sequence"]["cara_strong"].get("passed")) and not bool(ladder["full"].get("active")) and not bool(ladder["full"].get("passed")),
+            "sidestep_inputs_enabled": (
+                bool(ladder["smoke_sequence"]["cara_strong"].get("passed"))
+                and not bool(full_prerequisites.get("ready"))
+                and not bool(sidestep_inputs.get("active"))
+                and not active_h100_jobs
+            ),
+            "full_enabled": bool(full_prerequisites.get("ready")) and bool(ladder["smoke_sequence"]["cara_strong"].get("passed")) and not bool(ladder["full"].get("active")) and not bool(ladder["full"].get("passed")),
         },
+        "ace_full_prerequisites": full_prerequisites,
         "active_h100_jobs": active_h100_jobs,
         "data_locations": {
             "azure_source_root": _TRAINING_SOURCE_URI,
@@ -5324,6 +5492,8 @@ def _training_hybrid_readiness_payload() -> dict[str, Any]:
             "azure_ace_dit_tap_output_root": _TRAINING_ACE_DIT_TAP_OUTPUT_URI,
             "azure_ace_smoke_output_root": _TRAINING_ACE_SMOKE_OUTPUT_URI,
             "azure_ace_full_output_root": _TRAINING_ACE_FULL_OUTPUT_URI,
+            "azure_ace_checkpoint_root": _TRAINING_ACE_CHECKPOINT_URI,
+            "azure_ace_sidestep_tensor_root": _TRAINING_ACE_SIDESTEP_TENSOR_URI,
         },
         "target_model": {
             "model_family": "ace_step",
@@ -5331,7 +5501,7 @@ def _training_hybrid_readiness_payload() -> dict[str, Any]:
             "base_checkpoint": "ACE-Step/Ace-Step1.5",
             "planner_checkpoint": "ACE-Step/acestep-5Hz-lm-0.6B",
             "planner_size": "0.6B",
-            "dit_variant": "base_or_sft_dit",
+            "dit_variant": "turbo_dit",
             "comparison_role": "Comparable-size Hybrid CARA-Strong arm beside Diffusion, Context Diffusion, and MusicGen.",
         },
         "cloud_job_policy": {
@@ -5345,7 +5515,7 @@ def _training_hybrid_readiness_payload() -> dict[str, Any]:
             "model_family": "ace_step",
             "architecture": "0.6B LM planner plus DiT synthesizer",
             "planner_checkpoint": "ACE-Step/acestep-5Hz-lm-0.6B",
-            "dit_variant": "base_or_sft_dit",
+            "dit_variant": "turbo_dit",
             "sample_rate_hz": 48000,
             "latent_rate_hz": 25,
             "label_fields_required": [
@@ -5643,19 +5813,26 @@ def _ensure_ace_environment_registered() -> dict[str, Any]:
     try:
         from azure.ai.ml import load_environment
 
-        environment_file = ROOT / "azureml" / "environments" / "env_ace_step.yml"
-        environment = load_environment(source=environment_file)
-        registered = _azureml_client().environments.create_or_update(environment)
-        result = {
-            "name": getattr(registered, "name", None),
-            "version": getattr(registered, "version", None),
-            "description": getattr(registered, "description", None),
-        }
+        environment_files = [
+            (ROOT / "azureml" / "environments" / "env_ace_step.yml", _TRAINING_ACE_ENVIRONMENT),
+            (ROOT / "azureml" / "environments" / "env_ace_step_sidestep.yml", _TRAINING_ACE_SIDESTEP_ENVIRONMENT),
+        ]
+        result: dict[str, Any] = {}
+        for environment_file, expected_environment in environment_files:
+            environment = load_environment(source=environment_file)
+            registered = _azureml_client().environments.create_or_update(environment)
+            result[str(environment_file.relative_to(ROOT))] = {
+                "name": getattr(registered, "name", None),
+                "version": getattr(registered, "version", None),
+                "description": getattr(registered, "description", None),
+                "expected_environment": expected_environment,
+            }
         _azureml_test_prep_audit(
             {
                 "action": "ace_environment_registered",
                 "environment": _TRAINING_ACE_ENVIRONMENT,
-                "environment_file": str(environment_file.relative_to(ROOT)),
+                "sidestep_environment": _TRAINING_ACE_SIDESTEP_ENVIRONMENT,
+                "environment_files": [str(path.relative_to(ROOT)) for path, _ in environment_files],
                 "result": result,
             }
         )
@@ -6094,7 +6271,7 @@ def _record_ace_source_review(request: TrainingAceSourceReviewRequest) -> dict[s
         "step_name": "ACE source + license review",
         "base_checkpoint": "ACE-Step/Ace-Step1.5",
         "planner_checkpoint": "ACE-Step/acestep-5Hz-lm-0.6B",
-        "dit_variant": "base_or_sft_dit",
+        "dit_variant": "turbo_dit",
         "training_route": "Side-Step corrected-mode LoRA handoff; dashboard contract path remains non-deployable unless Side-Step actually runs.",
         "sources": [
             "https://huggingface.co/ACE-Step/Ace-Step1.5",
@@ -6203,12 +6380,45 @@ def _submit_ace_tensor_prepare_job(request: TrainingAceTensorRunRequest) -> dict
             "max_rows": max(0, int(request.max_rows)),
             "checkpoint": "ACE-Step/Ace-Step1.5",
             "planner_checkpoint": "ACE-Step/acestep-5Hz-lm-0.6B",
-            "dit_variant": "base_or_sft_dit",
+            "dit_variant": "turbo_dit",
         },
         tags_update={"cara_training_gate": "ace_step_tensor_prepare", "cara_step_id": "03"},
         compute=str(compute_selection["compute"]),
         compute_strategy=str(compute_selection["strategy"]),
         compute_reason=str(compute_selection["reason"]),
+    )
+
+
+def _submit_ace_sidestep_inputs_job(request: TrainingAceSidestepInputRunRequest) -> dict[str, Any]:
+    ladder = _training_ace_ladder()
+    if not ladder["smoke_sequence"]["cara_strong"].get("passed"):
+        raise HTTPException(status_code=409, detail=str(ladder["smoke_sequence"]["cara_strong"].get("reason") or "Run Hybrid CARA-Strong smoke before Side-Step input preparation."))
+    prerequisites = _training_ace_full_prerequisite_state(verify_blobs=True)
+    if prerequisites.get("ready") and not request.dry_run:
+        raise HTTPException(status_code=409, detail="ACE checkpoint bundle and Side-Step tensors are already present; proceed to Step 12 full fine-tune.")
+    _ace_require_h100_available("ACE Side-Step input preparation")
+    return _submit_ace_stage_job(
+        job_file=_TRAINING_ACE_SIDESTEP_INPUTS_JOB_FILE,
+        action="ace_step_sidestep_inputs_submitted",
+        output_path=f"{_TRAINING_ACE_ROOT_URI}sidestep_input_prep/",
+        request_dry_run=request.dry_run,
+        inputs_update={
+            "max_rows": max(0, int(request.max_rows)),
+            "allow_checkpoint_download": "true" if request.allow_checkpoint_download else "false",
+            "model_variant": request.model_variant or "turbo",
+            "checkpoint": "ACE-Step/Ace-Step1.5",
+            "planner_checkpoint": "ACE-Step/acestep-5Hz-lm-0.6B",
+            "dit_variant": "turbo_dit",
+        },
+        tags_update={
+            "cara_training_gate": "ace_step_sidestep_inputs",
+            "cara_step_id": "12a",
+            "cara_variant": "cara_strong",
+            "cara_model_variant": request.model_variant or "turbo",
+        },
+        compute=_TRAINING_H100_COMPUTE,
+        compute_strategy="gpu_only",
+        compute_reason="Side-Step preprocessing is a GPU two-pass VAE/text/DiT encoding stage and should not fall back to CPU.",
     )
 
 
@@ -6226,7 +6436,7 @@ def _submit_ace_planner_probe_job(request: TrainingAcePlannerProbeRunRequest) ->
             "max_rows": max(0, int(request.max_rows)),
             "checkpoint": "ACE-Step/Ace-Step1.5",
             "planner_checkpoint": "ACE-Step/acestep-5Hz-lm-0.6B",
-            "dit_variant": "base_or_sft_dit",
+            "dit_variant": "turbo_dit",
         },
         tags_update={"cara_training_gate": "ace_step_planner_probe", "cara_step_id": "04"},
         compute=str(compute_selection["compute"]),
@@ -6257,7 +6467,7 @@ def _submit_ace_dit_tap_job(request: TrainingAceDitTapRunRequest) -> dict[str, A
             "max_rows": max(1, min(int(request.max_rows), 20000)),
             "checkpoint": "ACE-Step/Ace-Step1.5",
             "planner_checkpoint": "ACE-Step/acestep-5Hz-lm-0.6B",
-            "dit_variant": "base_or_sft_dit",
+            "dit_variant": "turbo_dit",
         },
         tags_update={"cara_training_gate": "ace_step_dit_tap_discovery", "cara_step_id": "05"},
         compute=_TRAINING_H100_COMPUTE,
@@ -6306,7 +6516,7 @@ def _submit_ace_smoke_job(request: TrainingAceSmokeRunRequest) -> dict[str, Any]
             "max_eval_rows": max(1, min(int(request.max_eval_rows), 50000)),
             "checkpoint": "ACE-Step/Ace-Step1.5",
             "planner_checkpoint": "ACE-Step/acestep-5Hz-lm-0.6B",
-            "dit_variant": "base_or_sft_dit",
+            "dit_variant": "turbo_dit",
         },
         tags_update={"cara_training_gate": gate, "cara_step_id": step_id, "cara_variant": variant},
         compute=_TRAINING_H100_COMPUTE,
@@ -6319,12 +6529,34 @@ def _submit_ace_full_job(request: TrainingAceFullRunRequest) -> dict[str, Any]:
     expected = "LAUNCH ACE FULL FINE-TUNE"
     if str(request.confirmation_phrase or "").strip() != expected:
         raise HTTPException(status_code=409, detail=f"ACE full launch requires typed confirmation: {expected}")
+    if not request.run_sidestep and not request.allow_contract_only:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "ACE full launch now requires run_sidestep=true. The run_sidestep=false path is only a "
+                "non-deployable contract-adapter check and is not comparable to the completed full fine-tunes."
+            ),
+        )
     ladder = _training_ace_ladder()
     if not ladder["smoke_sequence"]["cara_strong"].get("passed"):
         raise HTTPException(status_code=409, detail=str(ladder["smoke_sequence"]["cara_strong"].get("reason") or "Run Hybrid CARA-Strong smoke before full ACE stage."))
     if ladder["full"].get("active"):
         latest = ladder["full"].get("latest_job") or {}
         raise HTTPException(status_code=409, detail=f"ACE full job {latest.get('name') or latest.get('job_name') or 'latest'} is already active.")
+    prerequisites = _training_ace_full_prerequisite_state(
+        checkpoint_uri=request.checkpoint_dir,
+        sidestep_tensor_uri=request.sidestep_tensor_dir,
+        verify_blobs=True,
+    )
+    if request.run_sidestep and not prerequisites.get("ready"):
+        errors = prerequisites.get("errors") or [str(prerequisites.get("reason") or "ACE full-run prerequisites are not ready.")]
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "ACE full launch is blocked before Azure submission because required Side-Step inputs are not mounted-ready: "
+                + " ".join(str(error) for error in errors)
+            ),
+        )
     _ace_require_h100_available("ACE full Hybrid fine-tune")
     output_path = f"{_TRAINING_ACE_FULL_OUTPUT_URI}ace-hybrid-full-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}/"
     return _submit_ace_stage_job(
@@ -6334,8 +6566,8 @@ def _submit_ace_full_job(request: TrainingAceFullRunRequest) -> dict[str, Any]:
         request_dry_run=request.dry_run,
         inputs_update={
             "run_sidestep": "true" if request.run_sidestep else "false",
-            "checkpoint_dir": request.checkpoint_dir,
-            "sidestep_tensor_dir": request.sidestep_tensor_dir,
+            "checkpoint_dir": _azureml_uri_folder_input(request.checkpoint_dir),
+            "sidestep_tensor_dir": _azureml_uri_folder_input(request.sidestep_tensor_dir),
             "model_variant": request.model_variant,
             "adapter_type": request.adapter_type,
             "rank": max(1, min(int(request.rank), 512)),
@@ -6350,13 +6582,16 @@ def _submit_ace_full_job(request: TrainingAceFullRunRequest) -> dict[str, Any]:
             "max_eval_rows": max(1, int(request.max_eval_rows)),
             "checkpoint": "ACE-Step/Ace-Step1.5",
             "planner_checkpoint": "ACE-Step/acestep-5Hz-lm-0.6B",
-            "dit_variant": "base_or_sft_dit",
+            "dit_variant": "turbo_dit",
         },
         tags_update={
             "cara_training_gate": "ace_step_hybrid_full",
             "cara_step_id": "12",
             "cara_variant": "cara_strong",
             "cara_run_sidestep": "true" if request.run_sidestep else "false",
+            "cara_ace_checkpoint_uri": request.checkpoint_dir,
+            "cara_ace_sidestep_tensor_uri": request.sidestep_tensor_dir,
+            "cara_trainer_compute": _TRAINING_FULL_H100_COMPUTE,
         },
         compute=_TRAINING_FULL_H100_COMPUTE,
         compute_strategy="gpu_only",
@@ -9230,6 +9465,12 @@ def training_ace_dit_taps(request: TrainingAceDitTapRunRequest):
 @app.post("/api/training/ace/smoke")
 def training_ace_smoke(request: TrainingAceSmokeRunRequest):
     submitted = _submit_ace_smoke_job(request)
+    return {"status": "submitted", "job": submitted, "readiness": _training_hybrid_readiness_payload()}
+
+
+@app.post("/api/training/ace/sidestep-inputs")
+def training_ace_sidestep_inputs(request: TrainingAceSidestepInputRunRequest):
+    submitted = _submit_ace_sidestep_inputs_job(request)
     return {"status": "submitted", "job": submitted, "readiness": _training_hybrid_readiness_payload()}
 
 

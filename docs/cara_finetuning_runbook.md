@@ -842,11 +842,62 @@ Side-Step handoff and claim scope:
   Side-Step tensor directories are mounted and `run_sidestep=true`. The
   intended Side-Step path is corrected-mode LoRA over the selected base/SFT DiT
   target, using the CARA-labelled tensor manifest and resolver from Step 03.
-- Until those mounted ACE checkpoint/tensor inputs exist, the dashboard submits
-  the conservative `run_sidestep=false` path. That path trains and records a
-  lightweight contract adapter/checkpoint so the ladder, registry binding,
-  metrics, and Azure plumbing can be tested, but it is not a deployable ACE-Step
-  adapter and must not be described as a completed ACE model fine-tune.
+- Step 12 full Hybrid training targets the existing
+  `gpu-fulltraining-h100` Azure ML compute, matching the completed Stable Audio,
+  Context Diffusion, and MusicGen full-run convention. Earlier ACE smoke,
+  preflight, tap-discovery, and Side-Step input-preparation stages may still use
+  `gpu-smoke-h100` as their GPU validation/preparation target, but the
+  deployable full fine-tune should not launch on the smoke compute.
+- Step 12 uses a separate full-training Azure ML environment,
+  `azureml:env-ace-step-sidestep:3`, rather than the lighter
+  `azureml:env-ace-step:4` preflight/smoke environment. The Side-Step
+  environment uses Python 3.11 and carries the Side-Step dependency set needed
+  at runtime. The `:3` environment installs CUDA 12.8 Torch, torchaudio,
+  torchvision, the upstream prebuilt `flash-attn` wheel, and the Side-Step
+  dependency set in the Azure image. Step 12a / Step 12 then clone the
+  Side-Step source tree at runtime and call `python train.py preprocess ...` or
+  `python train.py train ...` directly from that checkout. This avoids Azure
+  image-build failures where pip either tries to compile `flash-attn` before
+  Torch is importable or rejects `--no-deps` inside the conda-file requirements
+  section, and it avoids the installed Side-Step console wrapper failure where
+  the generated `sidestep` executable imports a non-packaged top-level
+  `train` module.
+- Before Step 12 submits, the dashboard now validates the two required mounted
+  inputs as AzureML datastore folders, not local container placeholders. It
+  checks that `checkpoint_dir` and `sidestep_tensor_dir` are
+  `azureml://datastores/.../paths/...` URI-folder inputs and probes the
+  datastore prefixes for at least one blob. If either the ACE checkpoint bundle
+  or Side-Step tensor folder is absent, the dashboard keeps Step 12 locked and
+  the API rejects direct submission before an Azure job is prepared.
+- The missing-input bridge is Step 12a, `Prepare Side-Step Inputs`. It runs as
+  a separate GPU command job after the Hybrid CARA-Strong smoke has passed and
+  before the full fine-tune. Step 12a materializes the public
+  `ACE-Step/Ace-Step1.5` checkpoint bundle into
+  `ace_step/checkpoints/`, regenerates the CARA JSON dataset with paths valid
+  for the current Azure container, clones the Side-Step source runner, and runs
+  `python train.py preprocess ...` into `ace_step/tensors/sidestep_tensors/`.
+  The full Step 12 launch should only be attempted after the dashboard verifies
+  both prefixes contain blobs.
+- The current public `ACE-Step/Ace-Step1.5` checkpoint tree exposes the
+  `acestep-v15-turbo` DiT bundle plus shared `vae/` and
+  `Qwen3-Embedding-0.6B/` folders. The live deployable Side-Step path therefore
+  uses `model_variant=turbo` / `dit_variant=turbo_dit` unless a separate
+  base/SFT checkpoint bundle is deliberately mounted and documented.
+- A failed Step 12 with `sidestep.available=false` is an environment failure,
+  not model evidence. A failed Step 12 with missing `checkpoint_dir` or
+  `sidestep_tensor_dir` means the ACE checkpoint bundle or Side-Step
+  preprocessed tensors still need to be mounted as Azure inputs before full
+  training can begin.
+- The dashboard full-run button now requires the real Side-Step path
+  (`run_sidestep=true`). A `run_sidestep=false` execution is still meaningful as
+  a lightweight contract-adapter/plumbing check, but it is not accepted as Step
+  12 completion, is not deployable, and must not be benchmarked as the ACE-Step
+  equivalent of the completed Stable Audio or MusicGen full fine-tunes.
+- If a historical Step 12 run completes in contract-only mode, the ladder should
+  display it as a contract handoff result and keep the real Side-Step LoRA
+  fine-tune gate open. The expected full run should take material GPU time once
+  ACE checkpoints, Side-Step tensors, and the Side-Step training module are
+  actually mounted.
 - A run may claim `deployable_ace_adapter=true` only when the report shows
   Side-Step actually ran, the output contains the Side-Step adapter artifacts,
   and the run records the mounted checkpoint/tensor source paths.

@@ -105,6 +105,13 @@ const ladder = [
     evidence: 'Deployable Side-Step LoRA adapter delta, held-out planner/DiT attribution, registry decoding, and baseline-vs-CARA comparison report.',
     comparator: 'Final third-arm comparison against diffusion and autoregressive results.',
   },
+  {
+    step: '13',
+    label: 'Native DiT attribution head',
+    state: 'blocked',
+    evidence: 'Train/export checkpoints/ace_attribution_head.pt from ACE DiT hidden states replaying the completed Side-Step LoRA model.',
+    comparator: 'Matches the diffusion branches: native CARA predictions come from DiT hidden-state evidence, not prompt-only text.',
+  },
 ];
 
 const sources = [
@@ -236,6 +243,38 @@ interface HybridReadiness {
   submitted_training_jobs?: Array<Record<string, unknown>>;
 }
 
+interface TrainingRunProgress {
+  checked_at?: string;
+  model_key?: string;
+  model_label?: string;
+  job_name?: string;
+  studio_url?: string;
+  status?: string;
+  variant?: string;
+  training_scope?: string;
+  max_steps?: number | null;
+  observed_step?: number | null;
+  step_percent?: number | null;
+  batch_size?: number | null;
+  elapsed_seconds?: number | null;
+  estimated_remaining_seconds?: number | null;
+  metrics_available?: boolean;
+  metrics_source?: string | null;
+  metrics_artifact?: string | null;
+  metrics_row_count?: number | null;
+  metrics_error?: string | null;
+  progress_artifact?: {
+    status?: string;
+    latest_line?: string | null;
+    line_count?: number | null;
+    log_path?: string | null;
+    updated_at?: string | null;
+    step_source_line?: string | null;
+    progress_warning?: string | null;
+  } | null;
+  note?: string;
+}
+
 const fallbackSteps: HybridLadderStep[] = ladder.map((item) => ({
   stage: Number(item.step),
   label: item.label,
@@ -245,13 +284,33 @@ const fallbackSteps: HybridLadderStep[] = ladder.map((item) => ({
   reason: item.evidence,
 }));
 
+const formatDuration = (seconds?: number | null): string => {
+  if (seconds === null || seconds === undefined || !Number.isFinite(seconds)) return '-';
+  const total = Math.max(0, Math.round(seconds));
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const secs = total % 60;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  if (minutes > 0) return `${minutes}m ${secs}s`;
+  return `${secs}s`;
+};
+
+const isActiveStatus = (status?: string | null): boolean =>
+  ['notstarted', 'queued', 'preparing', 'starting', 'provisioning', 'running', 'finalizing'].includes(
+    String(status || '').toLowerCase(),
+  );
+
 export const FinetuneHybridPage: React.FC = () => {
   const [readiness, setReadiness] = useState<HybridReadiness | null>(null);
+  const [runProgress, setRunProgress] = useState<TrainingRunProgress | null>(null);
+  const [runProgressLoading, setRunProgressLoading] = useState(false);
+  const [runProgressError, setRunProgressError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [launching, setLaunching] = useState(false);
   const [loadCheckpoint, setLoadCheckpoint] = useState(false);
   const [confirmation, setConfirmation] = useState('');
   const [fullConfirmation, setFullConfirmation] = useState('');
+  const [nativeHeadConfirmation, setNativeHeadConfirmation] = useState('');
   const [logs, setLogs] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -276,17 +335,69 @@ export const FinetuneHybridPage: React.FC = () => {
     }
   };
 
+  const refreshRunProgress = async () => {
+    setRunProgressLoading(true);
+    setRunProgressError(null);
+    try {
+      const res = await fetch('/api/training/run-progress?model=ace_step');
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.detail ?? 'ACE Step run-progress check failed');
+      setRunProgress(json.progress ?? null);
+    } catch (err) {
+      setRunProgressError(err instanceof Error ? err.message : 'ACE Step run-progress check failed');
+    } finally {
+      setRunProgressLoading(false);
+    }
+  };
+
   useEffect(() => {
     void refreshReadiness();
+    void refreshRunProgress();
   }, []);
 
+  useEffect(() => {
+    if (!isActiveStatus(runProgress?.status)) return undefined;
+    const timer = window.setInterval(() => {
+      void refreshRunProgress();
+    }, 60_000);
+    return () => window.clearInterval(timer);
+  }, [runProgress?.status]);
+
   const steps = useMemo(() => readiness?.ace_ladder?.steps ?? fallbackSteps, [readiness]);
+  const runProgressIsActive = isActiveStatus(runProgress?.status);
+  const runProgressStepLabel =
+    runProgress?.observed_step !== null && runProgress?.observed_step !== undefined
+      ? `${runProgress.observed_step.toLocaleString()} / ${runProgress.max_steps?.toLocaleString() ?? '-'}`
+      : runProgress?.max_steps
+        ? `waiting / ${runProgress.max_steps.toLocaleString()}`
+        : '-';
+  const runProgressPercentLabel =
+    runProgress?.step_percent !== null && runProgress?.step_percent !== undefined
+      ? `${runProgress.step_percent.toFixed(2)}%`
+      : runProgressIsActive
+        ? 'waiting for trainer step'
+        : '-';
+  const runProgressActivity =
+    runProgress?.progress_artifact?.line_count !== null && runProgress?.progress_artifact?.line_count !== undefined
+      ? `${runProgress.progress_artifact.line_count.toLocaleString()} log line${runProgress.progress_artifact.line_count === 1 ? '' : 's'}`
+      : runProgressIsActive
+        ? 'artifact heartbeat active'
+        : '-';
   const preflightActive = Boolean(readiness?.ace_preflight?.active);
   const preflightReady = Boolean(readiness?.ace_launch?.preflight_enabled ?? readiness?.training_launch_enabled) && !preflightActive;
   const preflightConfirmed = confirmation.trim() === 'LAUNCH ACE PREFLIGHT';
   const canLaunchPreflight = preflightReady && !launching;
 
   const launchFlag = (key: string) => Boolean(readiness?.ace_launch?.[key]) && !launching;
+  const sidestepInputTitle = () => {
+    if (readiness?.ace_full_prerequisites?.ready) {
+      return 'ACE checkpoint bundle and Side-Step tensors are ready; continue to Step 12 full fine-tune.';
+    }
+    if (readiness?.ace_sidestep_inputs?.active) {
+      return readiness.ace_sidestep_inputs.reason ?? 'ACE Side-Step input preparation is already active.';
+    }
+    return readiness?.ace_full_prerequisites?.reason ?? readiness?.ace_sidestep_inputs?.reason;
+  };
   const canRecordSourceReview = launchFlag('source_review_enabled');
 
   const stageLaunchEnabled = (stage: number) => {
@@ -302,6 +413,7 @@ export const FinetuneHybridPage: React.FC = () => {
     if (stage === 10) return launchFlag('planner_bypass_smoke_enabled');
     if (stage === 11) return launchFlag('cara_strong_smoke_enabled');
     if (stage === 12) return launchFlag('full_enabled');
+    if (stage === 13) return launchFlag('native_head_enabled');
     return false;
   };
 
@@ -394,10 +506,17 @@ export const FinetuneHybridPage: React.FC = () => {
             ? '/api/training/ace/dit-taps'
             : stage === 12
               ? '/api/training/ace/full'
-              : '/api/training/ace/smoke';
+              : stage === 13
+                ? '/api/training/ace/native-head'
+                : '/api/training/ace/smoke';
     const fullPhrase = 'LAUNCH ACE FULL FINE-TUNE';
+    const nativeHeadPhrase = 'LAUNCH ACE NATIVE HEAD';
     if (stage === 12 && fullConfirmation.trim() !== fullPhrase) {
       setError(`Type ${fullPhrase} before launching the full ACE stage.`);
+      return;
+    }
+    if (stage === 13 && nativeHeadConfirmation.trim() !== nativeHeadPhrase) {
+      setError(`Type ${nativeHeadPhrase} before launching the ACE native attribution-head stage.`);
       return;
     }
     setLaunching(true);
@@ -436,6 +555,23 @@ export const FinetuneHybridPage: React.FC = () => {
                     num_workers: 0,
                     timestep_mode: 'continuous',
                   }
+                : stage === 13
+                  ? {
+                      dry_run: false,
+                      confirmation_phrase: nativeHeadPhrase,
+                      max_steps: 2000,
+                      batch_size: 1,
+                      learning_rate: 0.0003,
+                      max_train_rows: 2048,
+                      max_eval_rows: 320,
+                      duration_seconds: 8,
+                      num_inference_steps: 20,
+                      guidance_scale: 7,
+                      include_cara_tag_in_prompt: false,
+                      checkpoint_dir:
+                        readiness?.data_locations?.azure_ace_checkpoint_root ??
+                        'azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_step/checkpoints/',
+                    }
                 : {
                     dry_run: false,
                     variant,
@@ -458,6 +594,7 @@ export const FinetuneHybridPage: React.FC = () => {
         `[launch:submitted] ACE Step ${stage} job=${json.job?.name ?? 'unknown'} · output=${json.job?.output_path ?? 'pending'}`,
       ]);
       if (stage === 12) setFullConfirmation('');
+      if (stage === 13) setNativeHeadConfirmation('');
     } catch (err) {
       const message = err instanceof Error ? err.message : `ACE Step ${stage} submission failed`;
       setError(message);
@@ -836,7 +973,7 @@ export const FinetuneHybridPage: React.FC = () => {
             type="button"
             onClick={runSidestepInputPrep}
             disabled={!launchFlag('sidestep_inputs_enabled')}
-            title={readiness?.ace_full_prerequisites?.reason ?? readiness?.ace_sidestep_inputs?.reason}
+            title={sidestepInputTitle()}
           >
             <CloudUpload size={16} /> 12a Prepare Side-Step Inputs
           </button>
@@ -850,16 +987,124 @@ export const FinetuneHybridPage: React.FC = () => {
           <button className={`btn stage-action ${launchFlag('full_enabled') && fullConfirmation.trim() === 'LAUNCH ACE FULL FINE-TUNE' ? 'is-current' : 'is-muted'}`} type="button" onClick={() => submitAceStage(12)} disabled={!launchFlag('full_enabled') || fullConfirmation.trim() !== 'LAUNCH ACE FULL FINE-TUNE'}>
             <Terminal size={16} /> 12 Full Hybrid Stage
           </button>
+          <div className="pool-empty-state">
+            <Brain size={18} />
+            Step 13 trains the missing ACE-native CARA attribution head from DiT hidden states produced by the completed Side-Step LoRA model. It keeps CARA text out of the prompt by default, then Step 25 can score native Hybrid CARA outputs.
+          </div>
+          <input
+            className="input"
+            value={nativeHeadConfirmation}
+            onChange={(event) => setNativeHeadConfirmation(event.target.value)}
+            placeholder="Type LAUNCH ACE NATIVE HEAD"
+            disabled={!launchFlag('native_head_enabled') || launching}
+          />
+          <button
+            className={`btn stage-action ${launchFlag('native_head_enabled') && nativeHeadConfirmation.trim() === 'LAUNCH ACE NATIVE HEAD' ? 'is-current' : 'is-muted'}`}
+            type="button"
+            onClick={() => submitAceStage(13)}
+            disabled={!launchFlag('native_head_enabled') || nativeHeadConfirmation.trim() !== 'LAUNCH ACE NATIVE HEAD'}
+          >
+            <Brain size={16} /> 13 Train Native DiT Attribution Head
+          </button>
         </div>
         <div className="paths" style={{ marginTop: 18 }}>
           <span>Source manifest: <span className="mono">{readiness?.data_locations?.azure_datastore_manifest ?? 'pending'}</span></span>
           <span>Preflight output: <span className="mono">{readiness?.data_locations?.azure_ace_preflight_output_root ?? 'pending'}</span></span>
-          <span>ACE environment: <span className="mono">{readiness?.ace_preflight?.required_environment ?? 'azureml:env-ace-step:4'}</span></span>
+          <span>ACE environment: <span className="mono">{readiness?.ace_preflight?.required_environment ?? 'azureml:env-ace-step:5'}</span></span>
           <span>Planner target: <span className="mono">{readiness?.target_model?.planner_checkpoint ?? 'ACE-Step/acestep-5Hz-lm-0.6B'}</span></span>
         </div>
         {logs.length > 0 && (
           <pre className="log-panel" style={{ marginTop: 18 }}>{logs.join('\n')}</pre>
         )}
+      </section>
+
+      <section className="card">
+        <div className="card-header">
+          <div className="card-title">ACE Training Progress</div>
+          <div className="card-meta">
+            {runProgress?.checked_at ? `checked ${new Date(runProgress.checked_at).toLocaleString()}` : 'trainer progress artifact'}
+          </div>
+        </div>
+        <div className="metric-list">
+          <div><span>Azure job</span><strong className="mono">{runProgress?.job_name ?? '-'}</strong></div>
+          <div><span>Status</span><strong>{runProgress?.status ?? '-'}</strong></div>
+          <div><span>Trainer status</span><strong>{runProgress?.progress_artifact?.status ?? '-'}</strong></div>
+          <div><span>Scope</span><strong>{runProgress?.training_scope ?? '-'}</strong></div>
+          <div>
+            <span>Step</span>
+            <strong>{runProgressStepLabel}</strong>
+          </div>
+          <div>
+            <span>Step progress</span>
+            <strong>{runProgressPercentLabel}</strong>
+          </div>
+          <div><span>Activity</span><strong>{runProgressActivity}</strong></div>
+          <div><span>Artifact updated</span><strong>{runProgress?.progress_artifact?.updated_at ? new Date(runProgress.progress_artifact.updated_at).toLocaleTimeString() : '-'}</strong></div>
+          <div><span>Elapsed</span><strong>{formatDuration(runProgress?.elapsed_seconds)}</strong></div>
+          <div><span>Estimated time left</span><strong>{formatDuration(runProgress?.estimated_remaining_seconds)}</strong></div>
+          <div>
+            <span>Source</span>
+            <strong>
+              {runProgress?.metrics_source === 'azure_datastore_training_progress_json'
+                ? 'training_progress.json'
+                : runProgress?.metrics_error
+                  ? 'unavailable'
+                  : '-'}
+            </strong>
+          </div>
+        </div>
+        <div className="bar" aria-label={`ACE Step progress ${runProgress?.step_percent ?? 0} percent`} style={{ marginTop: 14 }}>
+          <div
+            className="bar-fill"
+            style={{
+              width: `${Math.min(100, Math.max(runProgressIsActive && runProgress?.step_percent == null ? 2 : 0, runProgress?.step_percent ?? 0))}%`,
+            }}
+          />
+        </div>
+        {runProgressIsActive && (runProgress?.step_percent === null || runProgress?.step_percent === undefined) ? (
+          <div className="pool-empty-state" style={{ marginTop: 14 }}>
+            <RefreshCw size={18} />
+            Azure is still running this job. Numeric step progress is waiting for a trainer progress line; the card is showing log heartbeat instead.
+          </div>
+        ) : null}
+        <div className="pool-empty-state" style={{ marginTop: 14 }}>
+          <Terminal size={18} />
+          {runProgress?.progress_artifact?.latest_line
+            ? runProgress.progress_artifact.latest_line
+            : runProgress?.metrics_error
+              ? `Progress unavailable: ${runProgress.metrics_error}`
+              : 'ACE full and native-head stages write training_progress.json and training_progress.log while they run.'}
+        </div>
+        {runProgress?.progress_artifact?.progress_warning ? (
+          <div className="pool-empty-state" style={{ marginTop: 12 }}>
+            <AlertTriangle size={18} />
+            {runProgress.progress_artifact.progress_warning}
+          </div>
+        ) : null}
+        {runProgress?.progress_artifact?.step_source_line ? (
+          <div className="pool-empty-state" style={{ marginTop: 12 }}>
+            Step source: <span className="mono">{runProgress.progress_artifact.step_source_line}</span>
+          </div>
+        ) : null}
+        {runProgress?.metrics_artifact ? (
+          <div className="paths" style={{ marginTop: 12 }}>
+            <span>Progress artifact: <span className="mono">{runProgress.metrics_artifact}</span></span>
+            {runProgress.progress_artifact?.log_path ? (
+              <span>Run log path: <span className="mono">{runProgress.progress_artifact.log_path}</span></span>
+            ) : null}
+          </div>
+        ) : null}
+        {runProgressError ? <div className="error-banner" style={{ marginTop: 12 }}>{runProgressError}</div> : null}
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 14 }}>
+          <button className="btn btn-ghost" type="button" onClick={refreshRunProgress} disabled={runProgressLoading}>
+            <RefreshCw size={16} className={runProgressLoading ? 'spin' : ''} /> {runProgressLoading ? 'Checking...' : 'Check ACE Progress'}
+          </button>
+          {runProgress?.studio_url ? (
+            <a className="btn btn-ghost" href={runProgress.studio_url} target="_blank" rel="noreferrer">
+              Open in Azure Studio
+            </a>
+          ) : null}
+        </div>
       </section>
     </>
   );

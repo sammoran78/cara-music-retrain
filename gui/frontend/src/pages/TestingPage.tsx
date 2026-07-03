@@ -198,10 +198,17 @@ interface AudioBenchmarkProgress {
   note?: string;
 }
 
-const LIVE_WAVE_1_MODEL_IDS = [
+const DEFAULT_AUDIO_MODEL_IDS = [
   'diffusion_cara_strong_full_modest_arch',
   'context_diffusion_cara_strong_full',
   'musicgen_cara_strong_full',
+  'hybrid_ace_step_cara_strong_full',
+];
+const DEFAULT_SCORE_MODEL_IDS = [
+  'diffusion_cara_strong_full_modest_arch',
+  'context_diffusion_cara_strong_full',
+  'musicgen_cara_strong_full',
+  'hybrid_ace_step_cara_strong_full',
 ];
 const LIVE_WAVE_1_SUITE_IDS = [
   'heldout_audio_attribution',
@@ -291,6 +298,7 @@ const laneOrder = [
   'diffusion_cara_strong_full_modest_arch',
   'context_diffusion_cara_strong_full',
   'musicgen_cara_strong_full',
+  'hybrid_ace_step_cara_strong_full',
   'retrieval_baseline',
   'base_stable_audio_open_small',
   'stable_audio_no_cara_baseline',
@@ -301,7 +309,7 @@ const laneOrder = [
 export const TestingPage: React.FC = () => {
   const [readiness, setReadiness] = useState<EvaluationReadiness | null>(null);
   const [audioScope, setAudioScope] = useState<'smoke' | 'full'>('smoke');
-  const [audioModelIds, setAudioModelIds] = useState<string[]>(LIVE_WAVE_1_MODEL_IDS);
+  const [audioModelIds, setAudioModelIds] = useState<string[]>(DEFAULT_AUDIO_MODEL_IDS);
   const [audioSuiteIds, setAudioSuiteIds] = useState<string[]>(['known_pool_prompt_recall', 'control_token_confound']);
   const [audioMaxPrompts, setAudioMaxPrompts] = useState<number>(20);
   const [audioDryRun, setAudioDryRun] = useState<boolean>(true);
@@ -309,7 +317,7 @@ export const TestingPage: React.FC = () => {
   const [scoreDryRun, setScoreDryRun] = useState<boolean>(true);
   const [scoreForceRescore, setScoreForceRescore] = useState<boolean>(false);
   const [scoreConfirmation, setScoreConfirmation] = useState<string>('');
-  const [scoreModelIds, setScoreModelIds] = useState<string[]>(LIVE_WAVE_1_MODEL_IDS);
+  const [scoreModelIds, setScoreModelIds] = useState<string[]>(DEFAULT_SCORE_MODEL_IDS);
   const [loading, setLoading] = useState<boolean>(false);
   const [lockingPromptSet, setLockingPromptSet] = useState<boolean>(false);
   const [planningAudio, setPlanningAudio] = useState<boolean>(false);
@@ -394,18 +402,28 @@ export const TestingPage: React.FC = () => {
       return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
     });
   }, [readiness?.model_lanes]);
-  const selectableAudioLaneIdSet = new Set(LIVE_WAVE_1_MODEL_IDS);
-  const selectableAudioLanes = visibleLanes.filter((lane) => selectableAudioLaneIdSet.has(lane.model_id));
+  const runnableAudioAdapters = new Set(['stable_audio', 'musicgen', 'ace_step']);
+  const selectableAudioLaneIdSet = new Set(DEFAULT_AUDIO_MODEL_IDS);
+  const selectableAudioLanes = visibleLanes.filter(
+    (lane) =>
+      selectableAudioLaneIdSet.has(lane.model_id) &&
+      runnableAudioAdapters.has(String(lane.generation_adapter ?? '')) &&
+      statusClass(lane.status) === 'status-done',
+  );
   const selectedAudioLaneLabels = selectableAudioLanes.filter((lane) => audioModelIds.includes(lane.model_id)).map((lane) => lane.label);
-  const sourceScoreModelIds = (currentFullResult?.model_ids ?? []).filter((modelId) => selectableAudioLaneIdSet.has(modelId));
+  const scoreSupportedLaneIdSet = new Set(DEFAULT_SCORE_MODEL_IDS);
+  const sourceScoreModelIds = (currentFullResult?.model_ids ?? []).filter((modelId) => scoreSupportedLaneIdSet.has(modelId));
   const scoreSelectableLanes = sourceScoreModelIds.length
-    ? selectableAudioLanes.filter((lane) => sourceScoreModelIds.includes(lane.model_id))
-    : selectableAudioLanes;
+    ? visibleLanes.filter((lane) => sourceScoreModelIds.includes(lane.model_id))
+    : visibleLanes.filter((lane) => scoreSupportedLaneIdSet.has(lane.model_id) && statusClass(lane.status) === 'status-done');
   const selectedScoreModelIds = scoreModelIds.filter((modelId) => scoreSelectableLanes.some((lane) => lane.model_id === modelId));
   const selectedScoreLaneLabels = scoreSelectableLanes.filter((lane) => selectedScoreModelIds.includes(lane.model_id)).map((lane) => lane.label);
+  const sourceUnsupportedScoreModelIds = (currentFullResult?.model_ids ?? []).filter(
+    (modelId) => selectableAudioLaneIdSet.has(modelId) && !scoreSupportedLaneIdSet.has(modelId),
+  );
   const generatedAudioLaneIds = new Set(audioModelIds);
   const excludedGeneratedAudioLanes = visibleLanes.filter(
-    (lane) => !generatedAudioLaneIds.has(lane.model_id) && lane.generation_adapter !== 'post_hoc',
+    (lane) => selectableAudioLaneIdSet.has(lane.model_id) && !generatedAudioLaneIds.has(lane.model_id) && lane.generation_adapter !== 'post_hoc',
   );
   const excludedGeneratedAudioText = excludedGeneratedAudioLanes.length
     ? excludedGeneratedAudioLanes.map((lane) => `${lane.label} (${lane.status})`).join(', ')
@@ -455,7 +473,7 @@ export const TestingPage: React.FC = () => {
     setAudioModelIds((current) => (current.includes(modelId) ? current.filter((id) => id !== modelId) : [...current, modelId]));
   };
   const selectAudioModels = (modelIds: string[]) => {
-    const allowed = new Set(LIVE_WAVE_1_MODEL_IDS);
+    const allowed = new Set(selectableAudioLanes.map((lane) => lane.model_id));
     const deduped = Array.from(new Set(modelIds.filter((modelId) => allowed.has(modelId))));
     setAudioConfirmation('');
     setAudioModelIds(deduped);
@@ -656,6 +674,40 @@ export const TestingPage: React.FC = () => {
       <section className="card">
         <div className="card-header">
           <div>
+            <div className="card-title">How to run the tests</div>
+            <div className="dim" style={{ marginTop: 4, fontSize: 13 }}>
+              The tests are staged, not all separate manual rituals. Keep the prompt set fixed, then choose which model lanes to run.
+            </div>
+          </div>
+          <div className="card-meta">minimal workflow</div>
+        </div>
+        <div className="pool-summary-grid">
+          <div className="pool-metric-card">
+            <div className="pool-metric-top">1 · Lock prompts once</div>
+            <div className="pool-metric-value" style={{ fontSize: 18 }}>Shared target set</div>
+            <div className="pool-metric-meta">All models use the same benchmark prompt manifest so later comparisons are fair.</div>
+          </div>
+          <div className="pool-metric-card">
+            <div className="pool-metric-top">2 · Audio smoke</div>
+            <div className="pool-metric-value" style={{ fontSize: 18 }}>Small sanity run</div>
+            <div className="pool-metric-meta">Use this for newly wired lanes like Hybrid before spending on the full audio set.</div>
+          </div>
+          <div className="pool-metric-card">
+            <div className="pool-metric-top">3 · Full audio</div>
+            <div className="pool-metric-value" style={{ fontSize: 18 }}>One or many lanes</div>
+            <div className="pool-metric-meta">Run only Hybrid, a subset, or all runnable models. Old result folders are not overwritten.</div>
+          </div>
+          <div className="pool-metric-card">
+            <div className="pool-metric-top">4 · Attribution scoring</div>
+            <div className="pool-metric-value" style={{ fontSize: 18 }}>Follow-on scorer</div>
+            <div className="pool-metric-meta">Run after full audio. Stable Audio and MusicGen scorers exist; Hybrid native scoring is still pending.</div>
+          </div>
+        </div>
+      </section>
+
+      <section className="card">
+        <div className="card-header">
+          <div>
             <div className="card-title">Model readiness</div>
             <div className="dim" style={{ marginTop: 4, fontSize: 13 }}>
               Every lane is visible here; adding another model should add a row, not a new dashboard schema.
@@ -733,7 +785,7 @@ export const TestingPage: React.FC = () => {
             </div>
             <div>
               <span>Launcher coverage</span>
-              <strong>Released Stable Audio, Diffusion CARA-Strong, released MusicGen, and MusicGen CARA-Strong run from this page.</strong>
+              <strong>Diffusion CARA-Strong, Context Diffusion, MusicGen CARA-Strong, and ACE-Step Hybrid generated-audio runs are selectable here when ready.</strong>
             </div>
           </div>
         </div>
@@ -811,7 +863,7 @@ export const TestingPage: React.FC = () => {
                 setAudioConfirmation('');
                 setAudioScope('full');
                 setAudioSuiteIds(LIVE_WAVE_1_SUITE_IDS);
-                if (audioModelIds.length === 0) setAudioModelIds(LIVE_WAVE_1_MODEL_IDS);
+                if (audioModelIds.length === 0) setAudioModelIds(selectableAudioLanes.map((lane) => lane.model_id));
               }}
               disabled={planningAudio}
             >
@@ -870,8 +922,8 @@ export const TestingPage: React.FC = () => {
             </div>
           </div>
           <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
-            <button className="btn btn-ghost" type="button" disabled={planningAudio} onClick={() => selectAudioModels(LIVE_WAVE_1_MODEL_IDS)}>
-              All models
+            <button className="btn btn-ghost" type="button" disabled={planningAudio} onClick={() => selectAudioModels(selectableAudioLanes.map((lane) => lane.model_id))}>
+              All runnable models
             </button>
             <button className="btn btn-ghost" type="button" disabled={planningAudio} onClick={() => selectAudioModels(['diffusion_cara_strong_full_modest_arch'])}>
               Diffusion only
@@ -881,6 +933,9 @@ export const TestingPage: React.FC = () => {
             </button>
             <button className="btn btn-ghost" type="button" disabled={planningAudio} onClick={() => selectAudioModels(['musicgen_cara_strong_full'])}>
               MusicGen only
+            </button>
+            <button className="btn btn-ghost" type="button" disabled={planningAudio || !selectableAudioLanes.some((lane) => lane.model_id === 'hybrid_ace_step_cara_strong_full')} onClick={() => selectAudioModels(['hybrid_ace_step_cara_strong_full'])}>
+              Hybrid only
             </button>
           </div>
           <div className="check-list">
@@ -929,7 +984,7 @@ export const TestingPage: React.FC = () => {
                     <span>
                       {suite?.label ?? suiteId}
                       <span className="dim" style={{ display: 'block', fontSize: 12 }}>
-                        {suite?.evidence_type?.replace(/_/g, ' ') ?? 'locked evidence'}
+                        {suite?.description ?? suite?.evidence_type?.replace(/_/g, ' ') ?? 'locked evidence'}
                       </span>
                     </span>
                   </span>
@@ -1053,6 +1108,11 @@ export const TestingPage: React.FC = () => {
                 <span className="dim" style={{ display: 'block', fontSize: 12 }}>
                   Attribution scoring filters the source manifest to these model IDs; previous score folders are not overwritten.
                 </span>
+                {sourceUnsupportedScoreModelIds.length ? (
+                  <span className="dim" style={{ display: 'block', fontSize: 12 }}>
+                    Not yet scorable here: {formatList(sourceUnsupportedScoreModelIds)}. Generated audio can still be benchmarked and stored.
+                  </span>
+                ) : null}
               </strong>
             </div>
             <div>
@@ -1072,6 +1132,9 @@ export const TestingPage: React.FC = () => {
             </button>
             <button className="btn btn-ghost" type="button" disabled={planningScore} onClick={() => selectScoreModels(['musicgen_cara_strong_full'])}>
               MusicGen only
+            </button>
+            <button className="btn btn-ghost" type="button" disabled={planningScore} onClick={() => selectScoreModels(['hybrid_ace_step_cara_strong_full'])} title="Records the completed Hybrid generated-audio manifest and keeps native ACE scoring marked pending until the DiT-head extractor exists.">
+              Hybrid only
             </button>
           </div>
           <div className="check-list">

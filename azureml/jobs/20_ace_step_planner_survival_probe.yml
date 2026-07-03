@@ -30,7 +30,7 @@ outputs:
     type: uri_folder
     mode: rw_mount
     path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_step/planner_probe/
-environment: azureml:env-ace-step:4
+environment: azureml:env-ace-step:5
 compute: azureml:cpu-prep-cluster
 identity:
   type: user_identity

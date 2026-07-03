@@ -1,6 +1,6 @@
 $schema: https://azuremlschemas.azureedge.net/latest/environment.schema.json
 name: env-ace-step
-version: "4"
+version: "5"
 description: CARA environment for ACE-Step v1.5 Hybrid preflight, planner probes, and DiT attribution smoke tests. Uses pip CUDA PyTorch wheels to avoid conda libtorch/ITT import failures; Side-Step CLI is optional and checked at runtime.
 image: mcr.microsoft.com/azureml/openmpi4.1.0-ubuntu22.04:20260514.v1
 conda_file:
@@ -16,6 +16,9 @@ conda_file:
     - pip:
         - --extra-index-url https://download.pytorch.org/whl/cu121
         - azureml-mlflow
+        - azure-ai-ml
+        - azure-identity
+        - azure-keyvault-secrets
         - pandas
         - numpy
         - scipy

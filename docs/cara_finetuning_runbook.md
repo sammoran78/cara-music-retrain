@@ -850,18 +850,21 @@ Side-Step handoff and claim scope:
   deployable full fine-tune should not launch on the smoke compute.
 - Step 12 uses a separate full-training Azure ML environment,
   `azureml:env-ace-step-sidestep:3`, rather than the lighter
-  `azureml:env-ace-step:4` preflight/smoke environment. The Side-Step
+  `azureml:env-ace-step:5` preflight/smoke/benchmark environment. The Side-Step
   environment uses Python 3.11 and carries the Side-Step dependency set needed
   at runtime. The `:3` environment installs CUDA 12.8 Torch, torchaudio,
   torchvision, the upstream prebuilt `flash-attn` wheel, and the Side-Step
   dependency set in the Azure image. Step 12a / Step 12 then clone the
-  Side-Step source tree at runtime and call `python train.py preprocess ...` or
-  `python train.py train ...` directly from that checkout. This avoids Azure
-  image-build failures where pip either tries to compile `flash-attn` before
-  Torch is importable or rejects `--no-deps` inside the conda-file requirements
-  section, and it avoids the installed Side-Step console wrapper failure where
-  the generated `sidestep` executable imports a non-packaged top-level
-  `train` module.
+  Side-Step source tree at runtime and call
+  `python train.py --plain --yes preprocess ...` or
+  `python train.py --plain --yes train ...` directly from that checkout. The
+  `--plain --yes` flags are required in Azure because Side-Step otherwise asks
+  for interactive confirmation (`Start training? [Y/n]`) and can abort without
+  producing adapter artifacts. This avoids Azure image-build failures where pip
+  either tries to compile `flash-attn` before Torch is importable or rejects
+  `--no-deps` inside the conda-file requirements section, and it avoids the
+  installed Side-Step console wrapper failure where the generated `sidestep`
+  executable imports a non-packaged top-level `train` module.
 - Before Step 12 submits, the dashboard now validates the two required mounted
   inputs as AzureML datastore folders, not local container placeholders. It
   checks that `checkpoint_dir` and `sidestep_tensor_dir` are
@@ -904,6 +907,23 @@ Side-Step handoff and claim scope:
 - A `run_sidestep=true` run that exits successfully but produces no adapter
   artifact files is treated as failed. This prevents a command-line success from
   being mistaken for a deployable ACE-Step LoRA delta.
+- A `run_sidestep=true` run whose logs contain Side-Step's interactive
+  confirmation prompt or `Aborted.` is treated as a non-interactive launch
+  failure. It should be rerun only after confirming the generated Side-Step
+  command includes `--plain --yes`.
+- Step 12 and Step 12a stream Side-Step subprocess output into the mounted
+  Azure output folder while the job is still running. The machine-readable file
+  is `training_progress.json`; the human-readable tail is
+  `training_progress.log`. The dashboard reads `training_progress.json` through
+  `/api/training/run-progress?model=ace_step` and the Azure Runs progress API,
+  so long Hybrid runs can show status, observed step, percent, elapsed time,
+  rough ETA, and the latest Side-Step output line without touching or
+  interrupting the Azure job.
+- Step parsing is deliberately conservative. Configuration lines such as
+  `max_steps: 20000` or `--max-steps 20000` must not be treated as current
+  progress. New progress artifacts include `step_source_line`; if an older
+  running artifact reports `observed_step == max_steps` without that source
+  line, the dashboard suppresses the false 100% display and shows a warning.
 - Step 12 uses the same disk-safe storage rule as the completed Stable Audio
   full runs: the Azure output is mounted, full merged ACE checkpoints are not
   written by CARA, and the canonical saved artifact is
@@ -941,6 +961,52 @@ head-only, planner-preserved, planner-bypass, or Hybrid CARA-Strong evidence.
 The full hybrid run stays locked until the baseline, CARA-lite, detached DiT
 head, planner-preserved, planner-bypass, and Hybrid CARA-Strong smokes all have
 clear pass/fail evidence.
+
+After Step 12 completes, the ACE-Step branch is registered in the shared Testing
+and Benchmarks pages as `hybrid_ace_step_cara_strong_full`. The shared Testing
+page now treats model selection as the first explicit benchmark choice and can
+submit an ACE-Step generated-audio child job against the same locked prompt
+manifest used by Diffusion, Context Diffusion, and MusicGen. Native Hybrid
+attribution scoring is still intentionally separate: until the ACE-Step native
+DiT-head scorer is implemented, Hybrid generated-audio manifests report native
+CARA prediction as pending rather than being routed through the Stable Audio or
+MusicGen scorers. This keeps the workflow reproducible from the beginning:
+completed Diffusion, Context Diffusion, MusicGen, and ACE-Step audio artifacts
+remain append-only, and later scoring can reuse the saved generation manifests
+without replacing or overwriting earlier evidence.
+
+The ACE-Step generated-audio benchmark uses `azureml:env-ace-step:5`. This
+environment adds the Azure Key Vault client packages used by the shared
+Hugging Face token path. The ACE benchmark runner also treats public
+`ACE-Step/...` checkpoints as public-checkpoint loads if Key Vault token
+retrieval is unavailable, so missing Key Vault SDK imports are not allowed to
+fail the job before the actual ACE pipeline or adapter load is tested. Step 24
+also mounts the Step 12a checkpoint bundle from `ace_step/checkpoints/`. The
+public `ACE-Step/Ace-Step1.5` layout is not assumed to be a ready generic
+Diffusers root: the public bundle contains the ACE component layout
+(`acestep-v15-turbo/`, `vae/`, and `Qwen3-Embedding-0.6B/`) rather than a root
+`model_index.json`. Step 24 now converts that mounted bundle inside the job
+output cache into the Diffusers `AceStepPipeline` layout before loading the
+pipeline. This is required because the raw Transformers custom model exposes
+ACE acoustic-latent generation, while the benchmark needs the full Diffusers
+pipeline so the VAE produces comparable WAV audio. The conversion records its
+input layout, selected DiT variant, output folder, elapsed time, and converted
+file preview in the job report; it does not rewrite the mounted datastore
+checkpoint. Adapter loading then tries the pipeline-level LoRA loader first and
+falls back to component-level PEFT attachment on common diffusion targets such
+as `transformer`. If the adapter is missing or cannot be loaded from the deployable
+`checkpoints/trainable_delta.pt` / Side-Step LoRA artifacts, the benchmark must
+fail explicitly rather than silently benchmarking the base ACE checkpoint as the
+Hybrid lane.
+
+When Step 24 falls back to PEFT component attachment, it must not leave the
+generic `PeftModel` wrapper as `pipe.transformer`. That wrapper has a
+text-model-style forward signature and can pass `input_ids` into ACE's DiT,
+which fails because `AceStepTransformer1DModel.forward()` expects ACE diffusion
+kwargs such as `hidden_states`, `timestep`, `encoder_hidden_states`, and
+`context_latents`. The runner therefore loads the adapter through PEFT, activates
+the `cara_hybrid` adapter, then unwraps back to the injected native base model
+before generation.
 
 Cost guardrail: ACE-Step/Side-Step work must use existing Azure ML workspace
 resources, approved computes, datastores, environments, and command jobs only.
@@ -1320,8 +1386,44 @@ Context Diffusion Step 15 hands off to the shared Testing page rather than a sep
 - Diffusion CARA-Strong
 - Context Diffusion CARA-Strong
 - MusicGen CARA-Strong
+- ACE-Step Hybrid CARA-Strong
 
 Single-lane reruns are valid when a new model has just completed fine-tuning and the existing locked prompt set should be reused. Multi-lane and all-lane runs are valid for direct side-by-side comparisons. In all cases, the selected lanes must use the same locked prompt manifest and seed policy; changing the selected model set must not regenerate or replace the prompt set.
+
+The Testing page presents the stages in order:
+
+1. Lock prompts once.
+2. Run an audio smoke for newly wired lanes.
+3. Run full generated audio for one, several, or all ready lanes.
+4. Run attribution scoring only after full generated audio exists.
+5. Read the Benchmarks page; it does not submit another cloud job.
+
+These stages do not all need to be launched separately for every rerun. For a
+newly completed model such as ACE-Step Hybrid, run a small smoke first, then the
+full audio benchmark for only that model if the prompt set is already locked.
+Attribution scoring should be launched only for lanes with implemented native or
+probe scorers. As of this note, Stable Audio-derived and MusicGen scorers exist;
+the ACE-Step native scorer remains pending.
+
+For ACE-Step Hybrid, generated audio and CARA evidence are intentionally
+separated. Step 24 converts the mounted ACE-Step custom-code bundle into a local
+Diffusers `AceStepPipeline`, attaches the Side-Step adapter, and writes WAV
+files so the same prompt manifest can be compared across model families. It also
+captures continuous denoising-latent summaries from the Diffusers
+`callback_on_step_end` hook. Those latents are useful audit evidence that the
+adapter-conditioned DiT path ran, and they can support a later native
+attribution-head extractor, but they are not readable CARA codewords by
+themselves. Hybrid CARA pool IDs must come from a real ACE native scorer or
+external probe that decodes the model states into the locked registry.
+
+The current ACE Diffusers release can try to sort boolean attention masks on
+CUDA inside its condition encoder, which fails on the H100 PyTorch stack with
+`Sort currently does not support bool dtype on CUDA`. The benchmark runner
+therefore applies a narrow runtime compatibility patch to the ACE
+`_pack_sequences` helper: only the mask sort key is cast to integer, while the
+packed mask returned to the pipeline stays boolean. This patch does not change
+the CARA labels, adapter weights, prompts, or benchmark scoring contract; it
+only lets the converted ACE pipeline proceed past condition packing.
 
 Live launches use the neutral typed confirmation phrase:
 
@@ -1349,6 +1451,7 @@ selection pattern for attribution scoring:
 - Score only Diffusion CARA-Strong.
 - Score only Context Diffusion CARA-Strong.
 - Score only MusicGen CARA-Strong.
+- Score only ACE-Step Hybrid CARA-Strong.
 
 The backend validates that every selected scoring lane is actually present in
 the selected source audio run. The Azure scoring job receives the selected
@@ -1363,6 +1466,23 @@ completed timestamped Step 14 output folder containing
 `stable_audio_context/context_full/` folder. The backend resolves this from the
 latest `stable_audio_context_full_submitted` registry event and shows the URI in
 the Step 16 dry-run preflight panel.
+
+For ACE-Step Hybrid scoring, Step 25 is GPU-backed and native-extractor aware,
+but it still refuses to emit numeric metrics unless the trained Hybrid artifact
+contains a compatible native CARA attribution head. If the Side-Step LoRA output
+has no such head, Step 25 writes `blocked_missing_ace_native_head` and keeps
+Hybrid native cells non-numeric. This preserves the no-label-leakage rule:
+expected held-out labels are never copied into prediction fields, and continuous
+latent summaries are not treated as discrete CARA codewords.
+
+When a Step 13 native head is present, Step 25 must decode its logits with the
+full resolver saved inside `checkpoints/ace_attribution_head.pt`. The selected
+benchmark generation manifest usually contains only a subset of the 98 locked
+pools and may omit one or more families, so rebuilding a resolver only from
+generated rows can be smaller than the trained classifier head. The generated
+manifest resolver is kept only as an audit/fallback path; the scoring report
+should record `native_head_resolver.source=native_head_checkpoint_resolver` for
+the normal post-Step-13 path.
 
 Scoring jobs write new output folders under the evaluation datastore. They do
 not overwrite generated audio or previous score artifacts. A later score may
@@ -1440,3 +1560,62 @@ the Benchmarks page as "Held-out prepared-audio evidence". They are not the same
 as generated-audio repairability, and they should be interpreted as evidence
 that the trained attribution head can read labelled held-out audio features
 before asking whether newly generated audio carries recoverable CARA tags.
+
+### ACE-Step Hybrid Native Scoring Boundary
+
+ACE-Step Hybrid Step 25 is now a native-scorer contract, not just a manifest
+audit. It mounts the generated-audio folder, the trained Hybrid Side-Step output,
+and the ACE checkpoint bundle on the H100 scoring path. The scorer first looks
+for a compatible trained native CARA attribution head, such as
+`checkpoints/ace_attribution_head.pt` or `checkpoints/cara_attribution_head.pt`,
+with `CaraAttributionHead` pool/family classifier weights. Only then may it
+replay the ACE DiT path, tap hidden states, and write `native_predictions.jsonl`
+plus numeric Hybrid native metrics.
+
+If the trained Hybrid output only contains the Side-Step LoRA adapter delta, the
+expected Step 25 result is `blocked_missing_ace_native_head`. This is not a
+model score and must remain non-numeric in the benchmark matrices. It means the
+next methodological step is to train/export an ACE native attribution head from
+ACE hidden-state evidence. Do not repair this state by copying expected prompt
+labels into prediction fields or by treating continuous latent summaries as
+discrete CARA codewords.
+
+### ACE-Step Hybrid Step 13: Native DiT Attribution Head
+
+The completed ACE-Step Step 12 Side-Step LoRA run is necessary but not
+sufficient for native CARA metrics. It adapts the Hybrid generation path, but it
+does not by itself emit a registry-resolved CARA prediction. To make the Hybrid
+lane comparable to the Diffusion and Context Diffusion lanes, run Step 13 after
+Step 12 completes.
+
+Step 13 loads the completed Step 12 Side-Step LoRA artifact, replays ACE-Step
+generation on CARA-labelled tensor-manifest rows, taps ACE DiT hidden states,
+and trains a `CaraAttributionHead` over the same locked pool/family registry.
+It writes the copied generation delta plus the native head into a new
+head-augmented artifact folder:
+
+- `checkpoints/trainable_delta.pt`
+- `checkpoints/ace_attribution_head.pt`
+- `cara_registry_resolver.json`
+- `ace_native_head_metrics.json`
+- `ace_native_head_examples.json`
+- `training_progress.json`
+
+The default Step 13 prompt policy keeps the CARA codeword out of the visible
+prompt (`include_cara_tag_in_prompt=false`). This is intentional. The Hybrid
+claim being tested is whether the completed LoRA-conditioned ACE DiT path carries
+recoverable CARA evidence that a native head can read, not whether the model can
+copy a visible codeword from text.
+
+After Step 13 passes, rerun Hybrid attribution scoring. The benchmark model
+registry should use the Step 13 output folder for Hybrid native scoring, while
+the copied Step 12 `trainable_delta.pt` remains the generation adapter inside
+that folder. If Step 25 still reports `blocked_missing_ace_native_head`, inspect
+the Step 13 output folder first; it should contain
+`checkpoints/ace_attribution_head.pt`.
+
+Step 25 should also report that it decoded with the native-head checkpoint
+resolver. A mismatch such as a 98-pool / 9-family checkpoint being decoded with a
+45-pool / 8-family generated-manifest resolver is a scorer wiring failure, not a
+model result. Fix the resolver source before interpreting Hybrid attribution
+metrics.

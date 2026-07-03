@@ -238,6 +238,21 @@ class TrainingAceFullRunRequest(BaseModel):
     timestep_mode: str = "continuous"
 
 
+class TrainingAceNativeHeadRunRequest(BaseModel):
+    dry_run: bool = False
+    confirmation_phrase: str = ""
+    max_steps: int = 2000
+    batch_size: int = 1
+    learning_rate: float = 3e-4
+    max_train_rows: int = 2048
+    max_eval_rows: int = 320
+    duration_seconds: float = 8.0
+    num_inference_steps: int = 20
+    guidance_scale: float = 7.0
+    include_cara_tag_in_prompt: bool = False
+    checkpoint_dir: str = "azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_step/checkpoints/"
+
+
 class TrainingAzureUploadConfirmRequest(BaseModel):
     confirmed: bool = True
 
@@ -395,11 +410,14 @@ _TRAINING_ACE_DIT_TAP_JOB_FILE = ROOT / "azureml" / "jobs" / "21_ace_step_dit_ta
 _TRAINING_ACE_SMOKE_JOB_FILE = ROOT / "azureml" / "jobs" / "22_ace_step_hybrid_smoke.yml"
 _TRAINING_ACE_SIDESTEP_INPUTS_JOB_FILE = ROOT / "azureml" / "jobs" / "23a_prepare_ace_step_sidestep_inputs.yml"
 _TRAINING_ACE_FULL_JOB_FILE = ROOT / "azureml" / "jobs" / "23_full_ace_step_hybrid_trainer.yml"
+_TRAINING_ACE_NATIVE_HEAD_JOB_FILE = ROOT / "azureml" / "jobs" / "23b_train_ace_step_native_head.yml"
 _EVALUATION_STABLE_AUDIO_JOB_FILE = ROOT / "azureml" / "jobs" / "14_benchmark_testing_stable_audio_eval.yml"
 _EVALUATION_STABLE_AUDIO_AUDIO_JOB_FILE = ROOT / "azureml" / "jobs" / "15_benchmark_testing_stable_audio_audio.yml"
 _EVALUATION_STABLE_AUDIO_SCORE_JOB_FILE = ROOT / "azureml" / "jobs" / "16_benchmark_testing_stable_audio_score.yml"
 _EVALUATION_MUSICGEN_AUDIO_JOB_FILE = ROOT / "azureml" / "jobs" / "17_benchmark_testing_musicgen_audio.yml"
 _EVALUATION_MUSICGEN_SCORE_JOB_FILE = ROOT / "azureml" / "jobs" / "18_benchmark_testing_musicgen_score.yml"
+_EVALUATION_ACE_STEP_AUDIO_JOB_FILE = ROOT / "azureml" / "jobs" / "24_benchmark_testing_ace_step_audio.yml"
+_EVALUATION_ACE_STEP_SCORE_JOB_FILE = ROOT / "azureml" / "jobs" / "25_benchmark_testing_ace_step_score.yml"
 _TRAINING_JOB_REGISTRY = _TRAINING_LOCK_DIR / "azure_training_jobs.jsonl"
 _EVALUATION_JOB_REGISTRY = ROOT / "evaluation" / "generated" / "azure_evaluation_jobs.jsonl"
 _EVALUATION_PROMPT_SET_LOCK = ROOT / "evaluation" / "generated" / "benchmark_prompt_set.lock.json"
@@ -431,8 +449,10 @@ _TRAINING_ACE_PLANNER_OUTPUT_URI = f"{_TRAINING_ACE_ROOT_URI}planner_probe/"
 _TRAINING_ACE_DIT_TAP_OUTPUT_URI = f"{_TRAINING_ACE_ROOT_URI}dit_taps/"
 _TRAINING_ACE_SMOKE_OUTPUT_URI = f"{_TRAINING_ACE_ROOT_URI}smoke/"
 _TRAINING_ACE_FULL_OUTPUT_URI = f"{_TRAINING_ACE_ROOT_URI}full/"
+_TRAINING_ACE_NATIVE_HEAD_OUTPUT_URI = f"{_TRAINING_ACE_ROOT_URI}native_head/"
 _EVALUATION_STABLE_AUDIO_OUTPUT_URI = "azureml://datastores/ds_cara_raw_audio/paths/evaluation-runs/cara-strong-v0.4/stable_audio_benchmark_testing/"
 _EVALUATION_MUSICGEN_OUTPUT_URI = "azureml://datastores/ds_cara_raw_audio/paths/evaluation-runs/cara-strong-v0.4/musicgen_benchmark_testing/"
+_EVALUATION_ACE_STEP_OUTPUT_URI = "azureml://datastores/ds_cara_raw_audio/paths/evaluation-runs/cara-strong-v0.4/ace_step_benchmark_testing/"
 _EVALUATION_AUDIO_BENCHMARK_CONFIRMATION = "LAUNCH AUDIO BENCHMARK"
 _EVALUATION_AUDIO_BENCHMARK_LEGACY_CONFIRMATION = "LAUNCH ALL MODELS AUDIO BENCHMARK"
 _EVALUATION_AUDIO_BENCHMARK_CONFIRMATIONS = {
@@ -444,7 +464,7 @@ _EVALUATION_STABLE_AUDIO_TRAINED_JOB_NAME = "modest_arch_clgnkqrz4z"
 _EVALUATION_STABLE_AUDIO_TRAINED_MODEL_URI = "azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/stable_audio_full/cara-finetune-001-cara-strong-full-20260607-011523/"
 _TRAINING_STABLE_AUDIO_ENVIRONMENT = "azureml:env-stable-audio-tools:8"
 _TRAINING_MUSICGEN_ENVIRONMENT = "azureml:env-musicgen-audiocraft:3"
-_TRAINING_ACE_ENVIRONMENT = "azureml:env-ace-step:4"
+_TRAINING_ACE_ENVIRONMENT = "azureml:env-ace-step:5"
 _TRAINING_ACE_SIDESTEP_ENVIRONMENT = "azureml:env-ace-step-sidestep:3"
 _TRAINING_H100_COMPUTE = "gpu-smoke-h100"
 _TRAINING_FULL_H100_COMPUTE = "gpu-fulltraining-h100"
@@ -454,20 +474,24 @@ _AZUREML_ACTIVE_STATUSES = {"notstarted", "queued", "preparing", "starting", "pr
 _GENERATED_AUDIO_JOB_ACTIONS = {
     "benchmark_testing_stable_audio_audio_submitted",
     "benchmark_testing_musicgen_audio_submitted",
+    "benchmark_testing_ace_step_audio_submitted",
     "benchmark_testing_audio_group_submitted",
 }
 _GENERATED_AUDIO_LEAF_JOB_ACTIONS = {
     "benchmark_testing_stable_audio_audio_submitted",
     "benchmark_testing_musicgen_audio_submitted",
+    "benchmark_testing_ace_step_audio_submitted",
 }
 _ATTRIBUTION_SCORE_JOB_ACTIONS = {
     "benchmark_testing_stable_audio_score_submitted",
     "benchmark_testing_musicgen_score_submitted",
+    "benchmark_testing_ace_step_score_submitted",
     "benchmark_testing_attribution_score_group_submitted",
 }
 _ATTRIBUTION_SCORE_LEAF_JOB_ACTIONS = {
     "benchmark_testing_stable_audio_score_submitted",
     "benchmark_testing_musicgen_score_submitted",
+    "benchmark_testing_ace_step_score_submitted",
 }
 _EVALUATION_SCORE_MODEL_FAMILY_BY_ID = {
     "base_stable_audio_open_small": "stable_audio",
@@ -475,7 +499,18 @@ _EVALUATION_SCORE_MODEL_FAMILY_BY_ID = {
     "context_diffusion_cara_strong_full": "stable_audio",
     "base_musicgen_small": "musicgen",
     "musicgen_cara_strong_full": "musicgen",
+    "hybrid_ace_step_cara_strong_full": "ace_step",
 }
+
+
+def _attribution_score_event_family(action: str) -> str:
+    if action == "benchmark_testing_musicgen_score_submitted":
+        return "musicgen"
+    if action == "benchmark_testing_ace_step_score_submitted":
+        return "ace_step"
+    return "stable_audio"
+
+
 _AZUREML_JOB_PROGRESS_CACHE: dict[str, tuple[float, dict[str, Any]]] = {}
 _TRAINING_AUDIO_SUFFIXES = {".wav", ".mp3", ".flac", ".ogg", ".m4a", ".aac", ".aif", ".aiff"}
 _TRAINING_MODEL_PREP_SPECS = {
@@ -498,6 +533,8 @@ _TRAINING_RUN_PROGRESS_ACTIONS = {
     "stable_audio_context_full_submitted",
     "musicgen_ar_smoke_trainer_submitted",
     "musicgen_full_trainer_submitted",
+    "ace_step_hybrid_full_submitted",
+    "ace_step_native_head_submitted",
 }
 _TRAINING_RUN_PROGRESS_MODEL_LABELS = {
     "stable_audio_open_small": "Diffusion",
@@ -793,7 +830,7 @@ def _azureml_uri_folder_input(uri: str, *, mode: str = "ro_mount") -> dict[str, 
     return {"type": "uri_folder", "mode": mode, "path": str(uri)}
 
 
-def _azureml_datastore_prefix_probe(prefix: str) -> dict[str, Any]:
+def _azureml_datastore_prefix_probe(prefix: str, *, required_suffixes: tuple[str, ...] = (), required_name_contains: tuple[str, ...] = (), max_results: int = 500) -> dict[str, Any]:
     settings = _azureml_settings()
     datastore = _azureml_client().datastores.get(settings["datastore_name"])
     account_name = getattr(datastore, "account_name", None)
@@ -830,10 +867,35 @@ def _azureml_datastore_prefix_probe(prefix: str) -> dict[str, Any]:
             container_name=str(container_name),
             credential=account_key,
         )
-        first_blob = next(iter(container.list_blobs(name_starts_with=prefix)), None)
+        first_blob = None
+        matched_blob = None
+        scanned = 0
+        suffixes = tuple(suffix.lower() for suffix in required_suffixes)
+        name_needles = tuple(item.lower() for item in required_name_contains)
+        for blob in container.list_blobs(name_starts_with=prefix):
+            scanned += 1
+            if first_blob is None:
+                first_blob = blob
+            name = str(getattr(blob, "name", "") or "")
+            size = int(getattr(blob, "size", 0) or 0)
+            suffix_ok = not suffixes or name.lower().endswith(suffixes)
+            contains_ok = not name_needles or any(needle in name.lower() for needle in name_needles)
+            if size > 0 and suffix_ok and contains_ok:
+                matched_blob = blob
+                break
+            if scanned >= max_results:
+                break
+        requirement = {
+            "required_suffixes": list(required_suffixes),
+            "required_name_contains": list(required_name_contains),
+            "max_results": max_results,
+        }
+        exists = matched_blob is not None if (required_suffixes or required_name_contains) else first_blob is not None
         return {
-            "exists": first_blob is not None,
+            "exists": exists,
             "prefix": prefix,
+            "scanned_blob_count": scanned,
+            "requirement": requirement,
             "example_blob": (
                 {
                     "name": getattr(first_blob, "name", None),
@@ -841,6 +903,15 @@ def _azureml_datastore_prefix_probe(prefix: str) -> dict[str, Any]:
                     "last_modified": _azureml_iso(getattr(first_blob, "last_modified", None)),
                 }
                 if first_blob is not None
+                else None
+            ),
+            "matched_blob": (
+                {
+                    "name": getattr(matched_blob, "name", None),
+                    "size": getattr(matched_blob, "size", None),
+                    "last_modified": _azureml_iso(getattr(matched_blob, "last_modified", None)),
+                }
+                if matched_blob is not None
                 else None
             ),
         }
@@ -880,10 +951,28 @@ def _training_ace_full_prerequisite_state(
         check = {"configured": True, "uri": uri, "datastore": datastore_name, "prefix": prefix}
         if verify_blobs:
             try:
-                probe = _azureml_datastore_prefix_probe(prefix)
+                if key == "sidestep_tensor_dir":
+                    probe = _azureml_datastore_prefix_probe(prefix, required_suffixes=(".pt",), max_results=2000)
+                    missing_detail = "no non-empty .pt tensor blobs"
+                elif key == "checkpoint_dir":
+                    model_probe = _azureml_datastore_prefix_probe(prefix, required_name_contains=("acestep-v15-",), max_results=2000)
+                    vae_probe = _azureml_datastore_prefix_probe(prefix, required_name_contains=("vae/",), max_results=2000)
+                    probe = {
+                        "exists": bool(model_probe.get("exists")) and bool(vae_probe.get("exists")),
+                        "prefix": prefix,
+                        "requirement": "ACE model bundle plus VAE blobs",
+                        "model_probe": model_probe,
+                        "vae_probe": vae_probe,
+                        "example_blob": model_probe.get("example_blob") or vae_probe.get("example_blob"),
+                        "matched_blob": model_probe.get("matched_blob") or vae_probe.get("matched_blob"),
+                    }
+                    missing_detail = "no ACE checkpoint model/vae blobs"
+                else:
+                    probe = _azureml_datastore_prefix_probe(prefix)
+                    missing_detail = "no blobs"
                 check.update({"verified": bool(probe.get("exists")), "probe": probe})
                 if not probe.get("exists"):
-                    errors.append(f"{key} has no blobs under {uri}.")
+                    errors.append(f"{key} has {missing_detail} under {uri}.")
             except HTTPException as exc:
                 check.update({"verified": False, "probe_error": exc.detail})
                 errors.append(f"{key} could not be verified: {exc.detail}")
@@ -897,9 +986,9 @@ def _training_ace_full_prerequisite_state(
         "sidestep_tensor_uri": sidestep_tensor_uri,
         "verification": "blob_prefix_probe" if verify_blobs else "uri_shape_only",
         "reason": (
-            "ACE checkpoint bundle and Side-Step tensor folder are configured and visible in the datastore."
+            "ACE checkpoint bundle and Side-Step tensor folder are configured and contain required checkpoint/tensor blobs."
             if ready
-            else "ACE full run is blocked until checkpoint_dir and sidestep_tensor_dir are real AzureML datastore folders with blobs."
+            else "ACE full run is blocked until checkpoint_dir contains ACE checkpoint blobs and sidestep_tensor_dir contains non-empty .pt Side-Step tensors."
         ),
     }
 
@@ -1030,6 +1119,32 @@ def _training_latest_context_full_output_path() -> str:
         ):
             return str(event["output_path"])
     return _TRAINING_CONTEXT_FULL_OUTPUT_URI
+
+
+def _training_latest_ace_full_output_path() -> str:
+    for event in reversed(_training_job_registry_events(500)):
+        if (
+            event.get("action") == "ace_step_hybrid_full_submitted"
+            and event.get("model_family") == "ace_step"
+            and event.get("output_path")
+        ):
+            return str(event["output_path"])
+    return _TRAINING_ACE_FULL_OUTPUT_URI
+
+
+def _training_latest_ace_native_head_output_path() -> str | None:
+    for event in reversed(_training_job_registry_events(500)):
+        if (
+            event.get("action") == "ace_step_native_head_submitted"
+            and event.get("model_family") == "ace_step"
+            and event.get("output_path")
+        ):
+            return str(event["output_path"])
+    return None
+
+
+def _training_latest_ace_scoring_model_output_path() -> str:
+    return _training_latest_ace_native_head_output_path() or _training_latest_ace_full_output_path()
 
 
 def _training_append_job_event(event: dict[str, Any]) -> None:
@@ -1258,7 +1373,12 @@ def _evaluation_job_state_from_event_fast(event: dict[str, Any] | None) -> dict[
         if isinstance(child, dict) and child.get("family") and child.get("output_path")
     }
     if event.get("output_path") and not child_output_paths and action in _GENERATED_AUDIO_LEAF_JOB_ACTIONS:
-        family = "musicgen" if action == "benchmark_testing_musicgen_audio_submitted" else "stable_audio"
+        if action == "benchmark_testing_musicgen_audio_submitted":
+            family = "musicgen"
+        elif action == "benchmark_testing_ace_step_audio_submitted":
+            family = "ace_step"
+        else:
+            family = "stable_audio"
         child_output_paths[family] = event.get("output_path")
     return {
         "job_name": event.get("job_name"),
@@ -1329,7 +1449,7 @@ def _latest_attribution_score_job_state_fast(*, source_audio_job_name: str | Non
                 continue
             if str(event.get("source_audio_job_name") or "") != source_audio_job_name:
                 continue
-            family = "musicgen" if action == "benchmark_testing_musicgen_score_submitted" else "stable_audio"
+            family = _attribution_score_event_family(action)
             if family in seen_families:
                 continue
             seen_families.add(family)
@@ -1343,7 +1463,7 @@ def _latest_attribution_score_job_state_fast(*, source_audio_job_name: str | Non
                     "studio_url": event.get("studio_url"),
                 }
             )
-            if seen_families == {"stable_audio", "musicgen"}:
+            if seen_families == {"stable_audio", "musicgen", "ace_step"}:
                 break
         if child_jobs:
             latest_child_event = next(
@@ -1462,7 +1582,12 @@ def _generated_audio_artifact_summary(output_path: Any) -> dict[str, Any]:
         "generation_manifest": any(name.endswith("generation_manifest.jsonl") for name in names),
         "audio_metrics": any(name.endswith("benchmark_audio_metrics.json") for name in names),
         "audio_plan": any(name.endswith("benchmark_audio_plan.json") for name in names),
-        "report": any(name.endswith("benchmark_testing_stable_audio_audio_report.json") or name.endswith("benchmark_testing_musicgen_audio_report.json") for name in names),
+        "report": any(
+            name.endswith("benchmark_testing_stable_audio_audio_report.json")
+            or name.endswith("benchmark_testing_musicgen_audio_report.json")
+            or name.endswith("benchmark_testing_ace_step_audio_report.json")
+            for name in names
+        ),
         "metadata": any(name.endswith("metadata.json") for name in names),
     }
     latest_blob = max((str(blob.get("last_modified") or "") for blob in blobs), default=None)
@@ -1745,7 +1870,12 @@ def _generated_audio_progress_state(job_name: str | None = None) -> dict[str, An
         "by_model_suite": by_model_suite,
         "manifest_available": bool(manifest_name),
         "metrics_available": any(name.endswith("benchmark_audio_metrics.json") for name in blob_names),
-        "report_available": any(name.endswith("benchmark_testing_stable_audio_audio_report.json") or name.endswith("benchmark_testing_musicgen_audio_report.json") for name in blob_names),
+        "report_available": any(
+            name.endswith("benchmark_testing_stable_audio_audio_report.json")
+            or name.endswith("benchmark_testing_musicgen_audio_report.json")
+            or name.endswith("benchmark_testing_ace_step_audio_report.json")
+            for name in blob_names
+        ),
         "latest_completed_item": latest_completed_item,
         "latest_blob_at": max((str(blob.get("last_modified") or "") for blob in blobs), default=None),
         "blob_error": blob_error,
@@ -1774,7 +1904,12 @@ def _generated_audio_result_state() -> dict[str, Any] | None:
     }
     output_path = state.get("output_path")
     if output_path and not child_output_paths:
-        family = "musicgen" if state.get("action") == "benchmark_testing_musicgen_audio_submitted" else "stable_audio"
+        if state.get("action") == "benchmark_testing_musicgen_audio_submitted":
+            family = "musicgen"
+        elif state.get("action") == "benchmark_testing_ace_step_audio_submitted":
+            family = "ace_step"
+        else:
+            family = "stable_audio"
         child_output_paths[family] = output_path
     return {
         **state,
@@ -2016,12 +2151,13 @@ def _benchmark_rows_from_lanes(lanes: dict[str, Any]) -> list[dict[str, Any]]:
                 "context_diffusion_native": lane_value("context_diffusion_native", metric_id),
                 "context_diffusion_external_probe": lane_value("context_diffusion_external_probe", metric_id),
                 "ar_native": lane_value("musicgen_native", metric_id),
-                "hybrid_native": None,
+                "hybrid_native": lane_value("hybrid_native", metric_id),
                 "base_external_probe": lane_value("base_external_probe", metric_id),
                 "base_musicgen_external_probe": lane_value("base_musicgen_external_probe", metric_id),
                 "diffusion_native_status": (lanes.get("diffusion_native") or {}).get("status") if isinstance(lanes.get("diffusion_native"), dict) else None,
                 "context_diffusion_native_status": (lanes.get("context_diffusion_native") or {}).get("status") if isinstance(lanes.get("context_diffusion_native"), dict) else None,
                 "ar_native_status": (lanes.get("musicgen_native") or {}).get("status") if isinstance(lanes.get("musicgen_native"), dict) else None,
+                "hybrid_native_status": (lanes.get("hybrid_native") or {}).get("status") if isinstance(lanes.get("hybrid_native"), dict) else None,
                 "status": "scored",
             }
         )
@@ -2069,6 +2205,8 @@ def _merged_repairability_matrix(lanes: dict[str, Any]) -> dict[str, Any]:
         "context_diffusion_external_probe",
         "musicgen_native",
         "musicgen_external_probe",
+        "hybrid_native",
+        "hybrid_external_probe",
         "base_external_probe",
         "base_musicgen_external_probe",
     ]
@@ -2093,11 +2231,25 @@ def _merged_repairability_matrix(lanes: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _correct_recovery_tiers_for_lane(lane: dict[str, Any], repairability: dict[str, Any]) -> tuple[dict[str, int], dict[str, float]]:
+def _correct_recovery_tiers_for_lane(lane: dict[str, Any], repairability: dict[str, Any]) -> tuple[dict[str, int | None], dict[str, float | None]]:
     labelled_count = int(lane.get("labelled_count") or repairability.get("labelled_total") or lane.get("count") or 0)
     correct_counts = repairability.get("correct_tier_counts")
     correct_rates = repairability.get("correct_tier_rates")
     semantics = str(repairability.get("correctness_semantics") or "").strip()
+    lane_status = str(lane.get("status") or repairability.get("status") or "").strip()
+    pending_statuses = {
+        "not_scored",
+        "pending",
+        "pending_attribution_extractor",
+        "pending_ace_step_native_scorer",
+        "blocked_missing_ace_native_head",
+        "blocked_incompatible_ace_native_head",
+        "pending_external_probe",
+        "missing_predictions",
+    }
+    if semantics in {"not_scored", "pending"} or lane_status in pending_statuses:
+        tier_ids = ("exact_pool", "repairable_pool", "family_or_genre", "unattributable")
+        return ({tier_id: None for tier_id in tier_ids}, {tier_id: None for tier_id in tier_ids})
     if isinstance(correct_counts, dict) and semantics == "expected_label_correctness":
         counts = {str(key): int(value or 0) for key, value in correct_counts.items()}
         if isinstance(correct_rates, dict):
@@ -2131,6 +2283,22 @@ def _correct_recovery_tiers_for_lane(lane: dict[str, Any], repairability: dict[s
     return counts, rates
 
 
+def _lane_metric_status_is_pending(lane: dict[str, Any]) -> bool:
+    repairability = lane.get("repairability") if isinstance(lane.get("repairability"), dict) else {}
+    status = str(lane.get("status") or repairability.get("status") or "").strip()
+    semantics = str(repairability.get("correctness_semantics") or "").strip()
+    return status in {
+        "not_scored",
+        "pending",
+        "pending_attribution_extractor",
+        "pending_ace_step_native_scorer",
+        "blocked_missing_ace_native_head",
+        "blocked_incompatible_ace_native_head",
+        "pending_external_probe",
+        "missing_predictions",
+    } or semantics in {"not_scored", "pending"}
+
+
 def _merged_repair_method_matrix(lanes: dict[str, Any]) -> dict[str, Any]:
     lane_order = [
         "diffusion_native",
@@ -2139,6 +2307,8 @@ def _merged_repair_method_matrix(lanes: dict[str, Any]) -> dict[str, Any]:
         "context_diffusion_external_probe",
         "musicgen_native",
         "musicgen_external_probe",
+        "hybrid_native",
+        "hybrid_external_probe",
         "base_external_probe",
         "base_musicgen_external_probe",
     ]
@@ -2160,11 +2330,12 @@ def _merged_repair_method_matrix(lanes: dict[str, Any]) -> dict[str, Any]:
         for lane_id in lane_order:
             lane = lanes.get(lane_id) if isinstance(lanes.get(lane_id), dict) else {}
             total = lane.get("count") if isinstance(lane.get("count"), int) else None
-            count = lane_method_counts.get(lane_id, {}).get(method, 0)
+            pending_lane = _lane_metric_status_is_pending(lane)
+            count = None if pending_lane else lane_method_counts.get(lane_id, {}).get(method, 0)
             row[lane_id] = {
                 "status": lane.get("status"),
                 "count": count,
-                "rate": (count / total) if total else None,
+                "rate": (count / total) if isinstance(count, int) and total else None,
                 "labelled_count": lane.get("labelled_count"),
             }
         rows.append(row)
@@ -2189,6 +2360,8 @@ def _with_benchmark_lane_statuses(rows: list[dict[str, Any]], metrics: dict[str,
     base_musicgen_probe = lanes.get("base_musicgen_external_probe") if isinstance(lanes.get("base_musicgen_external_probe"), dict) else {}
     musicgen_native = lanes.get("musicgen_native") if isinstance(lanes.get("musicgen_native"), dict) else {}
     musicgen_probe = lanes.get("musicgen_external_probe") if isinstance(lanes.get("musicgen_external_probe"), dict) else {}
+    hybrid_native = lanes.get("hybrid_native") if isinstance(lanes.get("hybrid_native"), dict) else {}
+    hybrid_probe = lanes.get("hybrid_external_probe") if isinstance(lanes.get("hybrid_external_probe"), dict) else {}
     return [
         {
             **row,
@@ -2210,6 +2383,10 @@ def _with_benchmark_lane_statuses(rows: list[dict[str, Any]], metrics: dict[str,
             "musicgen_native_reason": musicgen_native.get("reason"),
             "musicgen_external_probe_status": musicgen_probe.get("status"),
             "musicgen_external_probe_reason": musicgen_probe.get("reason"),
+            "hybrid_native_status": hybrid_native.get("status"),
+            "hybrid_native_reason": hybrid_native.get("reason"),
+            "hybrid_external_probe_status": hybrid_probe.get("status"),
+            "hybrid_external_probe_reason": hybrid_probe.get("reason"),
         }
         for row in rows
     ]
@@ -2233,7 +2410,12 @@ def _attribution_scoring_plan(request: EvaluationAttributionScoringRunRequest) -
         if isinstance(child, dict) and child.get("family") and child.get("output_path")
     }
     if selected_audio and selected_audio.get("output_path") and not child_output_paths:
-        family = "musicgen" if selected_audio.get("action") == "benchmark_testing_musicgen_audio_submitted" else "stable_audio"
+        if selected_audio.get("action") == "benchmark_testing_musicgen_audio_submitted":
+            family = "musicgen"
+        elif selected_audio.get("action") == "benchmark_testing_ace_step_audio_submitted":
+            family = "ace_step"
+        else:
+            family = "stable_audio"
         child_output_paths[family] = selected_audio.get("output_path")
     source_model_ids = [
         str(model_id)
@@ -2278,7 +2460,7 @@ def _attribution_scoring_plan(request: EvaluationAttributionScoringRunRequest) -
     ]
     existing_score_jobs: list[dict[str, Any]] = []
     for event in score_events:
-        family = "musicgen" if str(event.get("action") or "") == "benchmark_testing_musicgen_score_submitted" else "stable_audio"
+        family = _attribution_score_event_family(str(event.get("action") or ""))
         state = _evaluation_job_state_from_event(event)
         existing_score_jobs.append(
             {
@@ -2318,7 +2500,7 @@ def _attribution_scoring_plan(request: EvaluationAttributionScoringRunRequest) -
     complete_enough = bool(progress and float(progress.get("progress_percent") or 0) >= 99.5)
     missing_families = [
         family
-        for family in ("stable_audio", "musicgen")
+        for family in ("stable_audio", "musicgen", "ace_step")
         if (not selected_families or family in selected_families)
         and family not in child_output_paths
         and family in {str(child.get("family") or "") for child in child_jobs}
@@ -2335,6 +2517,8 @@ def _attribution_scoring_plan(request: EvaluationAttributionScoringRunRequest) -
         score_job_files_ready = score_job_files_ready and _EVALUATION_STABLE_AUDIO_SCORE_JOB_FILE.exists()
     if "musicgen" in pending_score_output_paths:
         score_job_files_ready = score_job_files_ready and _EVALUATION_MUSICGEN_SCORE_JOB_FILE.exists()
+    if "ace_step" in pending_score_output_paths:
+        score_job_files_ready = score_job_files_ready and _EVALUATION_ACE_STEP_SCORE_JOB_FILE.exists()
     live_ready = bool(selected_audio and selected_model_ids and pending_score_output_paths and complete_enough and not missing_families and score_job_files_ready)
     if active_score_job:
         live_ready_reason = f"Attribution scoring is already active in Azure ML ({active_score_job.get('job_name')}, status={active_score_job.get('status')})."
@@ -2352,6 +2536,8 @@ def _attribution_scoring_plan(request: EvaluationAttributionScoringRunRequest) -
         live_ready_reason = "Force re-score is enabled; ready to submit fresh scorer jobs for the completed generated-audio run."
     elif "musicgen" in pending_score_output_paths and not _EVALUATION_MUSICGEN_SCORE_JOB_FILE.exists():
         live_ready_reason = f"MusicGen attribution scoring job file is missing: {_EVALUATION_MUSICGEN_SCORE_JOB_FILE.relative_to(ROOT)}."
+    elif "ace_step" in pending_score_output_paths and not _EVALUATION_ACE_STEP_SCORE_JOB_FILE.exists():
+        live_ready_reason = f"ACE-Step attribution scoring audit job file is missing: {_EVALUATION_ACE_STEP_SCORE_JOB_FILE.relative_to(ROOT)}."
     elif not _EVALUATION_STABLE_AUDIO_SCORE_JOB_FILE.exists():
         live_ready_reason = f"Stable Audio attribution scoring job file is missing: {_EVALUATION_STABLE_AUDIO_SCORE_JOB_FILE.relative_to(ROOT)}."
     else:
@@ -2389,11 +2575,12 @@ def _audio_benchmark_defaults() -> dict[str, Any]:
         "diffusion_cara_strong_full_modest_arch",
         "context_diffusion_cara_strong_full",
         "musicgen_cara_strong_full",
+        "hybrid_ace_step_cara_strong_full",
     }
     ready_models = [
         lane["model_id"]
         for lane in model_lanes()
-        if lane.get("generation_adapter") in {"stable_audio", "musicgen"}
+        if lane.get("generation_adapter") in {"stable_audio", "musicgen", "ace_step"}
         and lane.get("status") == "Ready"
         and lane.get("model_id") in live_model_ids
     ]
@@ -2405,6 +2592,7 @@ def _audio_benchmark_defaults() -> dict[str, Any]:
         "adapter_policy": {
             "stable_audio": "wired for live Azure generated-audio and native DiT hidden-state scoring",
             "musicgen": "wired for live Azure generated-audio from the completed MusicGen full-run delta; native suffix scoring is the follow-on scoring pass",
+            "ace_step": "wired for live Azure generated-audio from the completed ACE-Step Hybrid full-run artifact; native ACE attribution scoring remains a follow-on adapter",
             "retrieval": "post-hoc external probe lane runs for every generated-audio model",
         },
         "active_generated_audio_job": active_audio_job,
@@ -2420,7 +2608,7 @@ def _audio_benchmark_defaults() -> dict[str, Any]:
             "model_ids": [
                 model_id
                 for model_id in ready_models
-                if model_id in {"diffusion_cara_strong_full_modest_arch", "context_diffusion_cara_strong_full", "musicgen_cara_strong_full"}
+                if model_id in {"diffusion_cara_strong_full_modest_arch", "context_diffusion_cara_strong_full", "musicgen_cara_strong_full", "hybrid_ace_step_cara_strong_full"}
             ],
             "suite_ids": [
                 "known_pool_prompt_recall",
@@ -2436,10 +2624,10 @@ def _audio_benchmark_defaults() -> dict[str, Any]:
         "launch_guard": {
             "dry_run_default": True,
             "required_confirmation": _EVALUATION_AUDIO_BENCHMARK_CONFIRMATION,
-            "live_ready": _EVALUATION_STABLE_AUDIO_AUDIO_JOB_FILE.exists() and _EVALUATION_MUSICGEN_AUDIO_JOB_FILE.exists(),
+            "live_ready": _EVALUATION_STABLE_AUDIO_AUDIO_JOB_FILE.exists() and _EVALUATION_MUSICGEN_AUDIO_JOB_FILE.exists() and _EVALUATION_ACE_STEP_AUDIO_JOB_FILE.exists(),
             "live_ready_reason": (
-                f"Ready to submit {_EVALUATION_STABLE_AUDIO_AUDIO_JOB_FILE.relative_to(ROOT)} and {_EVALUATION_MUSICGEN_AUDIO_JOB_FILE.relative_to(ROOT)}."
-                if _EVALUATION_STABLE_AUDIO_AUDIO_JOB_FILE.exists() and _EVALUATION_MUSICGEN_AUDIO_JOB_FILE.exists()
+                f"Ready to submit {_EVALUATION_STABLE_AUDIO_AUDIO_JOB_FILE.relative_to(ROOT)}, {_EVALUATION_MUSICGEN_AUDIO_JOB_FILE.relative_to(ROOT)}, and {_EVALUATION_ACE_STEP_AUDIO_JOB_FILE.relative_to(ROOT)}."
+                if _EVALUATION_STABLE_AUDIO_AUDIO_JOB_FILE.exists() and _EVALUATION_MUSICGEN_AUDIO_JOB_FILE.exists() and _EVALUATION_ACE_STEP_AUDIO_JOB_FILE.exists()
                 else "Generated-audio Azure command jobs are not fully wired yet; this panel plans the next run without submitting Azure work."
             ),
             "cost_policy": "Use existing Azure ML workspace resources only; no Marketplace endpoints or deployments.",
@@ -2468,13 +2656,14 @@ def _audio_benchmark_plan(request: EvaluationAudioBenchmarkRunRequest) -> dict[s
         "musicgen_cara_strong_full",
         "base_stable_audio_open_small",
         "base_musicgen_small",
+        "hybrid_ace_step_cara_strong_full",
     }
     unsupported_models = [model_id for model_id in model_ids if model_id not in supported_models]
     if unsupported_models:
         raise HTTPException(
             status_code=409,
             detail=(
-                "Audio benchmark generation is wired for released-base and CARA-Strong lanes only. "
+                "Audio benchmark generation is currently wired for Stable Audio, MusicGen, and ACE-Step Hybrid benchmark lanes only. "
                 f"Blocked/unsupported model ids: {unsupported_models}"
             ),
         )
@@ -2508,10 +2697,12 @@ def _audio_benchmark_plan(request: EvaluationAudioBenchmarkRunRequest) -> dict[s
             if model_id in {"base_stable_audio_open_small", "diffusion_cara_strong_full_modest_arch", "context_diffusion_cara_strong_full"}
         ],
         "musicgen": [model_id for model_id in model_ids if model_id in {"base_musicgen_small", "musicgen_cara_strong_full"}],
+        "ace_step": [model_id for model_id in model_ids if model_id in {"hybrid_ace_step_cara_strong_full"}],
     }
     output_prefix = {
         "stable_audio": f"{_EVALUATION_STABLE_AUDIO_OUTPUT_URI}audio_{scope}/",
         "musicgen": f"{_EVALUATION_MUSICGEN_OUTPUT_URI}audio_{scope}/",
+        "ace_step": f"{_EVALUATION_ACE_STEP_OUTPUT_URI}audio_{scope}/",
     }
     estimated_prompt_rows: int | str = max_prompts if max_prompts else "all locked rows"
     estimated_generations: int | str
@@ -2538,12 +2729,14 @@ def _audio_benchmark_plan(request: EvaluationAudioBenchmarkRunRequest) -> dict[s
         "live_ready": (
             (not model_groups["stable_audio"] or _EVALUATION_STABLE_AUDIO_AUDIO_JOB_FILE.exists())
             and (not model_groups["musicgen"] or _EVALUATION_MUSICGEN_AUDIO_JOB_FILE.exists())
+            and (not model_groups["ace_step"] or _EVALUATION_ACE_STEP_AUDIO_JOB_FILE.exists())
         ),
         "live_ready_reason": (
             "Ready to submit generated-audio command jobs for selected model families."
             if (
                 (not model_groups["stable_audio"] or _EVALUATION_STABLE_AUDIO_AUDIO_JOB_FILE.exists())
                 and (not model_groups["musicgen"] or _EVALUATION_MUSICGEN_AUDIO_JOB_FILE.exists())
+                and (not model_groups["ace_step"] or _EVALUATION_ACE_STEP_AUDIO_JOB_FILE.exists())
             )
             else "One or more selected model-family Azure command jobs are missing."
         ),
@@ -3173,6 +3366,86 @@ def _evaluation_materialize_musicgen_audio_job_file(
     return Path(temp.name)
 
 
+def _evaluation_materialize_ace_step_audio_job_file(
+    *,
+    output_path: str,
+    prompt_manifest_uri: str,
+    trained_model_uri: str,
+    request: EvaluationAudioBenchmarkRunRequest,
+) -> Path:
+    payload = yaml.safe_load(_EVALUATION_ACE_STEP_AUDIO_JOB_FILE.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"ACE-Step generated-audio job YAML is not an object: {_EVALUATION_ACE_STEP_AUDIO_JOB_FILE}")
+    scope = str(request.scope or "smoke").strip().lower()
+    max_prompts = 0 if scope == "full" else max(1, int(request.max_prompts))
+    inputs = dict(payload.get("inputs") or {})
+    inputs.update(
+        {
+            "model_ids": ",".join(request.model_ids),
+            "suite_ids": ",".join(request.suite_ids),
+            "seed_ids": ",".join(str(int(seed)) for seed in request.seed_ids),
+            "max_prompts": max_prompts,
+            "scope": scope,
+            "dashboard_triggered": "true",
+            "dry_run": "false",
+            "duration_seconds": 12 if scope == "smoke" else 12,
+            "num_inference_steps": 20 if scope == "smoke" else 30,
+            "guidance_scale": 7.0,
+        }
+    )
+    prompt_manifest_file = dict(inputs.get("prompt_manifest_file") or {})
+    prompt_manifest_file["path"] = prompt_manifest_uri
+    prompt_manifest_file["mode"] = "ro_mount"
+    prompt_manifest_file["type"] = "uri_file"
+    inputs["prompt_manifest_file"] = prompt_manifest_file
+    trained_model_data = dict(inputs.get("trained_model_data") or {})
+    trained_model_data["path"] = trained_model_uri
+    trained_model_data["mode"] = "ro_mount"
+    trained_model_data["type"] = "uri_folder"
+    inputs["trained_model_data"] = trained_model_data
+    checkpoint_dir = dict(inputs.get("checkpoint_dir") or {})
+    checkpoint_dir["path"] = _TRAINING_ACE_CHECKPOINT_URI
+    checkpoint_dir["mode"] = "ro_mount"
+    checkpoint_dir["type"] = "uri_folder"
+    inputs["checkpoint_dir"] = checkpoint_dir
+    payload["inputs"] = inputs
+    payload["compute"] = f"azureml:{_TRAINING_H100_COMPUTE}"
+    payload["environment"] = _TRAINING_ACE_ENVIRONMENT
+    outputs = dict(payload.get("outputs") or {})
+    output_dir = dict(outputs.get("output_dir") or {})
+    output_dir["path"] = output_path
+    output_dir["mode"] = "rw_mount"
+    output_dir["type"] = "uri_folder"
+    outputs["output_dir"] = output_dir
+    payload["outputs"] = outputs
+    tags = dict(payload.get("tags") or {})
+    tags.update(
+        {
+            "cara_dashboard_triggered": "true",
+            "cara_evaluation_scope": f"generated_audio_{scope}",
+            "cara_model_family": "ace_step",
+            "cara_model_ids": ",".join(request.model_ids),
+            "cara_suite_ids": ",".join(request.suite_ids),
+            "cara_seed_ids": ",".join(str(int(seed)) for seed in request.seed_ids),
+            "cara_max_prompts": str(max_prompts),
+            "cara_compute_class": "gpu",
+            "cara_marketplace": "false",
+        }
+    )
+    payload["tags"] = tags
+    temp = tempfile.NamedTemporaryFile(
+        mode="w",
+        encoding="utf-8",
+        suffix=".materialized.yml",
+        prefix="ace_step_audio_benchmark_",
+        dir=_EVALUATION_ACE_STEP_AUDIO_JOB_FILE.parent,
+        delete=False,
+    )
+    with temp:
+        yaml.safe_dump(payload, temp, sort_keys=False)
+    return Path(temp.name)
+
+
 def _evaluation_materialize_stable_audio_score_job_file(
     *,
     output_path: str,
@@ -3310,6 +3583,86 @@ def _evaluation_materialize_musicgen_score_job_file(
         suffix=".materialized.yml",
         prefix="musicgen_attribution_score_",
         dir=_EVALUATION_MUSICGEN_SCORE_JOB_FILE.parent,
+        delete=False,
+    )
+    with temp:
+        yaml.safe_dump(payload, temp, sort_keys=False)
+    return Path(temp.name)
+
+
+def _evaluation_materialize_ace_step_score_job_file(
+    *,
+    output_path: str,
+    generated_audio_output_path: str,
+    model_ids: list[str],
+    trained_model_data: str,
+) -> Path:
+    payload = yaml.safe_load(_EVALUATION_ACE_STEP_SCORE_JOB_FILE.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"ACE-Step attribution scoring YAML is not an object: {_EVALUATION_ACE_STEP_SCORE_JOB_FILE}")
+    inputs = dict(payload.get("inputs") or {})
+    inputs.update(
+        {
+            "checkpoint": "ACE-Step/Ace-Step1.5",
+            "model_ids": ",".join(model_ids),
+            "native_extractor": "true",
+            "max_native_predictions": 0,
+            "duration_seconds": 12.0,
+            "num_inference_steps": 30,
+            "guidance_scale": 7.0,
+            "dashboard_triggered": "true",
+            "dry_run": "false",
+        }
+    )
+    generated_audio_dir = dict(inputs.get("generated_audio_dir") or {})
+    generated_audio_dir["path"] = generated_audio_output_path
+    generated_audio_dir["mode"] = "ro_mount"
+    generated_audio_dir["type"] = "uri_folder"
+    inputs["generated_audio_dir"] = generated_audio_dir
+    trained_model = dict(inputs.get("trained_model_data") or {})
+    trained_model["path"] = trained_model_data
+    trained_model["mode"] = "ro_mount"
+    trained_model["type"] = "uri_folder"
+    inputs["trained_model_data"] = trained_model
+    checkpoint_dir = dict(inputs.get("checkpoint_dir") or {})
+    checkpoint_dir["path"] = _TRAINING_ACE_CHECKPOINT_URI
+    checkpoint_dir["mode"] = "ro_mount"
+    checkpoint_dir["type"] = "uri_folder"
+    inputs["checkpoint_dir"] = checkpoint_dir
+    payload["inputs"] = inputs
+    payload["compute"] = f"azureml:{_TRAINING_H100_COMPUTE}"
+    payload["environment"] = _TRAINING_ACE_ENVIRONMENT
+    payload["environment_variables"] = {
+        **dict(payload.get("environment_variables") or {}),
+        "HF_TOKEN_SECRET_NAME": "hf-token",
+    }
+    outputs = dict(payload.get("outputs") or {})
+    output_dir = dict(outputs.get("output_dir") or {})
+    output_dir["path"] = output_path
+    output_dir["mode"] = "rw_mount"
+    output_dir["type"] = "uri_folder"
+    outputs["output_dir"] = output_dir
+    payload["outputs"] = outputs
+    tags = dict(payload.get("tags") or {})
+    tags.update(
+        {
+            "cara_dashboard_triggered": "true",
+            "cara_evaluation_scope": "attribution_scoring",
+            "cara_model_family": "ace_step",
+            "cara_compute_class": "gpu",
+            "cara_native_extractor": "true",
+            "cara_model_ids": ",".join(model_ids),
+            "cara_trained_model_data": trained_model_data,
+            "cara_marketplace": "false",
+        }
+    )
+    payload["tags"] = tags
+    temp = tempfile.NamedTemporaryFile(
+        mode="w",
+        encoding="utf-8",
+        suffix=".materialized.yml",
+        prefix="ace_step_attribution_score_",
+        dir=_EVALUATION_ACE_STEP_SCORE_JOB_FILE.parent,
         delete=False,
     )
     with temp:
@@ -4073,6 +4426,13 @@ def _training_ace_ladder(preflight: dict[str, Any] | None = None) -> dict[str, A
         output_path=_TRAINING_ACE_FULL_OUTPUT_URI,
         missing_reason="Run the full Hybrid Side-Step LoRA stage after Hybrid CARA-Strong smoke passes.",
     )
+    native_head = _training_latest_ace_stage(
+        action="ace_step_native_head_submitted",
+        stage=13,
+        label="Train ACE native DiT attribution head",
+        output_path=_TRAINING_ACE_NATIVE_HEAD_OUTPUT_URI,
+        missing_reason="Train/export the ACE native DiT CARA head after the full Side-Step LoRA fine-tune completes.",
+    )
     full_latest = full.get("latest_job") if isinstance(full.get("latest_job"), dict) else {}
     if full.get("passed") and str(full_latest.get("cara_run_sidestep") or "").lower() != "true":
         full["contract_only_passed"] = True
@@ -4089,6 +4449,7 @@ def _training_ace_ladder(preflight: dict[str, Any] | None = None) -> dict[str, A
         smokes[variant]["locked"] = not previous_passed
         previous_passed = bool(smokes[variant].get("passed"))
     full["locked"] = not bool(smokes["cara_strong"].get("passed"))
+    native_head["locked"] = not bool(full.get("passed"))
     preflight["locked"] = not bool(source_review.get("passed"))
     steps = [
         source_review,
@@ -4103,6 +4464,7 @@ def _training_ace_ladder(preflight: dict[str, Any] | None = None) -> dict[str, A
         smokes["planner_bypass"],
         smokes["cara_strong"],
         full,
+        native_head,
     ]
     active = next((step for step in steps if step.get("active")), None)
     next_step = active or next((step for step in steps if not step.get("passed")), steps[-1])
@@ -4114,6 +4476,7 @@ def _training_ace_ladder(preflight: dict[str, Any] | None = None) -> dict[str, A
         "dit_tap_discovery": dit_taps,
         "smoke_sequence": smokes,
         "full": full,
+        "native_head": native_head,
         "next_stage": next_step["stage"],
         "next_label": next_step["label"],
         "reason": next_step.get("reason"),
@@ -4873,6 +5236,78 @@ def _training_datastore_metrics_csv_payload(output_path: Any) -> dict[str, Any] 
     raise HTTPException(status_code=404, detail=f"No datastore metrics.csv found under {output_path}: {'; '.join(errors[-2:])}")
 
 
+def _training_datastore_progress_json_payload(output_path: Any) -> dict[str, Any] | None:
+    output_prefix = _azureml_uri_to_blob_prefix(output_path)
+    if not output_prefix:
+        return None
+    blob_name = f"{output_prefix.rstrip('/')}/training_progress.json"
+    text = _azureml_datastore_blob_text(blob_name)
+    progress = json.loads(text)
+    if not isinstance(progress, dict):
+        raise HTTPException(status_code=404, detail=f"training_progress.json under {output_path} is not a JSON object.")
+    observed_step = progress.get("observed_step")
+    try:
+        observed_step = int(float(observed_step)) if observed_step not in {None, ""} else None
+    except (TypeError, ValueError):
+        observed_step = None
+    max_steps = None
+    try:
+        max_steps = int(float(progress.get("max_steps") or 0))
+    except (TypeError, ValueError):
+        max_steps = None
+    trainer_status = str(progress.get("status") or "").lower()
+    step_source_line = str(progress.get("step_source_line") or "").strip()
+    latest_line = str(progress.get("latest_line") or "").strip()
+    recovered_step = None
+    if latest_line:
+        recovered_match = re.search(r"\bStep\s+(\d+)\b", latest_line, flags=re.IGNORECASE)
+        if recovered_match:
+            try:
+                recovered_step = int(recovered_match.group(1))
+            except (TypeError, ValueError):
+                recovered_step = None
+    suspicious_terminal_step = (
+        trainer_status in _AZUREML_ACTIVE_STATUSES
+        and observed_step is not None
+        and max_steps is not None
+        and max_steps > 0
+        and (observed_step >= max_steps or observed_step > max_steps * 2)
+        and not step_source_line
+    )
+    if suspicious_terminal_step:
+        observed_step = recovered_step if recovered_step is not None else None
+        progress["observed_step"] = observed_step
+        progress["step_source_line"] = latest_line if recovered_step is not None else None
+        progress["progress_percent"] = (
+            round(min(100.0, max(0.0, observed_step / max_steps * 100.0)), 2)
+            if observed_step is not None and max_steps
+            else None
+        )
+        progress["progress_warning"] = (
+            "Recovered step progress from latest_line after suppressing a false-positive value from an older progress parser."
+            if recovered_step is not None
+            else "Suppressed a likely false-positive step value from an older progress parser while the Azure job is still running."
+        )
+    latest: dict[str, float] = {}
+    if observed_step is not None:
+        latest["global_step"] = float(observed_step)
+    return {
+        "run_id": str(output_path),
+        "latest": latest,
+        "histories": {},
+        "params": {
+            "max_steps": progress.get("max_steps"),
+            "progress_percent": progress.get("progress_percent"),
+            "line_count": progress.get("line_count"),
+        },
+        "tags": {},
+        "observed_step": observed_step,
+        "source_blob": blob_name,
+        "row_count": progress.get("line_count"),
+        "progress": progress,
+    }
+
+
 def _training_progress_job_summary(job_name: str, event: dict[str, Any]) -> dict[str, Any]:
     settings = _azureml_settings()
     command = [
@@ -4992,6 +5427,7 @@ def _training_latest_training_progress(
     metrics_error = None
     metrics_source = None
     observed_step = None
+    progress_artifact: dict[str, Any] | None = None
     if event_model_key in {"stable_audio_open_small", "stable_audio_open_small_context_diffusion"}:
         try:
             datastore_metrics = _training_datastore_metrics_csv_payload(selected_event.get("output_path"))
@@ -5000,11 +5436,27 @@ def _training_latest_training_progress(
             metrics_source = "azure_datastore_lightning_metrics_csv"
         except Exception as exc:
             metrics_error = str(getattr(exc, "detail", None) or exc)
+    elif event_model_key == "ace_step":
+        try:
+            datastore_progress = _training_datastore_progress_json_payload(selected_event.get("output_path"))
+            metrics_payload = datastore_progress
+            progress_artifact = datastore_progress.get("progress") if isinstance(datastore_progress, dict) else None
+            observed_step = datastore_progress.get("observed_step") if isinstance(datastore_progress, dict) else None
+            metrics_source = "azure_datastore_training_progress_json"
+            if max_steps <= 0 and isinstance(progress_artifact, dict):
+                try:
+                    max_steps = int(float(progress_artifact.get("max_steps") or 0))
+                except (TypeError, ValueError):
+                    pass
+        except Exception as exc:
+            metrics_error = str(getattr(exc, "detail", None) or exc)
     needs_metric_fallback = (
         observed_step is None
         or not isinstance((metrics_payload or {}).get("latest"), dict)
         or not (metrics_payload or {}).get("latest")
     )
+    if event_model_key == "ace_step" and metrics_payload is not None:
+        needs_metric_fallback = False
     if needs_metric_fallback and event_model_key not in {"musicgen", "ace_step"}:
         try:
             mlflow_metrics = _azureml_job_metrics_payload(job_name, history_limit=2000)
@@ -5027,6 +5479,13 @@ def _training_latest_training_progress(
     if observed_step is None and selected_status == "completed" and max_steps > 0:
         observed_step = max_steps
     step_percent = min(100.0, observed_step / max(1, max_steps) * 100.0) if max_steps > 0 and observed_step is not None else None
+    if step_percent is None and isinstance(progress_artifact, dict):
+        try:
+            artifact_percent = progress_artifact.get("progress_percent")
+            if artifact_percent is not None and math.isfinite(float(artifact_percent)):
+                step_percent = float(artifact_percent)
+        except (TypeError, ValueError):
+            pass
     estimated_remaining_seconds = None
     if elapsed_seconds is not None and observed_step and max_steps > observed_step:
         estimated_remaining_seconds = elapsed_seconds * ((max_steps - observed_step) / observed_step)
@@ -5078,6 +5537,7 @@ def _training_latest_training_progress(
         "metrics_artifact": (metrics_payload or {}).get("source_blob") if isinstance(metrics_payload, dict) else None,
         "metrics_row_count": (metrics_payload or {}).get("row_count") if isinstance(metrics_payload, dict) else None,
         "metrics_error": metrics_error,
+        "progress_artifact": progress_artifact,
         "chunk_count": chunk_counts,
         "chunk_count_error": chunk_count_error,
         "note": (
@@ -5478,6 +5938,7 @@ def _training_hybrid_readiness_payload() -> dict[str, Any]:
                 and not active_h100_jobs
             ),
             "full_enabled": bool(full_prerequisites.get("ready")) and bool(ladder["smoke_sequence"]["cara_strong"].get("passed")) and not bool(ladder["full"].get("active")) and not bool(ladder["full"].get("passed")),
+            "native_head_enabled": bool(ladder["full"].get("passed")) and not bool(ladder["native_head"].get("active")) and not bool(ladder["native_head"].get("passed")) and not active_h100_jobs,
         },
         "ace_full_prerequisites": full_prerequisites,
         "active_h100_jobs": active_h100_jobs,
@@ -5492,6 +5953,7 @@ def _training_hybrid_readiness_payload() -> dict[str, Any]:
             "azure_ace_dit_tap_output_root": _TRAINING_ACE_DIT_TAP_OUTPUT_URI,
             "azure_ace_smoke_output_root": _TRAINING_ACE_SMOKE_OUTPUT_URI,
             "azure_ace_full_output_root": _TRAINING_ACE_FULL_OUTPUT_URI,
+            "azure_ace_native_head_output_root": _TRAINING_ACE_NATIVE_HEAD_OUTPUT_URI,
             "azure_ace_checkpoint_root": _TRAINING_ACE_CHECKPOINT_URI,
             "azure_ace_sidestep_tensor_root": _TRAINING_ACE_SIDESTEP_TENSOR_URI,
         },
@@ -6596,6 +7058,54 @@ def _submit_ace_full_job(request: TrainingAceFullRunRequest) -> dict[str, Any]:
         compute=_TRAINING_FULL_H100_COMPUTE,
         compute_strategy="gpu_only",
         compute_reason="ACE full Hybrid stage is GPU-only and uses the existing full-training H100 compute.",
+    )
+
+
+def _submit_ace_native_head_job(request: TrainingAceNativeHeadRunRequest) -> dict[str, Any]:
+    expected = "LAUNCH ACE NATIVE HEAD"
+    if str(request.confirmation_phrase or "").strip() != expected:
+        raise HTTPException(status_code=409, detail=f"ACE native-head launch requires typed confirmation: {expected}")
+    ladder = _training_ace_ladder()
+    if not ladder["full"].get("passed"):
+        raise HTTPException(status_code=409, detail=str(ladder["full"].get("reason") or "Run the full ACE Side-Step LoRA fine-tune before training the native attribution head."))
+    if ladder["native_head"].get("active"):
+        latest = ladder["native_head"].get("latest_job") or {}
+        raise HTTPException(status_code=409, detail=f"ACE native-head job {latest.get('name') or latest.get('job_name') or 'latest'} is already active.")
+    _ace_require_h100_available("ACE native DiT attribution-head training")
+    trained_model_path = _training_latest_ace_full_output_path()
+    output_path = f"{_TRAINING_ACE_NATIVE_HEAD_OUTPUT_URI}ace-native-head-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}/"
+    return _submit_ace_stage_job(
+        job_file=_TRAINING_ACE_NATIVE_HEAD_JOB_FILE,
+        action="ace_step_native_head_submitted",
+        output_path=output_path,
+        request_dry_run=request.dry_run,
+        inputs_update={
+            "trained_model_data": _azureml_uri_folder_input(trained_model_path),
+            "checkpoint_dir": _azureml_uri_folder_input(request.checkpoint_dir),
+            "max_steps": max(1, min(int(request.max_steps), 200000)),
+            "batch_size": 1,
+            "learning_rate": max(1e-7, min(float(request.learning_rate), 1e-2)),
+            "max_train_rows": max(1, int(request.max_train_rows)),
+            "max_eval_rows": max(1, int(request.max_eval_rows)),
+            "duration_seconds": max(1.0, min(float(request.duration_seconds), 30.0)),
+            "num_inference_steps": max(1, min(int(request.num_inference_steps), 100)),
+            "guidance_scale": max(0.0, min(float(request.guidance_scale), 20.0)),
+            "include_cara_tag_in_prompt": "true" if request.include_cara_tag_in_prompt else "false",
+            "checkpoint": "ACE-Step/Ace-Step1.5",
+            "planner_checkpoint": "ACE-Step/acestep-5Hz-lm-0.6B",
+            "dit_variant": "turbo_dit",
+        },
+        tags_update={
+            "cara_training_gate": "ace_step_native_head",
+            "cara_step_id": "13",
+            "cara_variant": "cara_strong_native_head",
+            "cara_trainer_compute": _TRAINING_FULL_H100_COMPUTE,
+            "cara_trained_model_data": trained_model_path,
+            "cara_native_head_checkpoint": "checkpoints/ace_attribution_head.pt",
+        },
+        compute=_TRAINING_FULL_H100_COMPUTE,
+        compute_strategy="gpu_only",
+        compute_reason="ACE native attribution head training replays the completed Side-Step LoRA model and is GPU-only on the existing full-training H100 compute.",
     )
 
 
@@ -8330,6 +8840,41 @@ def _azureml_training_step_progress(summary: dict[str, Any], checked_at: datetim
     )
 
 
+def _azureml_training_artifact_progress(summary: dict[str, Any], checked_at: datetime) -> dict[str, Any] | None:
+    tags = summary.get("tags") if isinstance(summary.get("tags"), dict) else {}
+    output_path = tags.get("cara_output_path")
+    if not output_path:
+        return None
+    progress_payload = _training_datastore_progress_json_payload(output_path)
+    if not progress_payload:
+        return None
+    progress = progress_payload.get("progress") if isinstance(progress_payload.get("progress"), dict) else {}
+    max_steps = _azureml_progress_number(progress, ["max_steps"])
+    observed_step = _azureml_progress_number(progress, ["observed_step"])
+    payload = _azureml_progress_payload(
+        job_name=str(summary.get("name") or ""),
+        checked_at=checked_at,
+        status=summary.get("status"),
+        method="azure_datastore_training_progress_json",
+        label="Training progress log",
+        completed=int(observed_step) if observed_step is not None else None,
+        total=int(max_steps) if max_steps is not None else None,
+        unit="steps",
+        elapsed_seconds=_azureml_job_elapsed(summary, checked_at),
+        latest_observed_at=str(progress.get("updated_at") or "") or None,
+        note="Reads the trainer-written training_progress.json artifact from the mounted Azure datastore output.",
+    )
+    if payload.get("percent") is None:
+        progress_percent = _azureml_progress_number(progress, ["progress_percent"])
+        if progress_percent is not None:
+            payload["percent"] = round(progress_percent, 2)
+    payload["artifact"] = progress_payload.get("source_blob")
+    payload["latest_line"] = progress.get("latest_line")
+    payload["line_count"] = progress.get("line_count")
+    payload["trainer_status"] = progress.get("status")
+    return payload
+
+
 def _azureml_job_progress_payload(job_name: str, *, force: bool = False) -> dict[str, Any]:
     now = time.time()
     cached = _AZUREML_JOB_PROGRESS_CACHE.get(job_name)
@@ -8349,6 +8894,8 @@ def _azureml_job_progress_payload(job_name: str, *, force: bool = False) -> dict
             payload = _azureml_training_step_progress(summary, checked_at)
         elif model_family == "musicgen" and ("trainer" in gate or "trainer" in display_name):
             payload = _azureml_training_step_progress(summary, checked_at)
+        elif model_family == "ace_step" and ("full" in gate or "trainer" in gate or "trainer" in display_name):
+            payload = _azureml_training_artifact_progress(summary, checked_at)
     except Exception as exc:
         payload = _azureml_progress_payload(
             job_name=job_name,
@@ -9480,6 +10027,12 @@ def training_ace_full(request: TrainingAceFullRunRequest):
     return {"status": "submitted", "job": submitted, "readiness": _training_hybrid_readiness_payload()}
 
 
+@app.post("/api/training/ace/native-head")
+def training_ace_native_head(request: TrainingAceNativeHeadRunRequest):
+    submitted = _submit_ace_native_head_job(request)
+    return {"status": "submitted", "job": submitted, "readiness": _training_hybrid_readiness_payload()}
+
+
 @app.post("/api/training/stable-audio-preflight")
 def training_stable_audio_preflight(request: TrainingStableAudioPreflightRunRequest):
     if not _training_lock_state().get("locked"):
@@ -9926,6 +10479,145 @@ def _submit_musicgen_audio_benchmark(
         raise _azureml_operation_error(exc) from exc
 
 
+def _submit_ace_step_audio_benchmark(
+    request: EvaluationAudioBenchmarkRunRequest,
+    plan: dict[str, Any],
+    *,
+    skip_duplicate_checks: bool = False,
+) -> dict[str, Any]:
+    from evaluation.benchmark_spec import model_lanes
+
+    if not _evaluation_audio_confirmation_matches(request.launch_confirmation, allow_legacy=True):
+        raise HTTPException(
+            status_code=409,
+            detail=f"Type {_EVALUATION_AUDIO_BENCHMARK_CONFIRMATION} to submit a live generated-audio scoring job.",
+        )
+    if not _EVALUATION_ACE_STEP_AUDIO_JOB_FILE.exists():
+        raise HTTPException(status_code=409, detail=f"ACE-Step generated-audio job file is missing: {_EVALUATION_ACE_STEP_AUDIO_JOB_FILE}")
+    active_audio_job = _active_generated_audio_job_state()
+    if active_audio_job and not skip_duplicate_checks:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Generated-audio benchmark is already active in Azure ML "
+                f"({active_audio_job.get('job_name')}, status={active_audio_job.get('status')}). "
+                "Refresh the Testing page or open the running job instead of submitting a duplicate."
+            ),
+        )
+    active_h100_jobs = _azureml_active_jobs_on_h100_computes()
+    if active_h100_jobs and not skip_duplicate_checks:
+        names = ", ".join(str(job.get("name") or "unknown") for job in active_h100_jobs[:3])
+        raise HTTPException(status_code=409, detail=f"H100-backed compute is busy ({names}); ACE-Step benchmark will not fall back to CPU.")
+
+    lanes_by_id = {lane["model_id"]: lane for lane in model_lanes()}
+    trained_model_uri = (lanes_by_id.get("hybrid_ace_step_cara_strong_full") or {}).get("output_uri")
+    if "hybrid_ace_step_cara_strong_full" in request.model_ids and not trained_model_uri:
+        raise HTTPException(status_code=409, detail="ACE-Step Hybrid full-run output is missing; cannot benchmark Hybrid lane.")
+
+    try:
+        from azure.ai.ml import load_job
+
+        scope = str(plan["scope"])
+        run_slug = datetime.now(timezone.utc).strftime(f"ace-step-audio-{scope}-%Y%m%d-%H%M%S")
+        output_path = f"{_EVALUATION_ACE_STEP_OUTPUT_URI}audio_{scope}/{run_slug}/"
+        environment_registration = _ensure_ace_environment_registered()
+        hf_secret = _training_sync_hf_token_secret()
+        materialized_job_file = _evaluation_materialize_ace_step_audio_job_file(
+            output_path=output_path,
+            prompt_manifest_uri=str(plan["prompt_manifest_uri"]),
+            trained_model_uri=str(trained_model_uri),
+            request=request,
+        )
+        try:
+            job = load_job(source=materialized_job_file)
+        finally:
+            try:
+                materialized_job_file.unlink()
+            except OSError:
+                pass
+        job.environment_variables = {
+            **dict(getattr(job, "environment_variables", None) or {}),
+            "KEY_VAULT_URL": str(hf_secret["vault_url"]),
+            "HF_TOKEN_SECRET_NAME": str(hf_secret["secret_name"]),
+        }
+        submitted = _azureml_client().jobs.create_or_update(job)
+        summary = _azureml_job_summary(submitted)
+        submitted_job = _azureml_client().jobs.get(str(summary.get("name")))
+        expected_models = ",".join(request.model_ids)
+        expected_suites = ",".join(request.suite_ids)
+        expected_seed_ids = ",".join(str(int(seed)) for seed in request.seed_ids)
+        expected_scope = str(plan["scope"])
+        expected_max_prompts = str(int(plan["max_prompts"]))
+        serialized_models = str(_azureml_input_scalar(submitted_job, "model_ids") or "")
+        serialized_suites = str(_azureml_input_scalar(submitted_job, "suite_ids") or "")
+        serialized_seed_ids = str(_azureml_input_scalar(submitted_job, "seed_ids") or "")
+        serialized_scope = str(_azureml_input_scalar(submitted_job, "scope") or "")
+        serialized_max_prompts = str(_azureml_input_scalar(submitted_job, "max_prompts") or "")
+        serialized_dashboard_triggered = str(_azureml_input_scalar(submitted_job, "dashboard_triggered") or "").lower()
+        if (
+            serialized_models != expected_models
+            or serialized_suites != expected_suites
+            or serialized_seed_ids != expected_seed_ids
+            or serialized_scope != expected_scope
+            or serialized_max_prompts != expected_max_prompts
+            or serialized_dashboard_triggered != "true"
+        ):
+            try:
+                _azureml_client().jobs.begin_cancel(str(summary.get("name")))
+            except Exception:
+                pass
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    "Azure ML serialized ACE-Step generated-audio inputs do not match the dashboard request; "
+                    f"cancel requested for {summary.get('name')}. "
+                    f"expected model_ids={expected_models}, suite_ids={expected_suites}, seed_ids={expected_seed_ids}, "
+                    f"scope={expected_scope}, max_prompts={expected_max_prompts}, dashboard_triggered=true; "
+                    f"got model_ids={serialized_models or 'missing'}, suite_ids={serialized_suites or 'missing'}, "
+                    f"seed_ids={serialized_seed_ids or 'missing'}, scope={serialized_scope or 'missing'}, "
+                    f"max_prompts={serialized_max_prompts or 'missing'}, dashboard_triggered={serialized_dashboard_triggered or 'missing'}."
+                ),
+            )
+        event = {
+            "action": "benchmark_testing_ace_step_audio_submitted",
+            "job_name": summary.get("name"),
+            "studio_url": summary.get("studio_url"),
+            "compute": _TRAINING_H100_COMPUTE,
+            "environment": summary.get("environment"),
+            "job_file": str(_EVALUATION_ACE_STEP_AUDIO_JOB_FILE.relative_to(ROOT)),
+            "output_path": output_path,
+            "prompt_manifest_uri": plan["prompt_manifest_uri"],
+            "model_ids": request.model_ids,
+            "suite_ids": request.suite_ids,
+            "seed_ids": request.seed_ids,
+            "max_prompts": int(plan["max_prompts"]),
+            "scope": plan["scope"],
+            "trained_model_data": trained_model_uri,
+            "hf_auth": "workspace_key_vault",
+            "hf_secret_name": str(hf_secret["secret_name"]),
+            "environment_registration": environment_registration,
+            "marketplace_resources": False,
+            "native_scoring_status": "pending_ace_step_native_scorer",
+        }
+        _azureml_test_prep_audit(event)
+        _evaluation_append_job_event(event)
+        return {
+            **summary,
+            "output_path": output_path,
+            "model_ids": request.model_ids,
+            "suite_ids": request.suite_ids,
+            "seed_ids": request.seed_ids,
+            "max_prompts": int(plan["max_prompts"]),
+            "scope": plan["scope"],
+            "prompt_manifest_uri": plan["prompt_manifest_uri"],
+            "trained_model_data": trained_model_uri,
+        }
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise _azureml_operation_error(exc) from exc
+
+
 @app.post("/api/evaluation/audio-benchmark/run")
 def evaluation_audio_benchmark_run(request: EvaluationAudioBenchmarkRunRequest):
     plan = _audio_benchmark_plan(request)
@@ -9956,6 +10648,7 @@ def evaluation_audio_benchmark_run(request: EvaluationAudioBenchmarkRunRequest):
     model_groups = plan.get("model_groups") if isinstance(plan.get("model_groups"), dict) else {}
     stable_models = list(model_groups.get("stable_audio") or [])
     musicgen_models = list(model_groups.get("musicgen") or [])
+    ace_step_models = list(model_groups.get("ace_step") or [])
     if stable_models:
         stable_request = request.copy(update={"model_ids": stable_models})
         jobs.append(
@@ -9970,6 +10663,14 @@ def evaluation_audio_benchmark_run(request: EvaluationAudioBenchmarkRunRequest):
             {
                 "family": "musicgen",
                 **_submit_musicgen_audio_benchmark(musicgen_request, plan, skip_duplicate_checks=True),
+            }
+        )
+    if ace_step_models:
+        ace_request = request.copy(update={"model_ids": ace_step_models})
+        jobs.append(
+            {
+                "family": "ace_step",
+                **_submit_ace_step_audio_benchmark(ace_request, plan, skip_duplicate_checks=True),
             }
         )
     if not jobs:
@@ -10341,6 +11042,112 @@ def _submit_musicgen_attribution_scoring(
         raise _azureml_operation_error(exc) from exc
 
 
+def _submit_ace_step_attribution_scoring(
+    request: EvaluationAttributionScoringRunRequest,
+    plan: dict[str, Any],
+    *,
+    skip_duplicate_checks: bool = False,
+) -> dict[str, Any]:
+    if request.launch_confirmation != "LAUNCH ATTRIBUTION SCORING":
+        raise HTTPException(status_code=409, detail="Type LAUNCH ATTRIBUTION SCORING to submit a live attribution scoring job.")
+    if not _EVALUATION_ACE_STEP_SCORE_JOB_FILE.exists():
+        raise HTTPException(status_code=409, detail=f"ACE-Step attribution scoring audit job file is missing: {_EVALUATION_ACE_STEP_SCORE_JOB_FILE}")
+    paths = plan.get("generated_audio_output_paths") if isinstance(plan.get("generated_audio_output_paths"), dict) else {}
+    generated_audio_output_path = str(paths.get("ace_step") or "")
+    if not generated_audio_output_path:
+        raise HTTPException(status_code=409, detail="Complete an ACE-Step generated-audio benchmark before Hybrid attribution scoring.")
+    active_score_job = _active_attribution_score_job_state()
+    if active_score_job and not skip_duplicate_checks:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Attribution scoring is already active in Azure ML ({active_score_job.get('job_name')}, status={active_score_job.get('status')}).",
+        )
+    try:
+        from azure.ai.ml import load_job
+
+        run_slug = datetime.now(timezone.utc).strftime("ace-step-score-%Y%m%d-%H%M%S")
+        output_path = f"{_EVALUATION_ACE_STEP_OUTPUT_URI}scoring/{run_slug}/"
+        ace_model_ids = [
+            str(model_id)
+            for model_id in plan.get("model_ids", [])
+            if _EVALUATION_SCORE_MODEL_FAMILY_BY_ID.get(str(model_id)) == "ace_step"
+        ]
+        trained_model_uri = _training_latest_ace_scoring_model_output_path()
+        materialized_job_file = _evaluation_materialize_ace_step_score_job_file(
+            output_path=output_path,
+            generated_audio_output_path=generated_audio_output_path,
+            model_ids=ace_model_ids,
+            trained_model_data=trained_model_uri,
+        )
+        try:
+            job = load_job(source=materialized_job_file)
+        finally:
+            try:
+                materialized_job_file.unlink()
+            except OSError:
+                pass
+        submitted = _azureml_client().jobs.create_or_update(job)
+        summary = _azureml_job_summary(submitted)
+        submitted_job = _azureml_client().jobs.get(str(summary.get("name")))
+        serialized_dashboard_triggered = str(_azureml_input_scalar(submitted_job, "dashboard_triggered") or "").lower()
+        serialized_dry_run = str(_azureml_input_scalar(submitted_job, "dry_run") or "").lower()
+        serialized_model_ids = str(_azureml_input_scalar(submitted_job, "model_ids") or "")
+        serialized_native_extractor = str(_azureml_input_scalar(submitted_job, "native_extractor") or "").lower()
+        expected_model_ids = ",".join(ace_model_ids)
+        if (
+            serialized_dashboard_triggered != "true"
+            or serialized_dry_run != "false"
+            or serialized_model_ids != expected_model_ids
+            or serialized_native_extractor != "true"
+        ):
+            try:
+                _azureml_client().jobs.begin_cancel(str(summary.get("name")))
+            except Exception:
+                pass
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    "Azure ML serialized ACE-Step attribution-scoring inputs do not match the dashboard request; "
+                    f"cancel requested for {summary.get('name')}. expected dashboard_triggered=true, dry_run=false; "
+                    f"got dashboard_triggered={serialized_dashboard_triggered or 'missing'}, dry_run={serialized_dry_run or 'missing'}, "
+                    f"model_ids={serialized_model_ids or 'missing'}, native_extractor={serialized_native_extractor or 'missing'}."
+                ),
+            )
+        event = {
+            "action": "benchmark_testing_ace_step_score_submitted",
+            "job_name": summary.get("name"),
+            "studio_url": summary.get("studio_url"),
+            "compute": _TRAINING_H100_COMPUTE,
+            "environment": summary.get("environment"),
+            "job_file": str(_EVALUATION_ACE_STEP_SCORE_JOB_FILE.relative_to(ROOT)),
+            "output_path": output_path,
+            "source_audio_job_name": plan.get("audio_job_name"),
+            "generated_audio_output_path": generated_audio_output_path,
+            "generation_manifest_uri": f"{generated_audio_output_path.rstrip('/')}/generation_manifest.jsonl",
+            "model_ids": ace_model_ids,
+            "trained_model_data": trained_model_uri,
+            "native_extractor": True,
+            "native_scoring_status": "native_extractor_requested",
+            "marketplace_resources": False,
+        }
+        _azureml_test_prep_audit(event)
+        _evaluation_append_job_event(event)
+        return {
+            **summary,
+            "output_path": output_path,
+            "source_audio_job_name": plan.get("audio_job_name"),
+            "generated_audio_output_path": generated_audio_output_path,
+            "model_ids": ace_model_ids,
+            "trained_model_data": trained_model_uri,
+            "native_scoring_status": "native_extractor_requested",
+            "metrics_uri": f"{output_path.rstrip('/')}/metrics_latest.json",
+        }
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise _azureml_operation_error(exc) from exc
+
+
 @app.post("/api/evaluation/attribution-scoring/run")
 def evaluation_attribution_scoring_run(request: EvaluationAttributionScoringRunRequest):
     plan = _attribution_scoring_plan(request)
@@ -10357,14 +11164,17 @@ def evaluation_attribution_scoring_run(request: EvaluationAttributionScoringRunR
     if not paths:
         paths = plan.get("generated_audio_output_paths") if isinstance(plan.get("generated_audio_output_paths"), dict) else {}
     jobs: list[dict[str, Any]] = []
-    active_h100_jobs = _azureml_active_jobs_on_h100_computes()
-    if active_h100_jobs:
+    gpu_scoring_requested = bool(paths.get("stable_audio") or paths.get("musicgen"))
+    active_h100_jobs = _azureml_active_jobs_on_h100_computes() if gpu_scoring_requested else []
+    if active_h100_jobs and gpu_scoring_requested:
         names = ", ".join(str(job.get("name") or "unknown") for job in active_h100_jobs[:3])
         raise HTTPException(status_code=409, detail=f"H100-backed compute is busy ({names}); attribution scoring will not fall back to CPU.")
     if paths.get("stable_audio"):
         jobs.append({"family": "stable_audio", **_submit_stable_audio_attribution_scoring(request, plan, skip_duplicate_checks=True)})
     if paths.get("musicgen"):
         jobs.append({"family": "musicgen", **_submit_musicgen_attribution_scoring(request, plan, skip_duplicate_checks=True)})
+    if paths.get("ace_step"):
+        jobs.append({"family": "ace_step", **_submit_ace_step_attribution_scoring(request, plan, skip_duplicate_checks=True)})
     if not jobs and plan.get("generated_audio_output_path"):
         jobs.append({"family": "stable_audio", **_submit_stable_audio_attribution_scoring(request, plan, skip_duplicate_checks=True)})
     if not jobs:
@@ -10374,7 +11184,7 @@ def evaluation_attribution_scoring_run(request: EvaluationAttributionScoringRunR
         "action": "benchmark_testing_attribution_score_group_submitted",
         "job_name": group_name,
         "studio_url": jobs[0].get("studio_url"),
-        "compute": _TRAINING_H100_COMPUTE,
+        "compute": "multi-compute",
         "environment": "multi-environment",
         "job_file": "multi-family attribution scoring run",
         "output_path": None,

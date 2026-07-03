@@ -332,6 +332,26 @@ def model_lanes(extra_lanes: list[dict[str, Any]] | None = None) -> list[dict[st
     stable_no_cara = _latest_event(model_family="stable_audio_open_small", variant="no_cara_baseline")
     musicgen_full = _latest_event(model_family="musicgen", variant="cara_strong", training_scope="full")
     musicgen_no_cara = _latest_event(model_family="musicgen", variant="no_cara_baseline")
+    ace_full = next(
+        (
+            event
+            for event in reversed(_job_events())
+            if event.get("action") == "ace_step_hybrid_full_submitted"
+            and event.get("model_family") == "ace_step"
+            and str(event.get("cara_run_sidestep") or "").lower() == "true"
+        ),
+        None,
+    )
+    ace_native_head = next(
+        (
+            event
+            for event in reversed(_job_events())
+            if event.get("action") == "ace_step_native_head_submitted"
+            and event.get("model_family") == "ace_step"
+            and event.get("output_path")
+        ),
+        None,
+    )
 
     lanes = [
         {
@@ -426,6 +446,21 @@ def model_lanes(extra_lanes: list[dict[str, Any]] | None = None) -> list[dict[st
             "baseline_role": "candidate",
         },
         {
+            "model_id": "hybrid_ace_step_cara_strong_full",
+            "label": "Hybrid CARA-Strong · ACE-Step v1.5",
+            "family": "ace_step",
+            "architecture": "hybrid",
+            "variant": "cara_strong",
+            "checkpoint_uri": "ACE-Step/Ace-Step1.5",
+            "output_uri": (ace_native_head or ace_full or {}).get("output_path"),
+            "generation_output_uri": (ace_full or {}).get("output_path"),
+            "native_prediction_adapter": "ace_step_dit_head",
+            "generation_adapter": "ace_step",
+            "native_cara_output": True,
+            "baseline_role": "candidate",
+            "benchmark_note": "ACE-Step generated-audio uses the completed Side-Step LoRA full run; native Hybrid attribution scoring uses the Step 13 ACE DiT attribution-head artifact when present.",
+        },
+        {
             "model_id": "retrieval_baseline",
             "label": "Retrieval Baseline · Embedding NN",
             "family": "post_hoc",
@@ -446,6 +481,7 @@ def model_lanes(extra_lanes: list[dict[str, Any]] | None = None) -> list[dict[st
         "stable_audio_no_cara_baseline": stable_no_cara,
         "musicgen_cara_strong_full": musicgen_full,
         "musicgen_no_cara_baseline": musicgen_no_cara,
+        "hybrid_ace_step_cara_strong_full": ace_native_head or ace_full,
     }
     for lane in lanes:
         checks = [
@@ -456,6 +492,11 @@ def model_lanes(extra_lanes: list[dict[str, Any]] | None = None) -> list[dict[st
         ]
         lane["artifact_checks"] = checks
         lane["status"] = _lane_status(checks, event_by_lane.get(lane["model_id"]), native_cara_output=bool(lane.get("native_cara_output")))
+        if lane.get("model_id") == "hybrid_ace_step_cara_strong_full":
+            if event_by_lane.get(lane["model_id"]) and lane.get("output_uri"):
+                lane["status"] = "Ready"
+            else:
+                lane["status"] = "Blocked: ACE full fine-tune pending"
         lane["latest_job"] = event_by_lane.get(lane["model_id"])
     return lanes
 
@@ -501,6 +542,8 @@ def _lane_metric_records(metrics: dict[str, Any]) -> list[dict[str, Any]]:
         "base_musicgen_native": ("base_musicgen_small", "released_base", "native"),
         "musicgen_external_probe": ("musicgen_cara_strong_full", "cara_strong", "external_probe"),
         "musicgen_native": ("musicgen_cara_strong_full", "cara_strong", "native"),
+        "hybrid_external_probe": ("hybrid_ace_step_cara_strong_full", "cara_strong", "external_probe"),
+        "hybrid_native": ("hybrid_ace_step_cara_strong_full", "cara_strong", "native"),
     }
     for lane_id, lane_metrics in lanes.items():
         if not isinstance(lane_metrics, dict):
@@ -544,15 +587,11 @@ def _lane_metric_records(metrics: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def default_metric_rows(lanes: list[dict[str, Any]] | None = None, metrics: dict[str, Any] | None = None) -> list[dict[str, Any]]:
-    if isinstance(metrics, dict):
-        rows = _lane_metric_records(metrics)
-        if rows:
-            return rows
-    rows = []
+    lane_rows = []
     for lane in lanes or model_lanes():
         evidence_lane = "native" if lane.get("native_cara_output") else "external_probe"
         for definition in metric_definitions():
-            rows.append(
+            lane_rows.append(
                 {
                     "format": "cara_metric_row_v2",
                     "model_id": lane["model_id"],
@@ -569,7 +608,20 @@ def default_metric_rows(lanes: list[dict[str, Any]] | None = None, metrics: dict
                     "higher_is_better": definition["higher_is_better"],
                 }
             )
-    return rows
+    if isinstance(metrics, dict):
+        scored_rows = _lane_metric_records(metrics)
+        if scored_rows:
+            scored_keys = {
+                (str(row.get("model_id")), str(row.get("metric_id")), str(row.get("evidence_lane")))
+                for row in scored_rows
+            }
+            fallback_rows = [
+                row
+                for row in lane_rows
+                if (str(row.get("model_id")), str(row.get("metric_id")), str(row.get("evidence_lane"))) not in scored_keys
+            ]
+            return scored_rows + fallback_rows
+    return lane_rows
 
 
 def comparison_cards(metric_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -617,6 +669,8 @@ def comparison_cards(metric_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return [
         card("context_vs_diffusion", "Context Diffusion vs Diffusion", "context_diffusion_cara_strong_full", "diffusion_cara_strong_full_modest_arch"),
         card("context_vs_musicgen", "Context Diffusion vs MusicGen", "context_diffusion_cara_strong_full", "musicgen_cara_strong_full"),
+        card("hybrid_vs_diffusion", "Hybrid vs Diffusion", "hybrid_ace_step_cara_strong_full", "diffusion_cara_strong_full_modest_arch"),
+        card("hybrid_vs_musicgen", "Hybrid vs MusicGen", "hybrid_ace_step_cara_strong_full", "musicgen_cara_strong_full"),
         card("diffusion_vs_musicgen", "Diffusion vs MusicGen", "diffusion_cara_strong_full_modest_arch", "musicgen_cara_strong_full"),
         card("context_vs_retrieval", "Context Diffusion vs retrieval", "context_diffusion_cara_strong_full", "retrieval_baseline"),
         card("musicgen_vs_retrieval", "MusicGen vs retrieval", "musicgen_cara_strong_full", "retrieval_baseline"),
@@ -629,7 +683,7 @@ def prompt_set_summary(lock: dict[str, Any] | None = None) -> dict[str, Any]:
         "prompt_set_version": PROMPT_SET_VERSION,
         "conditions": PROMPT_CONDITIONS,
         "legacy_v1": lock if lock and lock.get("format") == "cara_benchmark_prompt_set_v1" else None,
-        "reuse_policy": "All Diffusion, MusicGen, retrieval, and future model lanes must reuse the same v2 prompt rows for like-for-like scoring.",
+        "reuse_policy": "All Diffusion, Context Diffusion, MusicGen, ACE-Step Hybrid, retrieval, and future model lanes must reuse the same v2 prompt rows for like-for-like scoring.",
     }
 
 

@@ -10,12 +10,176 @@ import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from ace_step_hybrid_stages import stage_adapter_smoke, stage_full_trainer, stage_planner_probe, stage_prepare_tensors
+from ace_step_hybrid_stages import (
+    _ace_resolver_from_rows,
+    _copy_required_hybrid_artifacts,
+    _sidestep_command,
+    _sidestep_interactive_abort_error,
+    _sidestep_step_from_line,
+    stage_adapter_smoke,
+    stage_full_trainer,
+    stage_planner_probe,
+    stage_prepare_tensors,
+)
+from benchmark_testing_ace_step_audio import (
+    _checkpoint_layout,
+    _load_transformers_pipeline,
+    _mask_sort_key,
+    _stage_ace_transformers_checkpoint,
+    _unwrap_peft_native_model,
+)
 
 
 def _write_jsonl(path: Path, rows: list[dict[str, object]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(json.dumps(row) for row in rows) + "\n", encoding="utf-8")
+
+
+def test_sidestep_source_runner_command_is_noninteractive() -> None:
+    command = _sidestep_command({"source_available": True, "train_py": "/tmp/sidestep/train.py"}, "train")
+
+    assert command[:2] == [sys.executable, "/tmp/sidestep/train.py"]
+    assert command[2:4] == ["--plain", "--yes"]
+    assert command[-1] == "train"
+
+
+def test_sidestep_interactive_abort_is_reported() -> None:
+    completed = SimpleNamespace(
+        stdout="[INFO] First-time setup not complete.\nStart training? [Y/n] ",
+        stderr="Aborted.\n",
+    )
+
+    error = _sidestep_interactive_abort_error(completed)
+
+    assert error is not None
+    assert "interactive confirmation prompt" in error
+
+
+def test_sidestep_progress_parser_ignores_config_values() -> None:
+    assert _sidestep_step_from_line("max_steps: 20000", 20000) is None
+    assert _sidestep_step_from_line("--max-steps 20000 --save-every 50", 20000) is None
+    assert _sidestep_step_from_line("training step 120 / 20000 loss=1.23 lr=1e-4", 20000) == 120
+
+
+def test_ace_benchmark_checkpoint_layout_accepts_custom_code_bundle(tmp_path: Path) -> None:
+    checkpoint_dir = tmp_path / "ace_checkpoints"
+    (checkpoint_dir / "acestep-v15-turbo").mkdir(parents=True)
+    (checkpoint_dir / "vae").mkdir()
+    (checkpoint_dir / "Qwen3-Embedding-0.6B").mkdir()
+    (checkpoint_dir / "config.json").write_text("{}", encoding="utf-8")
+    (checkpoint_dir / "acestep-v15-turbo" / "config.json").write_text("{}", encoding="utf-8")
+
+    layout = _checkpoint_layout(checkpoint_dir)
+
+    assert layout["ace_bundle_layout"] is True
+    assert layout["has_model_index_json"] is False
+    assert layout["has_turbo_dit"] is True
+
+    for name in ("configuration_acestep_v15.py", "modeling_acestep_v15_turbo.py", "model.safetensors"):
+        (checkpoint_dir / "acestep-v15-turbo" / name).write_text("stub", encoding="utf-8")
+    staged = _stage_ace_transformers_checkpoint(checkpoint_dir, tmp_path / "staged", layout)
+
+    assert (staged / "configuration_acestep_v15.py").exists()
+    assert (staged / "modeling_acestep_v15_turbo.py").exists()
+    assert (staged / "model.safetensors").exists()
+    assert (staged / "vae").exists()
+    assert (staged / "Qwen3-Embedding-0.6B").exists()
+
+
+def test_ace_benchmark_rejects_raw_transformers_audio_pipeline() -> None:
+    try:
+        _load_transformers_pipeline("/tmp/ace-transformers-bundle")
+    except RuntimeError as exc:
+        message = str(exc)
+    else:
+        raise AssertionError("raw Transformers ACE loader should fail before benchmark audio generation")
+
+    assert "Diffusers AceStepPipeline" in message
+    assert "VAE decoding produces WAV audio" in message
+
+
+def test_ace_diffusers_bool_mask_sort_key_is_numeric() -> None:
+    mask = torch.tensor([[True, False, True]])
+
+    key = _mask_sort_key(mask)
+
+    assert key.dtype == torch.int64
+    assert key.tolist() == [[1, 0, 1]]
+
+
+def test_ace_peft_unwrap_restores_native_forward_model() -> None:
+    native = object()
+
+    class Wrapped:
+        def __init__(self) -> None:
+            self.selected = None
+
+        def set_adapter(self, name: str) -> None:
+            self.selected = name
+
+        def get_base_model(self) -> object:
+            return native
+
+    wrapped = Wrapped()
+
+    unwrapped, method = _unwrap_peft_native_model(wrapped)
+
+    assert unwrapped is native
+    assert method == "get_base_model"
+    assert wrapped.selected == "cara_hybrid"
+
+
+def test_ace_native_head_stage_copies_lora_delta_and_adapter_artifacts(tmp_path: Path) -> None:
+    source = tmp_path / "source"
+    target = tmp_path / "target"
+    adapter_path = source / "sidestep_adapter" / "adapter_model.safetensors"
+    adapter_path.parent.mkdir(parents=True, exist_ok=True)
+    adapter_path.write_bytes(b"adapter")
+    delta_path = source / "checkpoints" / "trainable_delta.pt"
+    delta_path.parent.mkdir(parents=True, exist_ok=True)
+    torch.save(
+        {
+            "format": "cara_ace_step_trainable_delta_v1",
+            "delta_type": "sidestep_lora_adapter_delta",
+            "adapter_artifacts": [{"relative_path": "sidestep_adapter/adapter_model.safetensors"}],
+        },
+        delta_path,
+    )
+
+    audit = _copy_required_hybrid_artifacts(source, target)
+
+    assert audit["delta_type"] == "sidestep_lora_adapter_delta"
+    assert (target / "checkpoints" / "trainable_delta.pt").exists()
+    assert (target / "sidestep_adapter" / "adapter_model.safetensors").read_bytes() == b"adapter"
+    copied = {item["relative_path"] for item in audit["copied"]}
+    assert "checkpoints/trainable_delta.pt" in copied
+    assert "sidestep_adapter/adapter_model.safetensors" in copied
+
+
+def test_ace_native_head_resolver_keeps_pool_family_maps() -> None:
+    rows = [
+        {
+            "cara_pool_id": "CARA:AUD:1:AAAA-BBBB-CCCC:DD",
+            "cara_pool_index": 0,
+            "cara_pool_family": "Percussion",
+            "cara_pool_family_index": 2,
+            "split": "train",
+        },
+        {
+            "cara_pool_id": "CARA:AUD:1:EEEE-FFFF-GGGG:HH",
+            "cara_pool_index": 1,
+            "cara_pool_family": "Atmosphere/Field",
+            "cara_pool_family_index": 3,
+            "split": "validation",
+        },
+    ]
+
+    resolver = _ace_resolver_from_rows(rows)
+
+    assert resolver["format"] == "cara_ace_native_head_resolver_v1"
+    assert resolver["pool_by_index"]["0"] == "CARA:AUD:1:AAAA-BBBB-CCCC:DD"
+    assert resolver["family_by_index"]["3"] == "Atmosphere/Field"
+    assert resolver["pool_to_family_index"]["1"] == "3"
 
 
 def test_ace_tensor_prepare_and_planner_probe_preserve_cara_binding(tmp_path: Path) -> None:

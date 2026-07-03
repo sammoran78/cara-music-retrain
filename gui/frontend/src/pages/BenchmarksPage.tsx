@@ -248,7 +248,7 @@ const fetchJson = async <T,>(url: string, init?: RequestInit): Promise<T> => {
   return body as T;
 };
 
-const BENCHMARKS_SESSION_CACHE_KEY = 'cara.benchmarks.payload.v1';
+const BENCHMARKS_SESSION_CACHE_KEY = 'cara.benchmarks.payload.v2';
 
 interface BenchmarksSessionCache {
   cachedAt: string;
@@ -367,12 +367,16 @@ const laneDisplay = (laneId: string) => {
     base_musicgen_external_probe: 'MusicGen base probe',
     musicgen_native: 'MusicGen native',
     musicgen_external_probe: 'MusicGen probe',
+    hybrid_native: 'Hybrid native',
+    hybrid_external_probe: 'Hybrid probe',
   };
   return labels[laneId] ?? laneId.replace(/_/g, ' ');
 };
 
 const statusMeaning = [
   ['pending', 'No scored artifact has provided this metric yet.'],
+  ['pending native scorer', 'Generated audio and labels exist, but the architecture-specific native attribution extractor has not produced CARA predictions yet.'],
+  ['blocked native head', 'The generated audio exists, but the trained model artifact does not yet include the native attribution head required to decode CARA predictions.'],
   ['missing predictions', 'Audio exists, but that lane did not write native/probe CARA predictions.'],
   ['extractor failed', 'The scorer attempted native/probe attribution but failed internally; this is not a zero-percent model result.'],
   ['scored with extractor errors', 'Some predictions were scored and some failed; read the exception rate and examples before making a headline claim.'],
@@ -390,6 +394,20 @@ const statusClass = (status?: string | null) => {
   }
   if (normalized.includes('pending') || normalized.includes('not run')) return 'status-queued';
   return 'status-running';
+};
+
+const isPendingMetricStatus = (status?: string | null) => {
+  const normalized = String(status ?? '').trim();
+  return [
+    'not_scored',
+    'pending',
+    'pending_attribution_extractor',
+    'pending_ace_step_native_scorer',
+    'blocked_missing_ace_native_head',
+    'blocked_incompatible_ace_native_head',
+    'pending_external_probe',
+    'missing_predictions',
+  ].includes(normalized);
 };
 
 const listText = (values?: Array<string | number> | string | number | null) => {
@@ -441,6 +459,14 @@ const laneGroups = [
     family: 'autoregressive',
   },
   {
+    id: 'hybrid',
+    title: 'Hybrid CARA',
+    subtitle: 'ACE-Step v1.5',
+    modelIds: ['hybrid_ace_step_cara_strong_full'],
+    variants: ['cara_strong'],
+    family: 'ace_step',
+  },
+  {
     id: 'retrieval',
     title: 'Retrieval',
     subtitle: 'post-hoc floor',
@@ -465,7 +491,7 @@ const scoredMetricRank = (row: MetricRow, groupId: string) => {
   if (row.status === 'scored') rank += 40;
   if (row.condition === 'tag_withheld') rank += 20;
   if (row.condition === 'mixed') rank += 10;
-  if ((groupId === 'diffusion' || groupId === 'context-diffusion' || groupId === 'musicgen') && row.evidence_lane === 'native') rank += 30;
+  if ((groupId === 'diffusion' || groupId === 'context-diffusion' || groupId === 'musicgen' || groupId === 'hybrid') && row.evidence_lane === 'native') rank += 30;
   if ((groupId === 'baseline' || groupId === 'retrieval') && row.evidence_lane === 'external_probe') rank += 15;
   if (row.status === 'missing_predictions') rank -= 20;
   return rank;
@@ -607,20 +633,21 @@ export const BenchmarksPage: React.FC = () => {
 	      : 'Run attribution scoring';
   const repairabilityMatrix = payload?.repairability_matrix;
   const repairabilityLanes = (repairabilityMatrix?.lanes ?? []).filter((laneId) =>
-    ['diffusion_native', 'context_diffusion_native', 'musicgen_native', 'retrieval_native'].includes(laneId),
+    ['diffusion_native', 'context_diffusion_native', 'musicgen_native', 'hybrid_native', 'retrieval_native'].includes(laneId),
   );
   const repairMethodMatrix = payload?.repair_method_matrix;
   const repairMethodLanes = (repairMethodMatrix?.lanes ?? []).filter((laneId) =>
-    ['diffusion_native', 'context_diffusion_native', 'musicgen_native', 'retrieval_native'].includes(laneId),
+    ['diffusion_native', 'context_diffusion_native', 'musicgen_native', 'hybrid_native', 'retrieval_native'].includes(laneId),
   );
   const laneMetrics = payload?.latest_results.latest_metrics?.lanes ?? {};
-  const mechanicalLanes = ['diffusion_native', 'context_diffusion_native', 'musicgen_native', 'retrieval_native'].filter(
+  const mechanicalLanes = ['diffusion_native', 'context_diffusion_native', 'musicgen_native', 'hybrid_native', 'retrieval_native'].filter(
     (laneId) => laneMetrics[laneId],
   );
   const mechanicalRows = repairTierIds.map((tierId) => {
     const row: RepairabilityRow = { tier: tierId, label: repairTierLabels[tierId] ?? tierId };
     mechanicalLanes.forEach((laneId) => {
       const metrics = laneMetrics[laneId];
+      const pendingLane = isPendingMetricStatus(metrics.status);
       const counts =
         metrics.resolution_tier_counts ??
         metrics.repairability?.tier_counts ??
@@ -629,12 +656,12 @@ export const BenchmarksPage: React.FC = () => {
       const total =
         metrics.count ??
         Object.values(counts).reduce((sum, value) => sum + Number(value ?? 0), 0);
-      const count = Number(counts[tierId] ?? 0);
+      const count = pendingLane ? null : Number(counts[tierId] ?? 0);
       row[laneId] = {
         status: metrics.status ?? (total ? 'scored' : 'pending'),
         count,
         labelled_count: total,
-        rate: total ? count / total : null,
+        rate: !pendingLane && total && count !== null ? count / total : null,
       };
     });
     return row;
@@ -671,7 +698,7 @@ export const BenchmarksPage: React.FC = () => {
         description={
           <>
             One locked prompt set, one scoring contract, and side-by-side numbers for Diffusion CARA,
-            Context Diffusion, MusicGen CARA, and retrieval controls.
+            Context Diffusion, MusicGen CARA, Hybrid ACE-Step, and retrieval controls.
           </>
         }
         actions={
@@ -748,7 +775,7 @@ export const BenchmarksPage: React.FC = () => {
         </div>
         <div className="table-scroll">
           <div className="run-table" style={{ minWidth: 980 }}>
-            <div className="run-row run-head" style={{ gridTemplateColumns: '1.15fr repeat(4, minmax(135px, 1fr)) 0.65fr' }}>
+            <div className="run-row run-head" style={{ gridTemplateColumns: `1.15fr repeat(${laneGroups.length}, minmax(135px, 1fr)) 0.65fr` }}>
               <span>Metric</span>
               {laneGroups.map((group) => (
                 <span key={group.id}>
@@ -759,7 +786,7 @@ export const BenchmarksPage: React.FC = () => {
               <span>Goal</span>
             </div>
             {headlineMetricIds.map((metric) => (
-              <div className="run-row" key={metric.id} style={{ gridTemplateColumns: '1.15fr repeat(4, minmax(135px, 1fr)) 0.65fr' }}>
+              <div className="run-row" key={metric.id} style={{ gridTemplateColumns: `1.15fr repeat(${laneGroups.length}, minmax(135px, 1fr)) 0.65fr` }}>
                 <span>{metric.label}</span>
                 {laneGroups.map((group) => {
                   const row = metricFor(group, metric.id);

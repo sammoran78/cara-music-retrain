@@ -1,0 +1,64 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+type: command
+command: >-
+  python benchmark_testing_ace_step_score.py
+  --generated_audio_dir ${{inputs.generated_audio_dir}}
+  --trained_model_data ${{inputs.trained_model_data}}
+  --checkpoint ${{inputs.checkpoint}}
+  --checkpoint_dir ${{inputs.checkpoint_dir}}
+  --output_dir ${{outputs.output_dir}}
+  --model_ids ${{inputs.model_ids}}
+  --native_extractor ${{inputs.native_extractor}}
+  --max_native_predictions ${{inputs.max_native_predictions}}
+  --duration_seconds ${{inputs.duration_seconds}}
+  --num_inference_steps ${{inputs.num_inference_steps}}
+  --guidance_scale ${{inputs.guidance_scale}}
+  --dashboard_triggered ${{inputs.dashboard_triggered}}
+  --dry_run ${{inputs.dry_run}}
+code: ../../src
+inputs:
+  generated_audio_dir:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/evaluation-runs/cara-strong-v0.4/ace_step_benchmark_testing/audio_full/
+  trained_model_data:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_step/full/
+  checkpoint: ACE-Step/Ace-Step1.5
+  checkpoint_dir:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_step/checkpoints/
+  model_ids: hybrid_ace_step_cara_strong_full
+  native_extractor: "true"
+  max_native_predictions: 0
+  duration_seconds: 12
+  num_inference_steps: 30
+  guidance_scale: 7.0
+  dashboard_triggered: "false"
+  dry_run: "false"
+outputs:
+  output_dir:
+    type: uri_folder
+    mode: rw_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/evaluation-runs/cara-strong-v0.4/ace_step_benchmark_testing/scoring/
+environment: azureml:env-ace-step:5
+environment_variables:
+  HF_TOKEN_SECRET_NAME: hf-token
+compute: azureml:gpu-smoke-h100
+identity:
+  type: user_identity
+experiment_name: cara-benchmark-testing-score
+display_name: 25-benchmark-testing-ace-step-score
+description: ACE-Step Hybrid native DiT-head attribution scoring. Blocks explicitly if the trained native head artifact is absent.
+tags:
+  cara_phase: evaluation
+  cara_step_id: "25"
+  cara_step_name: 25_benchmark_testing_ace_step_score
+  cara_compute_class: gpu
+  cara_model_family: ace_step
+  cara_evaluation_scope: attribution_scoring
+  cara_dashboard_triggered: "false"
+  cara_native_extractor: "true"
+  cara_marketplace: "false"

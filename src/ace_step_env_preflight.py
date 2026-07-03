@@ -274,12 +274,12 @@ def main() -> int:
     metadata = base_metadata(
         test_name=report["test_name"],
         compute="gpu-smoke-h100",
-        environment="azureml:env-ace-step:4",
+        environment="azureml:env-ace-step:5",
         dashboard_triggered=parse_bool(args.dashboard_triggered),
         report=report,
         model_family="ace_step",
         environment_name="env-ace-step",
-        environment_version="4",
+        environment_version="5",
         import_status=imports["diffusers.AceStepPipeline"]["status"],
     )
     write_report(Path(args.output_dir), report, metadata, report_alias="ace_step_env_preflight_report.json")

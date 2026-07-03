@@ -1,0 +1,81 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+type: command
+command: >-
+  python ace_step_hybrid_stages.py
+  --stage native_head_trainer
+  --ace_tensor_dir ${{inputs.ace_tensor_dir}}
+  --trained_model_data ${{inputs.trained_model_data}}
+  --checkpoint_dir ${{inputs.checkpoint_dir}}
+  --output_dir ${{outputs.output_dir}}
+  --tensor_manifest_relative_path ${{inputs.tensor_manifest_relative_path}}
+  --checkpoint ${{inputs.checkpoint}}
+  --planner_checkpoint ${{inputs.planner_checkpoint}}
+  --dit_variant ${{inputs.dit_variant}}
+  --variant cara_strong
+  --max_train_rows ${{inputs.max_train_rows}}
+  --max_eval_rows ${{inputs.max_eval_rows}}
+  --max_steps ${{inputs.max_steps}}
+  --batch_size ${{inputs.batch_size}}
+  --learning_rate ${{inputs.learning_rate}}
+  --duration_seconds ${{inputs.duration_seconds}}
+  --num_inference_steps ${{inputs.num_inference_steps}}
+  --guidance_scale ${{inputs.guidance_scale}}
+  --include_cara_tag_in_prompt ${{inputs.include_cara_tag_in_prompt}}
+  --dashboard_triggered ${{inputs.dashboard_triggered}}
+  --dry_run ${{inputs.dry_run}}
+code: ../../src
+inputs:
+  ace_tensor_dir:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_step/tensors/
+  trained_model_data:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_step/full/
+  checkpoint_dir:
+    type: uri_folder
+    mode: ro_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_step/checkpoints/
+  tensor_manifest_relative_path: ace_tensor_manifest.jsonl
+  checkpoint: ACE-Step/Ace-Step1.5
+  planner_checkpoint: ACE-Step/acestep-5Hz-lm-0.6B
+  dit_variant: turbo_dit
+  max_train_rows: 2048
+  max_eval_rows: 320
+  max_steps: 2000
+  batch_size: 1
+  learning_rate: 0.0003
+  duration_seconds: 8.0
+  num_inference_steps: 20
+  guidance_scale: 7.0
+  include_cara_tag_in_prompt: "false"
+  dashboard_triggered: "false"
+  dry_run: "false"
+outputs:
+  output_dir:
+    type: uri_folder
+    mode: rw_mount
+    path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_step/native_head/
+environment: azureml:env-ace-step:5
+environment_variables:
+  HF_TOKEN_SECRET_NAME: hf-token
+compute: azureml:gpu-fulltraining-h100
+identity:
+  type: user_identity
+experiment_name: cara-ace-step-full
+display_name: 23b-train-ace-step-native-head
+description: Train/export the ACE-Step Hybrid native DiT CARA attribution head over the completed Side-Step LoRA model.
+tags:
+  cara_phase: fine-tuning
+  cara_step_id: "13"
+  cara_step_name: 13_train_ace_step_native_head
+  cara_compute_class: gpu
+  cara_model_family: ace_step
+  cara_planner_size: 0.6B
+  cara_training_gate: ace_step_native_head
+  cara_training_scope: native-head
+  cara_trainer_compute: gpu-fulltraining-h100
+  cara_cost_guardrail: existing_azureml_workspace_only
+  cara_native_head_checkpoint: checkpoints/ace_attribution_head.pt
+  cara_output_path: azureml://datastores/ds_cara_raw_audio/paths/training-runs/cara-strong-v0.4/ace_step/native_head/

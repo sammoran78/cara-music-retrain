@@ -1619,3 +1619,13 @@ resolver. A mismatch such as a 98-pool / 9-family checkpoint being decoded with 
 45-pool / 8-family generated-manifest resolver is a scorer wiring failure, not a
 model result. Fix the resolver source before interpreting Hybrid attribution
 metrics.
+# Phase 2 Stable Audio Rewrite Handoff (2026-07-16)
+
+The original Stable Audio CARA-Strong lane is now classified as **trained but benchmark-incomplete**. It reached `7665 / 7665` optimization steps and wrote a compact trainable delta before Azure failed during post-training artifact handling. The generated-audio scorer later reconstructed the delta but could not obtain a batch-aligned DiT hidden-state tensor, so Stable Audio never produced a valid locked benchmark row.
+
+The forked implementation and future rerun procedure live in:
+
+- `../cara-native-stable-audio/CARA_NATIVE_STABLE_AUDIO_INTEGRATION_LOG.md`
+- `../cara-native-stable-audio/docs/CARA_NATIVE_STABLE_AUDIO_PHASE2_RUNBOOK.md`
+
+The Phase 2 fork makes the feature tap and hierarchical CARA head native checkpoint APIs. The dashboard must preserve this Phase 1 record as an incomplete reference and show the fork as a separate rewrite lane. Missing predictions or extractor failure must never be rendered as measured 0% attribution.
